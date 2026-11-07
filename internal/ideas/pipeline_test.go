@@ -18,14 +18,14 @@ import (
 	"unicode/utf8"
 )
 
-// commit is one file the pipeline wrote to GitHub.
+// commit is a file the pipeline committed.
 type commit struct {
 	path    string
 	message string
 	content string
 }
 
-// fakeGitHub accepts the contents API calls createFile makes and records them.
+// fakeGitHub records the files createFile commits.
 type fakeGitHub struct {
 	srv *httptest.Server
 
@@ -88,11 +88,9 @@ func newPipeline(t *testing.T, g *scriptedGateway) (*Service, *fakeGitHub) {
 
 const zhIdea = "最近整理自己的经历，推断出下面几条适用于目前阶段的公理。"
 
-// TestProcessIdeaWithholdsOnGatewayOutage reproduces the 2026-09-01 post. The
-// Lux gateway's database ran out of connection slots, every call in the
-// pipeline failed, every fallback substituted the source text, and the service
-// committed a post titled "Untitled" whose English block held Chinese.
-// Publishing is permanent, dated and public, so an outage must withhold.
+// TestProcessIdeaWithholdsOnGatewayOutage reproduces the 2026-09-01 incident:
+// every model call failed, each fallback kept the source text, and a post
+// titled "Untitled" with Chinese in its English block was published.
 func TestProcessIdeaWithholdsOnGatewayOutage(t *testing.T) {
 	g := newScriptedGateway(t) // no replies: every call answers 500
 	svc, gh := newPipeline(t, g)
@@ -104,10 +102,8 @@ func TestProcessIdeaWithholdsOnGatewayOutage(t *testing.T) {
 	}
 }
 
-// TestProcessIdeaWithholdsOnEchoedTranslation covers the same defect one
-// branch over: the gateway answers, and answers with the source text in both
-// languages. That payload passes isUsableTranslateResult, so only a check
-// after the branches meet catches it.
+// TestProcessIdeaWithholdsOnEchoedTranslation covers a model that echoes the
+// source as its translation, which isUsableTranslateResult accepts.
 func TestProcessIdeaWithholdsOnEchoedTranslation(t *testing.T) {
 	echoed, err := json.Marshal(translateResult{
 		Lang:              "zh",
@@ -130,10 +126,10 @@ func TestProcessIdeaWithholdsOnEchoedTranslation(t *testing.T) {
 	}
 }
 
-// TestProcessIdeaWithholdsWithoutTitle keeps the "Untitled" placeholder out of
-// the blog: a post the model could not name is not one worth dating.
+// TestProcessIdeaWithholdsWithoutTitle checks that the run stops when no title
+// can be generated.
 func TestProcessIdeaWithholdsWithoutTitle(t *testing.T) {
-	g := newScriptedGateway(t) // the title call is the first, and it fails
+	g := newScriptedGateway(t) // no replies: the title call fails
 	svc, gh := newPipeline(t, g)
 
 	svc.processIdea(ideaRequest{Content: zhIdea})
@@ -146,8 +142,8 @@ func TestProcessIdeaWithholdsWithoutTitle(t *testing.T) {
 	}
 }
 
-// TestProcessIdeaPublishesBilingual walks the whole pipeline with a gateway
-// that answers every step, and checks what reaches GitHub.
+// TestProcessIdeaPublishesBilingual runs the combined translation path for a
+// Chinese idea and checks the committed post.
 func TestProcessIdeaPublishesBilingual(t *testing.T) {
 	translated, err := json.Marshal(translateResult{
 		Lang:              "zh",
@@ -189,10 +185,8 @@ func TestProcessIdeaPublishesBilingual(t *testing.T) {
 	assertContains(t, "the zh block", zh, zhIdea, "这是补充说明。")
 }
 
-// TestProcessIdeaFallbackPlacesEnglishSource walks the other translation path
-// in the other direction: the combined call returns nothing usable, so the
-// title and content are translated one at a time, from English into Chinese.
-// Each language must still land in its own block.
+// TestProcessIdeaFallbackPlacesEnglishSource runs the fallback translation path
+// for an English idea and checks that each language lands in its own block.
 func TestProcessIdeaFallbackPlacesEnglishSource(t *testing.T) {
 	const enIdea = "Three axioms drawn from my own experience."
 
@@ -227,9 +221,7 @@ func TestProcessIdeaFallbackPlacesEnglishSource(t *testing.T) {
 	}
 }
 
-// splitLanguages returns the en and zh blocks of a published post, so a test
-// can check which language each text landed in rather than only that it
-// appears somewhere.
+// splitLanguages returns the en and zh blocks of a post.
 func splitLanguages(t *testing.T, md string) (en, zh string) {
 	t.Helper()
 	_, rest, ok := strings.Cut(md, "{{% en %}}")
@@ -252,11 +244,10 @@ func assertContains(t *testing.T, where, s string, want ...string) {
 	}
 }
 
-// TestFetchURLKeepsWholeRunes covers the two byte limits on a linked page, the
-// read limit and maxPageText. Either can land inside a multi-byte character,
-// and the half character reached the model as a stray U+FFFD.
+// TestFetchURLKeepsWholeRunes checks that neither byte limit on a page splits a
+// character.
 func TestFetchURLKeepsWholeRunes(t *testing.T) {
-	const han = "标" // three bytes, so a byte limit not divisible by three splits one
+	const han = "标" // 3 bytes, so a limit not divisible by 3 splits one
 
 	tests := []struct {
 		name string
@@ -270,9 +261,8 @@ func TestFetchURLKeepsWholeRunes(t *testing.T) {
 			want: strings.Repeat(han, maxPageText/3),
 		},
 		{
-			// Markup fills most of the read limit, so the text that survives
-			// it is under maxPageText and the read limit is the only cut. It
-			// leaves 4061 bytes of text: 1353 characters and two bytes.
+			// Markup fills the read limit, leaving 4061 bytes of text: 1353
+			// characters and two bytes. maxPageText does not cut.
 			name: "cut at the read limit",
 			page: strings.Repeat("<i></i>", 4101) + strings.Repeat(han, 2000),
 			want: strings.Repeat(han, 1353),

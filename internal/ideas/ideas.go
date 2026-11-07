@@ -2,9 +2,9 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-// Package ideas is the API behind the compose box on changkun.de. It accepts an
-// idea, polishes and translates it through the Lux model gateway, and commits
-// the result as a bilingual post to the blog repository.
+// Package ideas implements the API behind the compose box on changkun.de. It
+// polishes and translates an idea with models behind the Lux gateway, and
+// commits the result to the blog repository as a bilingual post.
 package ideas
 
 import (
@@ -19,42 +19,31 @@ import (
 	"latere.ai/x/pkg/luxsdk"
 )
 
-// Lux resolves a model name exactly: no prefix is stripped and no alias is
-// looked up, so a name either is one of the gateway's Models or is refused
-// with model_not_found. The defaults are the names the default gateway's
-// catalog lists, provider first and the version written with a dot. The
-// retired lux.latere.ai served bare names instead. A gateway whose catalog
-// names them otherwise is answered by LLM_MODEL and LLM_TITLE_MODEL.
+// Default models. Lux matches names exactly, so they are spelled as the
+// gateway's catalog lists them; any other spelling fails with model_not_found.
 const (
 	defaultModel      = "anthropic/claude-opus-5.5"
 	defaultTitleModel = "anthropic/claude-haiku-5.5"
 )
 
-// Prefix is the subtree the ideas API owns. The routes below repeat it
-// because the handler is mounted without stripping the prefix, which keeps the
-// paths in this file the same as the ones a caller types.
+// Prefix is the path the API is mounted at. The mux does not strip it, so the
+// routes include it.
 const Prefix = "/ideas/"
 
-// Service is a configured ideas API. A nil *Service is a deployment without
-// credentials, which Handler answers with 503.
+// Service is the configured API. A nil *Service has no credentials, and
+// Handler answers it with 503.
 type Service struct {
 	log    *log.Logger
 	llm    *llmClient
 	github *githubClient
 }
 
-// New builds the ideas API from the environment, and returns nil
-// when it cannot.
+// New configures the API from the environment. It returns nil if LLM_API_KEY
+// or GIT_TOKEN is unset, or GIT_REPO is not owner/repo, so a host without
+// secrets still serves the site.
 //
-// Serving changkun.de is the primary job of this binary and needs no
-// configuration at all. The ideas API needs a model gateway key and a GitHub
-// token. Missing credentials therefore leave the API unbuilt rather than stop
-// the process: a host that carries no secrets still serves the site.
-//
-// The gateway itself has a default, Lux under the latere platform origin. It
-// is passed explicitly rather than left to luxsdk, which would otherwise read
-// LUX_BASE_URL from the environment and let an unrelated variable retarget
-// this service.
+// The gateway URL is always passed to luxsdk, which would otherwise read
+// LUX_BASE_URL.
 func New(l *log.Logger) *Service {
 	llmBaseURL := cmp.Or(os.Getenv("LLM_BASE_URL"), luxsdk.DefaultBaseURL)
 	llmAPIKey := os.Getenv("LLM_API_KEY")
@@ -89,13 +78,9 @@ func New(l *log.Logger) *Service {
 	}
 }
 
-// Handler serves the ideas API under Prefix.
-//
-// A nil service answers 503 on the whole subtree instead of leaving the paths
-// to the file server, so a deployment that lost its credentials says so at the
-// endpoint rather than returning the site's 404 page. Both forms keep the CORS
-// wrapper, because the caller is the compose box on changkun.de and a browser
-// reads a blocked response as a network error, not as the status it carries.
+// Handler serves the API. If svc is nil, every route answers 503 rather than
+// falling through to the site's 404 page. Both cases send CORS headers, so the
+// compose box sees the real status instead of a network error.
 func Handler(svc *Service, l *log.Logger) http.Handler {
 	r := http.NewServeMux()
 	if svc == nil {
@@ -113,20 +98,22 @@ func Handler(svc *Service, l *log.Logger) http.Handler {
 	return cors(auth(newLatereVerifier(l), r))
 }
 
+// ideaRequest is the body of /ideas/post and /ideas/improve.
 type ideaRequest struct {
 	Title     string `json:"title"`
 	Content   string `json:"content"`
 	Augmented string `json:"augmented"`
 }
 
+// ideaResponse is the reply of /ideas/post and /ideas/improve.
 type ideaResponse struct {
 	OK      bool   `json:"ok"`
 	Message string `json:"message,omitempty"`
 	Content string `json:"content,omitempty"`
 }
 
-// handlePost accepts an idea and publishes it in the background. The pipeline
-// takes minutes, so the caller is answered as soon as the request is valid.
+// handlePost replies as soon as the idea is valid and publishes it in the
+// background.
 func (s *Service) handlePost(w http.ResponseWriter, r *http.Request) {
 	req, ok := decodeIdea(w, r)
 	if !ok {
@@ -136,7 +123,8 @@ func (s *Service) handlePost(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, ideaResponse{OK: true, Message: "idea accepted, publishing in background"})
 }
 
-// handleImprove polishes content and returns it without publishing.
+// handleImprove replies with the content polished by the model, without
+// publishing it.
 func (s *Service) handleImprove(w http.ResponseWriter, r *http.Request) {
 	req, ok := decodeIdea(w, r)
 	if !ok {
@@ -151,8 +139,8 @@ func (s *Service) handleImprove(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, ideaResponse{OK: true, Content: improved})
 }
 
-// decodeIdea reads the request body, answering 400 itself when it is not an
-// idea with content.
+// decodeIdea decodes the request body. It writes a 400 and reports false if
+// the body is invalid or has no content.
 func decodeIdea(w http.ResponseWriter, r *http.Request) (ideaRequest, bool) {
 	var req ideaRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -172,8 +160,7 @@ func writeJSON(w http.ResponseWriter, code int, v ideaResponse) {
 	json.NewEncoder(w).Encode(v)
 }
 
-// cors admits the compose box on changkun.de. The ideas API is reached from a
-// page on the site itself, never from a third-party origin.
+// cors lets pages on changkun.de call the API, and answers preflight requests.
 func cors(next http.Handler) http.Handler {
 	allowed := map[string]bool{
 		"https://changkun.de":     true,

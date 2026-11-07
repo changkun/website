@@ -15,17 +15,15 @@ import (
 	"time"
 )
 
-// processIdea turns one submitted idea into a bilingual post and commits it.
-//
-// It runs after the request has been answered, so it reports only to the log.
-// The steps run in the order of their model calls, which the pipeline tests
-// script by position.
+// processIdea turns an idea into a bilingual post and commits it. It runs in
+// the background and reports only to the log. The steps run in the order of
+// their model calls, which the tests script by position.
 func (s *Service) processIdea(req ideaRequest) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
-	// The linked pages inform the title and the augmentation. Translation and
-	// the published body see only what the author wrote.
+	// Linked pages inform the title and the deep dive. Translation and the
+	// published body use only what the author wrote.
 	enriched := req.Content + s.references(ctx, req.Content)
 
 	if req.Title == "" {
@@ -43,13 +41,9 @@ func (s *Service) processIdea(req ideaRequest) {
 	title, content := s.translate(ctx, lang, req.Title, req.Content)
 	s.log.Printf("detected language: %s", lang)
 
-	// Every step above degrades rather than fails, and the floor sits here
-	// because the ways they degrade all converge on one artifact: the source
-	// text in both language blocks. A gateway outage makes each fallback
-	// substitute the input, and a model that echoes the input into both
-	// fields passes isUsableTranslateResult on the primary path, so a check
-	// inside either branch would miss the other. Publishing that is worse
-	// than publishing nothing: it is permanent, dated, and public.
+	// The steps above degrade instead of failing. A gateway outage, or a model
+	// that echoes its input, leaves the source text in both languages on
+	// either translation path. Publishing is permanent, so withhold the post.
 	if err := checkBilingual(title, content); err != nil {
 		s.log.Printf("idea not published: %v", err)
 		return
@@ -70,8 +64,8 @@ func (s *Service) processIdea(req ideaRequest) {
 	s.log.Printf("idea published: %s", p.filename())
 }
 
-// references fetches the pages an idea links to and renders each as context
-// for the model. A page that cannot be fetched is skipped.
+// references fetches the pages content links to and renders them as context
+// for the model, skipping any that fail.
 func (s *Service) references(ctx context.Context, content string) string {
 	var refs strings.Builder
 	for _, u := range urlRe.FindAllString(content, maxURLs) {
@@ -92,11 +86,10 @@ func (s *Service) references(ctx context.Context, content string) string {
 	return refs.String()
 }
 
-// translate returns the title and content in both languages, the source
-// polished. It asks for everything in one call and falls back to translating
-// title and content separately when that answer is missing or malformed. The
-// fallback copies what it cannot translate; checkBilingual decides whether the
-// result is fit to publish.
+// translate returns the title and content, each as the polished source plus
+// its translation. If the combined call fails or its reply is unusable, it
+// translates title and content separately, keeping the source wherever that
+// fails too.
 func (s *Service) translate(ctx context.Context, lang, title, content string) (bilingual, bilingual) {
 	s.log.Printf("detecting language, polishing, and translating...")
 	tr, err := s.llm.detectAndTranslate(ctx, title, content)
@@ -126,8 +119,7 @@ func (s *Service) translate(ctx context.Context, lang, title, content string) (b
 	return inLang(lang, title, translatedTitle), inLang(lang, content, translatedContent)
 }
 
-// slug names the permalink, falling back to the slugified title when the model
-// gives nothing usable.
+// slug asks the model for a permalink slug, falling back to slugify.
 func (s *Service) slug(ctx context.Context, titleEn string) string {
 	s.log.Printf("generating short slug...")
 	slug, err := s.llm.generateSlug(ctx, titleEn)
@@ -139,10 +131,10 @@ func (s *Service) slug(ctx context.Context, titleEn string) string {
 	return slug
 }
 
-// augment returns the deep dive in both languages and whether a model wrote
-// it. The author may provide one; otherwise it is generated in the idea's
-// language. Either way it is then translated. A post publishes without a deep
-// dive, or with one in a single language, when these calls fail.
+// augment returns the deep dive in both languages, and whether a model wrote
+// it. It uses the author's deep dive if provided, and generates one otherwise.
+// If a call fails, the post publishes without the deep dive or its
+// translation.
 func (s *Service) augment(ctx context.Context, lang, title, enriched, provided string) (bilingual, bool) {
 	source := provided
 	if source != "" {
@@ -170,11 +162,11 @@ func (s *Service) augment(ctx context.Context, lang, title, enriched, provided s
 	return inLang(lang, source, translated), provided == ""
 }
 
-// Bounds on what linked pages add to a prompt.
+// Limits on what linked pages add to a prompt.
 const (
 	maxURLs      = 5
-	maxPageBytes = 32 * 1024 // read from the response
-	maxPageText  = 4096      // kept after stripping tags, in bytes
+	maxPageBytes = 32 * 1024 // read from each response
+	maxPageText  = 4096      // bytes kept after stripping tags
 )
 
 var (
@@ -182,7 +174,8 @@ var (
 	htmlTagRe = regexp.MustCompile(`<[^>]*>`)
 )
 
-// fetchURL returns a rough plain-text rendering of the page at url.
+// fetchURL returns the text of the page at url, with tags stripped and
+// whitespace collapsed.
 func fetchURL(ctx context.Context, url string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
@@ -211,7 +204,6 @@ func fetchURL(ctx context.Context, url string) (string, error) {
 	if len(text) > maxPageText {
 		text = text[:maxPageText]
 	}
-	// Both limits count bytes, so either can split a multi-byte character.
-	// Drop the partial one rather than send the model half of it.
+	// Both limits count bytes; drop any character they split.
 	return strings.ToValidUTF8(text, ""), nil
 }

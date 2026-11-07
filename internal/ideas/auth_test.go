@@ -24,8 +24,8 @@ import (
 
 const testKid = "test-key"
 
-// authFixture is a latere auth service stood up in-process: an RSA key, the
-// JWKS document served over HTTP, and a minter for tokens signed by that key.
+// authFixture is an in-process latere auth server: an RSA key, its JWKS
+// endpoint, and a token minter.
 type authFixture struct {
 	key    *rsa.PrivateKey
 	issuer string
@@ -55,8 +55,8 @@ func newAuthFixture(t *testing.T) *authFixture {
 	return f
 }
 
-// token mints an access token shaped like the one auth.latere.ai issues to
-// the changkun-blog PKCE client (see buildSession in the auth service).
+// token mints an access token like those auth.latere.ai issues to the compose
+// box. claims override the defaults.
 func (f *authFixture) token(t *testing.T, claims map[string]any) string {
 	t.Helper()
 
@@ -68,7 +68,7 @@ func (f *authFixture) token(t *testing.T, claims map[string]any) string {
 		"client_id":      "changkun-blog",
 	}
 	maps.Copy(payload, claims)
-	// A nil value removes the claim, so a case can mint a token without one.
+	// A nil value removes the claim.
 	maps.DeleteFunc(payload, func(_ string, v any) bool { return v == nil })
 
 	header, err := json.Marshal(map[string]string{"alg": "RS256", "kid": testKid, "typ": "JWT"})
@@ -117,9 +117,7 @@ func doAuth(v *latereVerifier, bearer string) *httptest.ResponseRecorder {
 	return w
 }
 
-// TestAuthLatereToken covers the browser compose path: the blog's login SDK
-// runs PKCE against auth.latere.ai and sends the resulting RS256 access token
-// as a Bearer. Before latere validation existed this returned 401.
+// TestAuthLatereToken checks the principal allowlist and token validation.
 func TestAuthLatereToken(t *testing.T) {
 	f := newAuthFixture(t)
 
@@ -180,8 +178,8 @@ func TestAuthLatereToken(t *testing.T) {
 	}
 }
 
-// TestAuthForgedSignature rejects a token that carries the right claims but
-// was signed by a key the JWKS document does not publish.
+// TestAuthForgedSignature rejects a token signed by a key the JWKS does not
+// publish.
 func TestAuthForgedSignature(t *testing.T) {
 	f := newAuthFixture(t)
 
@@ -194,10 +192,8 @@ func TestAuthForgedSignature(t *testing.T) {
 	}
 }
 
-// TestAuthForeignClient refuses an allowlisted person's token when it was
-// minted for another latere client. A login token is addressed to the issuer,
-// so without the client check a token handed to any other latere app would
-// post to the blog.
+// TestAuthForeignClient rejects an allowed person's token issued to another
+// latere client.
 func TestAuthForeignClient(t *testing.T) {
 	f := newAuthFixture(t)
 
@@ -240,8 +236,8 @@ func TestAuthForeignClient(t *testing.T) {
 	}
 }
 
-// TestAuthDisabledLatere pins the fail-closed default: with no allowlist
-// configured newLatereVerifier yields nil and latere tokens are refused.
+// TestAuthDisabledLatere checks that every token is rejected without an
+// allowlist.
 func TestAuthDisabledLatere(t *testing.T) {
 	f := newAuthFixture(t)
 	t.Setenv("AUTH_ALLOWED_PRINCIPALS", "")
@@ -256,8 +252,7 @@ func TestAuthDisabledLatere(t *testing.T) {
 	}
 }
 
-// TestNewLatereVerifier checks the environment wiring, including the default
-// issuer and the derived JWKS URL.
+// TestNewLatereVerifier checks the allowlists parsed from the environment.
 func TestNewLatereVerifier(t *testing.T) {
 	t.Setenv("AUTH_ALLOWED_PRINCIPALS", " HI@changkun.de , principal-1 ,")
 	t.Setenv("AUTH_URL", "https://auth.latere.ai/")

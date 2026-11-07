@@ -11,10 +11,10 @@ import (
 	"unicode"
 )
 
-// bilingual is one text in the two languages the blog publishes.
+// bilingual holds a text in English and Chinese.
 type bilingual struct{ en, zh string }
 
-// inLang pairs a text written in lang with its translation into the other.
+// inLang pairs source, written in lang, with its translation.
 func inLang(lang, source, translated string) bilingual {
 	if lang == "en" {
 		return bilingual{en: source, zh: translated}
@@ -22,7 +22,7 @@ func inLang(lang, source, translated string) bilingual {
 	return bilingual{en: translated, zh: source}
 }
 
-// otherLang is the language an idea written in lang is translated into.
+// otherLang returns the language an idea in lang is translated into.
 func otherLang(lang string) string {
 	if lang == "en" {
 		return "zh"
@@ -30,8 +30,8 @@ func otherLang(lang string) string {
 	return "en"
 }
 
-// detectLang guesses whether text is primarily Chinese or English
-// by checking if more than half the non-space runes are CJK.
+// detectLang returns "zh" if Han characters make up more than half of the
+// runes in s that are neither space nor punctuation, and "en" otherwise.
 func detectLang(s string) string {
 	var cjk, total int
 	for _, r := range s {
@@ -49,8 +49,8 @@ func detectLang(s string) string {
 	return "en"
 }
 
-// normalizeTranslateResult trims the model's answer for an idea written in
-// lang, and swaps the halves back when the model returned them inverted.
+// normalizeTranslateResult trims the fields of tr, and swaps source and
+// translation back if the model inverted them. lang is the idea's language.
 func normalizeTranslateResult(tr *translateResult, lang string) *translateResult {
 	n := *tr
 	n.PolishedTitle = strings.TrimSpace(n.PolishedTitle)
@@ -65,11 +65,14 @@ func normalizeTranslateResult(tr *translateResult, lang string) *translateResult
 	return &n
 }
 
+// isUsableTranslateResult reports whether tr has two plausible titles and two
+// non-empty contents.
 func isUsableTranslateResult(tr *translateResult) bool {
 	return isLikelyTitle(tr.PolishedTitle) && isLikelyTitle(tr.TranslatedTitle) &&
 		strings.TrimSpace(tr.PolishedContent) != "" && strings.TrimSpace(tr.TranslatedContent) != ""
 }
 
+// isLikelyTitle reports whether s is one non-empty line of at most 120 runes.
 func isLikelyTitle(s string) bool {
 	s = strings.TrimSpace(s)
 	if s == "" {
@@ -84,12 +87,9 @@ func isLikelyTitle(s string) bool {
 	return true
 }
 
-// checkBilingual reports whether the two language versions are fit to publish.
-//
-// The titles are not compared: a title can legitimately read the same in both
-// languages. The bodies cannot. Two identical bodies mean no translation
-// happened, and a body whose script does not match its block means the two
-// were swapped or never produced.
+// checkBilingual returns an error if the post is not fit to publish. Titles may
+// read the same in both languages; contents may not, and each must be written
+// in its own language.
 func checkBilingual(title, content bilingual) error {
 	for _, f := range []struct{ name, value string }{
 		{"the en title", title.en},

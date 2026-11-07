@@ -10,8 +10,8 @@ import (
 	"unicode/utf8"
 )
 
-// TestSanitizeCommitMsg covers the two jobs: control characters never reach a
-// commit subject, and the length bound counts runes.
+// TestSanitizeCommitMsg checks that control characters and surrounding space
+// are dropped, and everything else is kept.
 func TestSanitizeCommitMsg(t *testing.T) {
 	tests := []struct {
 		name string
@@ -33,10 +33,8 @@ func TestSanitizeCommitMsg(t *testing.T) {
 	}
 }
 
-// TestSanitizeCommitMsgTruncatesOnRunes is the regression this change exists
-// for. Truncating on bytes cut a multi-byte rune in half, so a Chinese title
-// long enough to trim put invalid UTF-8 into the commit message. Git accepts
-// those bytes and every later reader inherits them.
+// TestSanitizeCommitMsgTruncatesOnRunes checks that a long Chinese subject is
+// cut on a character boundary.
 func TestSanitizeCommitMsgTruncatesOnRunes(t *testing.T) {
 	long := "ideas: " + strings.Repeat("标", 300)
 
@@ -44,8 +42,7 @@ func TestSanitizeCommitMsgTruncatesOnRunes(t *testing.T) {
 	if !utf8.ValidString(got) {
 		t.Fatalf("sanitizeCommitMsg() produced invalid UTF-8: %q", got)
 	}
-	// One trailing ellipsis marks the cut, so the rune count is the bound
-	// plus that marker.
+	// The cut is marked with one ellipsis.
 	if n := utf8.RuneCountInString(got); n != commitMsgMaxRunes+1 {
 		t.Fatalf("rune count = %d, want %d", n, commitMsgMaxRunes+1)
 	}

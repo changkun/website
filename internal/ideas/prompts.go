@@ -11,8 +11,7 @@ import (
 	"text/template"
 )
 
-// Prompt names, one per file in prompts/. TestRenderPromptAll renders each file
-// in the directory with its entry in sampleData.
+// Template names in prompts/.
 const (
 	promptAugment          = "augment.tmpl"
 	promptTitle            = "title.tmpl"
@@ -25,54 +24,42 @@ const (
 	promptReference        = "reference.tmpl"
 )
 
-// promptFS carries the templates into the binary, so a deployed server needs
-// no files beside it and cannot drift from the prompts it was built with.
-//
 //go:embed prompts/*.tmpl
 var promptFS embed.FS
 
-// prompts is parsed once at process start. A template that does not parse is a
-// mistake in this repository, not a condition to recover from at request time,
-// so it stops the binary before it can serve.
-//
-// missingkey=error covers map-shaped data. Every prompt below is rendered from
-// a typed struct, where a bad field name is already an execution error; the
-// option is what keeps that true if a map is ever passed.
+// prompts are parsed at startup; a template that does not parse panics.
+// missingkey=error makes a missing map key an error instead of "<no value>".
 var prompts = template.Must(
 	template.New("prompts").Option("missingkey=error").ParseFS(promptFS, "prompts/*.tmpl"),
 )
 
-// augmentData drives augment.tmpl. Lang is the source language of the idea
-// ("en" or "zh"); WebTools reports whether the request carries web search and
-// fetch tools, which changes both the instructions and the citation wording.
+// augmentData is the data for augment.tmpl. Lang is the idea's language, "en"
+// or "zh". WebTools is set when the request carries web search and fetch.
 type augmentData struct {
 	Lang     string
 	WebTools bool
 }
 
-// languageData names a target language in prose, e.g. "Chinese".
+// languageData names a target language in English, such as "Chinese".
 type languageData struct {
 	Language string
 }
 
-// ideaInputData is the user message an idea is presented in.
+// ideaInputData is the data for idea_input.tmpl.
 type ideaInputData struct {
 	Title   string
 	Content string
 }
 
-// referenceData is one fetched URL appended to an idea for context.
+// referenceData is the data for reference.tmpl: a linked page and its text.
 type referenceData struct {
 	URL  string
 	Text string
 }
 
-// renderPrompt executes the named template.
-//
-// Exactly one trailing newline is dropped: the one every template file ends
-// with, as text files should. Trimming further would eat blank lines an author
-// wrote at the end of an idea, since idea_input.tmpl and reference.tmpl close
-// on user content rather than on our own prose.
+// renderPrompt executes the named template. It drops only the newline that
+// ends the template file: idea_input.tmpl and reference.tmpl end with user
+// content, whose trailing blank lines must survive.
 func renderPrompt(name string, data any) (string, error) {
 	var b strings.Builder
 	if err := prompts.ExecuteTemplate(&b, name, data); err != nil {
@@ -81,7 +68,7 @@ func renderPrompt(name string, data any) (string, error) {
 	return strings.TrimSuffix(b.String(), "\n"), nil
 }
 
-// languageName maps a language code to the name used inside a prompt.
+// languageName returns the English name of a language code.
 func languageName(code string) string {
 	if code == "zh" {
 		return "Chinese"

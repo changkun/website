@@ -10,8 +10,7 @@ import (
 	"testing"
 )
 
-// sampleData is representative input for every prompt, so the whole set can be
-// rendered in one pass.
+// sampleData is valid data for each template in prompts/.
 var sampleData = map[string]any{
 	promptAugment:          augmentData{Lang: "en"},
 	promptTitle:            nil,
@@ -24,9 +23,8 @@ var sampleData = map[string]any{
 	promptReference:        referenceData{URL: "https://example.com", Text: "body"},
 }
 
-// TestRenderPromptAll renders every template in prompts/. A field renamed in Go
-// but not in the template fails only on execution, so this is what catches it
-// before a live post does.
+// TestRenderPromptAll renders every template, catching a field renamed in Go
+// but not in the template.
 func TestRenderPromptAll(t *testing.T) {
 	files, err := fs.Glob(promptFS, "prompts/*.tmpl")
 	if err != nil {
@@ -59,8 +57,7 @@ func TestRenderPromptAll(t *testing.T) {
 	}
 }
 
-// TestAugmentPrompt covers the one template with branches. Both switches are
-// independent, so all four combinations are checked.
+// TestAugmentPrompt checks all four combinations of Lang and WebTools.
 func TestAugmentPrompt(t *testing.T) {
 	const (
 		zhDirective = "You MUST write your ENTIRE response in Chinese"
@@ -122,10 +119,8 @@ func TestAugmentPrompt(t *testing.T) {
 	}
 }
 
-// TestRenderPromptKeepsContentWhitespace covers the two templates that close
-// on user content. Only the template file's own trailing newline may go: an
-// author's blank lines are part of what they wrote, and stripping them would
-// silently reformat every idea that ends with one.
+// TestRenderPromptKeepsContentWhitespace checks that trailing blank lines in
+// user content survive rendering.
 func TestRenderPromptKeepsContentWhitespace(t *testing.T) {
 	got, err := renderPrompt(promptIdeaInput, ideaInputData{Title: "T", Content: "body\n\n"})
 	if err != nil {

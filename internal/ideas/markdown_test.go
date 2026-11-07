@@ -9,9 +9,7 @@ import (
 	"time"
 )
 
-// TestBuildMarkdown pins the bytes committed to the blog. The Hugo shortcodes
-// and front matter keys are read by the blog's templates, so a change here is a
-// change to every future post and must be deliberate.
+// TestBuildMarkdown pins the committed bytes, which the blog's templates parse.
 func TestBuildMarkdown(t *testing.T) {
 	date := time.Date(2026, time.November, 7, 9, 30, 0, 0, time.UTC)
 

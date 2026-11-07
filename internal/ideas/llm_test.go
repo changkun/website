@@ -18,10 +18,9 @@ import (
 	"latere.ai/x/pkg/luxsdk"
 )
 
-// scriptedGateway stands in for Lux. It answers each call with the next reply
-// in the script and records what it was sent, so one server can stand in for a
-// single task or a whole pipeline run. A call past the end of the script fails
-// the way the real gateway fails.
+// scriptedGateway is a fake Lux gateway. It answers each call with the next
+// scripted reply and records the request. Past the end of the script it fails
+// like the real gateway.
 type scriptedGateway struct {
 	srv *httptest.Server
 
@@ -82,9 +81,8 @@ func (g *scriptedGateway) client() *llmClient {
 	}
 }
 
-// TestAugmentAsksForGrounding covers the reason server tools exist here: the
-// augmentation must ask the provider to search and fetch, or every citation is
-// something the model recalled rather than read.
+// TestAugmentAsksForGrounding checks that augment requests web search and
+// fetch, so citations come from pages the model read.
 func TestAugmentAsksForGrounding(t *testing.T) {
 	g := newScriptedGateway(t, "augmented")
 
@@ -116,8 +114,8 @@ func TestAugmentAsksForGrounding(t *testing.T) {
 	}
 }
 
-// TestAugmentFallsBackUngrounded keeps a provider without those tools from
-// costing the post entirely. The answer is worse and it still arrives.
+// TestAugmentFallsBackUngrounded checks that augment retries without tools when
+// the grounded call fails.
 func TestAugmentFallsBackUngrounded(t *testing.T) {
 	var seen []map[string]any
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -157,9 +155,7 @@ func TestAugmentFallsBackUngrounded(t *testing.T) {
 	}
 }
 
-// TestAnswerText covers the one piece of response handling with a judgement in
-// it. Text between tool calls is the model thinking aloud, so only the last
-// block is the answer; with no tool there is nothing to think aloud between.
+// TestAnswerText checks which text blocks count as the reply.
 func TestAnswerText(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -214,9 +210,8 @@ func TestAnswerText(t *testing.T) {
 	}
 }
 
-// TestDetectAndTranslateRepairsReply covers the decode path end to end: the
-// model answers with the right keys inside a fence, with raw newlines in the
-// multi-line values, and the result still has to come out whole.
+// TestDetectAndTranslateRepairsReply decodes a fenced reply with raw newlines
+// inside JSON strings.
 func TestDetectAndTranslateRepairsReply(t *testing.T) {
 	reply := "```json\n{\n  \"lang\": \"en\",\n  \"polished_title\": \"A Title\",\n" +
 		"  \"polished_content\": \"Line one.\n\nLine two.\",\n" +
@@ -240,8 +235,8 @@ func TestDetectAndTranslateRepairsReply(t *testing.T) {
 	}
 }
 
-// TestDetectAndTranslateRejectsUnknownLanguage keeps a reply the blog cannot
-// publish from reaching the markdown builder.
+// TestDetectAndTranslateRejectsUnknownLanguage rejects a reply whose lang is
+// neither en nor zh.
 func TestDetectAndTranslateRejectsUnknownLanguage(t *testing.T) {
 	g := newScriptedGateway(t, `{"lang":"fr","polished_title":"t","polished_content":"c","translated_title":"t","translated_content":"c"}`)
 
@@ -250,8 +245,7 @@ func TestDetectAndTranslateRejectsUnknownLanguage(t *testing.T) {
 	}
 }
 
-// TestHasSlugChar covers the gate in front of sanitize.Slug: the placeholder
-// it would otherwise return is a container-name default, not a permalink.
+// TestHasSlugChar checks which replies sanitize.Slug can turn into a slug.
 func TestHasSlugChar(t *testing.T) {
 	tests := []struct {
 		in   string
@@ -275,13 +269,9 @@ func TestHasSlugChar(t *testing.T) {
 	}
 }
 
-// TestPromptTasks covers the thin tasks in one pass: each renders its prompt,
-// sends it as system, and returns the reply.
-//
-// Two things are worth pinning per task. Which model it picks, since the cheap
-// one handles the short jobs and the expensive one the long ones. And which
-// token bound it sends, because the wrong one here does not fail — it returns
-// a reply cut off mid-sentence, and the post publishes that way.
+// TestPromptTasks checks the prompt, model, and token limit of each
+// single-prompt task. A wrong limit does not fail; it silently cuts the reply
+// off.
 func TestPromptTasks(t *testing.T) {
 	const (
 		bigModel   = "test/model"
@@ -381,8 +371,8 @@ func TestPromptTasks(t *testing.T) {
 	}
 }
 
-// TestGenerateSlugRejectsUnusableAnswer keeps a post from publishing under a
-// placeholder permalink when the model answers with nothing usable.
+// TestGenerateSlugRejectsUnusableAnswer checks that a reply with no letters or
+// digits is an error, not a placeholder slug.
 func TestGenerateSlugRejectsUnusableAnswer(t *testing.T) {
 	g := newScriptedGateway(t, "!!! ???")
 

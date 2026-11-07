@@ -14,7 +14,7 @@ import (
 	"testing"
 )
 
-// ideasEnv is the minimum configuration New accepts.
+// ideasEnv sets the minimal environment New accepts.
 func ideasEnv(t *testing.T) {
 	t.Helper()
 	t.Setenv("LLM_BASE_URL", "https://lux.example")
@@ -24,9 +24,8 @@ func ideasEnv(t *testing.T) {
 
 func discard() *log.Logger { return log.New(io.Discard, "", 0) }
 
-// TestNewNeedsCredentials keeps the site independent of the API.
-// The binary serves changkun.de first and answers /ideas/* second, so a host
-// without credentials must start rather than exit.
+// TestNewNeedsCredentials checks that New returns nil, rather than failing,
+// when a credential is missing.
 func TestNewNeedsCredentials(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -80,10 +79,8 @@ func TestNewReadsRepo(t *testing.T) {
 	}
 }
 
-// TestHandlerUnconfigured pins what an unconfigured deployment answers.
-// Leaving the subtree unmounted would hand /ideas/post to the file server and
-// return the site's 404 page, which reads as a wrong URL rather than a
-// missing credential.
+// TestHandlerUnconfigured checks that without a service every route answers
+// 503, not the site's 404.
 func TestHandlerUnconfigured(t *testing.T) {
 	h := Handler(nil, discard())
 
@@ -96,9 +93,8 @@ func TestHandlerUnconfigured(t *testing.T) {
 	}
 }
 
-// TestHandlerAllowsComposeBox covers the browser path: the compose box is
-// served from changkun.de and calls the API cross-origin, so a missing CORS
-// header reaches the page as a network error and hides the real status.
+// TestHandlerAllowsComposeBox checks the CORS preflight from changkun.de, with
+// and without a service.
 func TestHandlerAllowsComposeBox(t *testing.T) {
 	tests := []struct {
 		name string
@@ -126,8 +122,7 @@ func TestHandlerAllowsComposeBox(t *testing.T) {
 	}
 }
 
-// TestHandlerRejectsUnauthenticated checks the configured mount still
-// closes: only /ideas/ping is public.
+// TestHandlerRejectsUnauthenticated checks that only /ideas/ping is public.
 func TestHandlerRejectsUnauthenticated(t *testing.T) {
 	h := Handler(&Service{log: discard()}, discard())
 
@@ -144,8 +139,7 @@ func TestHandlerRejectsUnauthenticated(t *testing.T) {
 	}
 }
 
-// TestHandleImprove returns the model's rewrite, and a fixed message rather
-// than the gateway's error when there is none.
+// TestHandleImprove checks the reply with and without a working gateway.
 func TestHandleImprove(t *testing.T) {
 	t.Run("rewritten", func(t *testing.T) {
 		svc := &Service{log: discard(), llm: newScriptedGateway(t, "Polished.").client()}

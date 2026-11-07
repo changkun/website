@@ -20,15 +20,14 @@ import (
 	"latere.ai/x/pkg/sanitize"
 )
 
+// githubClient commits files through the GitHub contents API.
 type githubClient struct {
-	token string
-	owner string
-	repo  string
-	name  string
-	email string
-	// baseURL overrides the GitHub API root. Empty means the real one; a
-	// test points it at a server it can inspect.
-	baseURL string
+	token   string
+	owner   string
+	repo    string
+	name    string // committer
+	email   string // committer
+	baseURL string // API root; empty means https://api.github.com
 }
 
 type createFileRequest struct {
@@ -42,6 +41,7 @@ type githubCommitter struct {
 	Email string `json:"email"`
 }
 
+// createFile commits content as a new file at path.
 func (g *githubClient) createFile(ctx context.Context, path, content, commitMsg string) error {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
@@ -85,12 +85,11 @@ func (g *githubClient) createFile(ctx context.Context, path, content, commitMsg 
 	return nil
 }
 
-// commitMsgMaxRunes bounds the commit subject. The limit counts runes, not
-// bytes: a byte cut lands mid-rune on any Chinese title and writes invalid
-// UTF-8 into the repository history.
+// commitMsgMaxRunes bounds the commit subject. It counts runes, so the cut
+// never splits a character.
 const commitMsgMaxRunes = 200
 
-// sanitizeCommitMsg strips control characters and truncates the message.
+// sanitizeCommitMsg drops control characters, trims space, and truncates s.
 func sanitizeCommitMsg(s string) string {
 	var b strings.Builder
 	for _, r := range s {

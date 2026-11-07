@@ -14,32 +14,23 @@ import (
 	"latere.ai/x/pkg/authkit/jwt"
 )
 
-// latereVerifier accepts the RS256 access tokens that auth.latere.ai issues to
-// the blog compose box through browser PKCE.
+// latereVerifier verifies latere access tokens against two allowlists.
 //
-// Signature, issuer and expiry come from the JWKS document. Posting rights do
-// not: any latere account can mint a token for any client, so a valid
-// signature only proves *who* is calling. The allowlist decides whether that
-// principal may write to the blog.
-//
-// The client list decides which login the token came from. A latere login
-// token is addressed to the issuer, not to this API, so a token the same
-// person handed to any other latere app verifies here just as well. Only the
-// clients listed, by default the compose box's own, may reach the API.
+// A valid token only proves who the caller is: any latere account can get one,
+// for any latere client. A request is allowed only if its token was issued to
+// an allowed client, by default the compose box, for an allowed principal.
 type latereVerifier struct {
 	auth    *jwt.Authenticator
-	allowed map[string]bool // lowercased email or principal id (sub)
-	clients map[string]bool // lowercased OAuth client ids
+	allowed map[string]bool // lowercase emails and principal ids
+	clients map[string]bool // lowercase OAuth client ids
 	log     *log.Logger
 }
 
-// defaultClient is the OAuth client the blog's compose box logs in with,
-// named in login-sdk.js.
+// defaultClient is the compose box's OAuth client, as in static/login-sdk.js.
 const defaultClient = "changkun-blog"
 
-// newLatereVerifier builds a verifier from the environment. It returns nil
-// when AUTH_ALLOWED_PRINCIPALS is unset: with no allowlist there is no safe
-// answer, so latere tokens are refused outright rather than trusted wholesale.
+// newLatereVerifier configures a verifier from the environment. It returns nil,
+// which rejects every token, if AUTH_ALLOWED_PRINCIPALS is empty.
 func newLatereVerifier(l *log.Logger) *latereVerifier {
 	allowed := principalSet(os.Getenv("AUTH_ALLOWED_PRINCIPALS"))
 	if len(allowed) == 0 {
@@ -60,8 +51,7 @@ func newLatereVerifier(l *log.Logger) *latereVerifier {
 	}
 }
 
-// principalSet parses a comma-separated list of emails, principal ids or
-// client ids.
+// principalSet parses a comma-separated list into a set of lowercase entries.
 func principalSet(s string) map[string]bool {
 	set := map[string]bool{}
 	for p := range strings.SplitSeq(s, ",") {
@@ -72,15 +62,8 @@ func principalSet(s string) map[string]bool {
 	return set
 }
 
-// allow reports whether r carries a latere token belonging to an allowlisted
-// principal and minted for an allowlisted client.
-//
-// jwt.Authenticator decides identity: it reads the Bearer header and validates
-// the signature, issuer and expiry. The allowlists decide authority, and stay
-// here, because who may write to this blog is not something a token can say.
-//
-// A nil receiver denies everything. newLatereVerifier returns nil when no
-// allowlist is configured, and that must fail closed rather than panic.
+// allow reports whether r carries a valid Bearer token issued to an allowed
+// client for an allowed principal. A nil v allows nothing.
 func (v *latereVerifier) allow(r *http.Request) bool {
 	if v == nil {
 		return false
@@ -102,8 +85,7 @@ func (v *latereVerifier) allow(r *http.Request) bool {
 	return false
 }
 
-// auth admits one credential: a latere access token carried as a Bearer.
-// Everything else is rejected.
+// auth rejects requests that latere does not allow, except /ideas/ping.
 func auth(latere *latereVerifier, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/ideas/ping" {
