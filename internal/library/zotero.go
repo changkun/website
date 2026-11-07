@@ -26,6 +26,10 @@ type zoteroClient struct {
 	http    *http.Client
 
 	notBefore time.Time // from a Backoff header; see get
+
+	// progress, if set, is called after each page of items with the items
+	// fetched so far and the total.
+	progress func(done, total int)
 }
 
 // pageSize is the most the API returns per request.
@@ -137,6 +141,9 @@ func (z *zoteroClient) pages(ctx context.Context, path string, q url.Values, fn 
 		}
 		if err := fn(raw); err != nil {
 			return 0, err
+		}
+		if path == "items/top" && z.progress != nil {
+			z.progress(min(start+pageSize, total), total)
 		}
 		if start+pageSize >= total {
 			return version, nil

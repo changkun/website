@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
 <title>{{.Title}} · Library</title>
+{{if and .Total .Synced.IsZero}}<meta http-equiv="refresh" content="5">{{end}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
@@ -28,7 +29,8 @@
 </header>
 {{if .Owner}}
 <p class="status{{if .SyncErr}} bad{{end}}">
-  {{if .SyncErr}}Sync failed: {{.SyncErr}}. Last good sync {{ago .Synced}}; showing that copy.
+  {{if .Total}}Syncing: {{num .Fetched}} of {{num .Total}} items.{{if .Synced.IsZero}} This page reloads until the first sync is done.{{end}}
+  {{else if .SyncErr}}Sync failed: {{.SyncErr}}. Last good sync {{ago .Synced}}; showing that copy.
   {{else}}Synced {{ago .Synced}}.{{end}}
 </p>
 {{end}}

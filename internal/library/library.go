@@ -50,6 +50,7 @@ type Service struct {
 	lastErr   string
 	lastErrAt time.Time
 	notBefore time.Time // Zotero asked us to wait until then
+	syncing   [2]int    // items fetched and total, while a sync fetches items
 }
 
 // New configures the library from the environment. It returns nil if
@@ -149,6 +150,14 @@ func (s *Service) Sync(ctx context.Context) (err error) {
 		}
 		s.record(err)
 	}()
+	s.zotero.progress = func(done, total int) {
+		s.statusMu.Lock()
+		s.syncing = [2]int{done, total}
+		s.statusMu.Unlock()
+		if total > pageSize {
+			s.log.Printf("library: sync: %d of %d items", done, total)
+		}
+	}
 
 	s.statusMu.Lock()
 	wait := time.Until(s.notBefore)
@@ -200,6 +209,7 @@ func (s *Service) Sync(ctx context.Context) (err error) {
 func (s *Service) record(err error) {
 	s.statusMu.Lock()
 	defer s.statusMu.Unlock()
+	s.syncing = [2]int{}
 	if err == nil {
 		s.lastOK = time.Now()
 		return
@@ -217,6 +227,14 @@ func (s *Service) status() (ok time.Time, errMsg string, errAt time.Time) {
 		return s.lastOK, s.lastErr, s.lastErrAt
 	}
 	return s.lastOK, "", time.Time{}
+}
+
+// progress returns the items fetched so far and the total while a sync
+// fetches items, and zeros otherwise.
+func (s *Service) progress() (done, total int) {
+	s.statusMu.Lock()
+	defer s.statusMu.Unlock()
+	return s.syncing[0], s.syncing[1]
 }
 
 // Handler serves the library below Prefix.

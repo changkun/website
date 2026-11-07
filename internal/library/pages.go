@@ -5,6 +5,7 @@
 package library
 
 import (
+	"context"
 	"embed"
 	"errors"
 	"fmt"
@@ -77,6 +78,8 @@ type view struct {
 	Unread  int
 	Synced  time.Time
 	SyncErr string
+	Fetched int // items fetched so far, while a sync runs
+	Total   int
 	Data    any
 }
 
@@ -84,6 +87,7 @@ func (s *Service) render(w http.ResponseWriter, r *http.Request, status int, nam
 	if v.Owner {
 		v.Unread = s.unread()
 		v.Synced, v.SyncErr, _ = s.status()
+		v.Fetched, v.Total = s.progress()
 	}
 	h := w.Header()
 	h.Set("Content-Type", "text/html; charset=utf-8")
@@ -478,7 +482,9 @@ func (s *Service) markRead(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) syncNow(w http.ResponseWriter, r *http.Request) {
-	_ = s.Sync(r.Context()) // the status line shows the outcome
+	// The sync runs on after the redirect; the status line shows its
+	// progress and outcome. A sync already running finishes first.
+	go func() { _ = s.Sync(context.WithoutCancel(r.Context())) }()
 	back := r.FormValue("next")
 	if !strings.HasPrefix(back, Prefix) {
 		back = Prefix
