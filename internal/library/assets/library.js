@@ -119,6 +119,15 @@
       });
       return;
     }
+    var copyLink = ev.target.closest('button.copy-link');
+    if (copyLink) {
+      var field = copyLink.closest('tr').querySelector('input.link-field');
+      navigator.clipboard.writeText(field.value).then(function () {
+        copyLink.textContent = 'Copied';
+        setTimeout(function () { copyLink.textContent = 'Copy'; }, 1200);
+      });
+      return;
+    }
     var confirmBtn = ev.target.closest('[data-confirm]');
     if (confirmBtn && !confirm(confirmBtn.dataset.confirm)) {
       ev.preventDefault();

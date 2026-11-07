@@ -762,10 +762,11 @@ func (s *Service) shares(w http.ResponseWriter, r *http.Request) {
 }
 
 // names splits a textarea into one name per line.
+// names splits a list of names on new lines and commas.
 func names(s string) []string {
 	var out []string
-	for line := range strings.Lines(s) {
-		if n := strings.TrimSpace(line); n != "" && utf8.RuneCountInString(n) <= 80 {
+	for _, f := range strings.FieldsFunc(s, func(r rune) bool { return r == '\n' || r == ',' }) {
+		if n := strings.TrimSpace(f); n != "" && utf8.RuneCountInString(n) <= 80 {
 			out = append(out, n)
 		}
 	}

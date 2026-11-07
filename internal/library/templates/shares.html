@@ -1,36 +1,58 @@
 {{define "content"}}
+<div class="shares-page">
 <div class="head"><h1>Shares</h1><p class="muted">To create one, open a topic and use “Share this topic”. Each person has their own link; revoking one leaves the others working.</p></div>
 {{range .Data.Shares}}{{$sh := .}}
 <section class="share{{if eq .ID $.Data.Created}} created{{end}}" id="{{.ID}}">
-  <form method="post" action="/library/shares/{{.ID}}" class="share-edit">
-    <input name="title" value="{{.Title}}" aria-label="Title" class="title">
-    <label class="check"><input type="checkbox" name="public"{{if .Public}} checked{{end}}> Public, read-only</label>
-    <button>Save</button>
-    <div class="topics-line">Topics:
-      {{range .Topics}}<span class="tag"><a href="/library/t/{{.Key}}">{{.Name}}</a> <label title="Remove from this share on Save"><input type="checkbox" name="remove" value="{{.Key}}">remove</label></span>{{end}}
-      {{range .Missing}}<span class="tag bad">{{.}} is no longer in Zotero <label><input type="checkbox" name="remove" value="{{.}}">remove</label></span>{{end}}
-    </div>
-  </form>
-  {{if .Public}}<p>Public link: <a href="{{.Public}}">{{.Public}}</a></p>{{end}}
-  <table class="members">
+  <div class="share-head">
+    <h2>{{.Title}}</h2>
+    {{if .Public}}<span class="badge">Public</span>{{end}}
+    <span class="share-topics">{{range $i, $t := .Topics}}{{if $i}}, {{end}}<a href="/library/t/{{$t.Key}}">{{$t.Name}}</a>{{end}}{{range .Missing}} <span class="bad">{{.}} is no longer in Zotero</span>{{end}}</span>
+  </div>
+
+  <table class="links">
+  {{if .Public}}
+  <tr>
+    <td class="name">Anyone</td>
+    <td><input readonly value="{{.Public}}" class="link-field" aria-label="Public link"></td>
+    <td class="acts"><button type="button" class="link copy-link">Copy</button></td>
+  </tr>
+  {{end}}
   {{range .Members}}
   <tr{{if .Revoked}} class="revoked"{{end}}>
     <td class="name">{{.Name}}</td>
     {{if .Revoked}}
-    <td class="muted">revoked {{.Revoked}}</td><td></td>
+    <td class="muted">Revoked {{.Revoked}}</td><td></td>
     {{else}}
     <td><input readonly value="{{index $sh.Links .Token}}" class="link-field" aria-label="Link for {{.Name}}"></td>
-    <td><form method="post" action="/library/shares/{{$sh.ID}}/revoke" class="inline"><input type="hidden" name="token" value="{{.Token}}"><button class="link" data-confirm="Revoke {{.Name}}'s link? It stops working at once.">Revoke</button></form></td>
+    <td class="acts"><button type="button" class="link copy-link">Copy</button>
+      <form method="post" action="/library/shares/{{$sh.ID}}/revoke" class="inline"><input type="hidden" name="token" value="{{.Token}}"><button class="link" data-confirm="Revoke {{.Name}}'s link? It stops working at once.">Revoke</button></form></td>
     {{end}}
   </tr>
   {{end}}
   </table>
+
   <form method="post" action="/library/shares/{{.ID}}/members" class="add-members">
-    <textarea name="names" rows="1" placeholder="Add people, one name per line" aria-label="Add people"></textarea>
+    <input name="names" placeholder="Add people, separated by commas" aria-label="Add people" autocomplete="off">
     <button>Add</button>
   </form>
+
+  <details class="settings"{{if .Missing}} open{{end}}>
+    <summary>Settings</summary>
+    <form method="post" action="/library/shares/{{.ID}}" class="share-edit">
+      <label>Title <input name="title" value="{{.Title}}"></label>
+      <label class="check"><input type="checkbox" name="public"{{if .Public}} checked{{end}}> Also readable by anyone, without comments</label>
+      {{if or (gt (len .Topics) 1) .Missing}}
+      <fieldset><legend>Remove topics</legend>
+        {{range .Topics}}<label class="check"><input type="checkbox" name="remove" value="{{.Key}}"> {{.Name}}</label>{{end}}
+        {{range .Missing}}<label class="check"><input type="checkbox" name="remove" value="{{.}}"> {{.}} (no longer in Zotero)</label>{{end}}
+      </fieldset>
+      {{end}}
+      <p><button class="primary">Save</button></p>
+    </form>
+  </details>
 </section>
 {{else}}
 <p class="muted">No shares yet.</p>
 {{end}}
+</div>
 {{end}}

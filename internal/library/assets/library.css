@@ -111,7 +111,7 @@ nav.topics a:hover { text-decoration: none; background: var(--link-tint-strong);
 nav.topics a.current { background: var(--link); color: var(--bg); }
 nav.topics .n { color: var(--text-secondary); font-size: 13px; }
 nav.topics a.current .n { color: inherit; opacity: 0.8; }
-.status.bad, .note.bad, .tag.bad { color: var(--bad); }
+.status.bad, .note.bad, .tag.bad, .share-head .bad { color: var(--bad); }
 .note.good { color: var(--good); }
 .crumbs { margin: 0; color: var(--text-secondary); }
 .crumbs a { color: var(--text-secondary); }
@@ -196,17 +196,30 @@ table.inbox .who { white-space: nowrap; width: 120px; }
 table.inbox tr.unread .what { font-weight: 600; }
 table.inbox tr.unread .what .muted { font-weight: 400; }
 
-section.share { border-top: 1px solid var(--border); padding: 10px 0; }
-section.share.created { background: var(--bg-raised); padding: 10px; }
-.share-edit .title { font-weight: 600; width: 320px; max-width: 100%; }
-.topics-line { margin-top: 6px; display: flex; gap: 10px; flex-wrap: wrap; color: var(--text-secondary); }
-.tag label { display: inline; font-size: 13px; color: var(--text-secondary); }
-table.members { width: auto; margin: 6px 0; }
-table.members td { padding: 3px 10px 3px 0; }
-table.members .name { min-width: 100px; }
-table.members tr.revoked { color: var(--text-secondary); text-decoration: line-through; }
-.link-field { width: 560px; max-width: 60vw; font: 13px var(--mono); }
-.add-members { display: flex; gap: 8px; max-width: 520px; }
+.shares-page { max-width: 880px; }
+section.share { border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
+section.share.created { border-color: var(--text-secondary); }
+.share-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.share-head h2 { margin: 0; font-size: 20px; }
+.share-head .badge { font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--bg-raised); color: var(--text-secondary); }
+.share-head .share-topics { color: var(--text-secondary); }
+.share-head .share-topics a { color: var(--text-secondary); }
+table.links { width: 100%; border-collapse: collapse; }
+table.links td { padding: 4px 12px 4px 0; vertical-align: middle; }
+table.links .name { width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+table.links .acts { width: 1%; white-space: nowrap; padding-right: 0; }
+table.links .acts form { margin-left: 12px; }
+table.links tr.revoked .name { color: var(--text-secondary); text-decoration: line-through; }
+.link-field { width: 100%; font: 13px var(--mono); color: var(--text-secondary); background: var(--bg-raised); border-color: transparent; }
+.add-members { display: flex; gap: 8px; margin: 10px 0 0; }
+.add-members input { flex: 1; max-width: 360px; }
+details.settings { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 8px; }
+details.settings summary { cursor: pointer; color: var(--text-secondary); font-size: 14px; }
+.share-edit { display: grid; gap: 10px; max-width: 480px; margin-top: 10px; }
+.share-edit label:not(.check) { display: grid; gap: 4px; }
+.share-edit fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 4px; }
+.share-edit legend { color: var(--text-secondary); margin-bottom: 4px; }
+.share-edit p { margin: 0; }
 
 @media (max-width: 640px) {
   table.entries .a, table.entries .v, table.entries .c,
