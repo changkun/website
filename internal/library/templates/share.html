@@ -1,0 +1,47 @@
+{{define "content"}}<div class="app{{if not (or .Pane (and (eq .Show "discussion") .Data.Member))}} no-pane{{end}}">
+{{with .Data}}
+<aside class="side">{{template "side" (side .TreeBase .List.Path "All topics" (not .List.T) .Tree)}}</aside>{{template "side-scroll"}}
+<div class="grip" data-grip="side" title="Drag to resize; double-click to reset"></div>
+<section class="list">
+<div class="head">
+  <h1>{{if .Sub}}<a class="up" href="{{.List.Path}}">{{.Share.Title}}</a>{{range .Sub}}<span class="sub"> › {{.Name}}</span>{{end}}{{else}}{{.Share.Title}}{{end}}</h1>
+  <p class="meta">Shared by Changkun Ou{{if .Member}} with {{.Member.Name}} · this link is yours, please do not pass it on{{end}}</p>
+  {{if .Member}}<p class="actions-line"><a href="{{.List.Panel "discussion"}}">Discussion{{with len .Comments}} ({{.}}){{end}} and suggestions{{with len .Suggestions}} ({{.}}){{end}}</a></p>{{end}}
+</div>
+{{if .Done}}<p class="note good">{{.Done}}</p>{{end}}
+{{if .Error}}<p class="note bad">{{.Error}}</p>{{end}}
+{{end}}
+{{template "table" .}}
+</section>
+<div class="grip" data-grip="pane" title="Drag to resize; double-click to reset"></div>
+<aside class="pane" id="pane">
+{{with .Pane}}{{template "pane" .}}{{else}}{{with .Data}}
+  {{if .Member}}
+  <section class="comments" id="comments">
+  <a class="close" href="{{.List.Here}}" aria-label="Close" title="Close">×</a>
+  <h2>Discussion</h2>
+  {{range .Comments}}
+  <div class="post"><span class="by">{{.By}} · {{date .Time}}</span> {{linkify .Text}}</div>
+  {{else}}<p class="muted">Nothing yet. Select a paper to comment on it.</p>{{end}}
+  <form method="post" action="/library/s/{{.Token}}/comment" class="line-form">
+    <textarea name="text" rows="1" required maxlength="2000" placeholder="Comment on the whole share, as {{.Member.Name}}" aria-label="Comment"></textarea>
+    <button class="primary">Post</button>
+  </form>
+
+  <h2>Suggested</h2>
+  {{range .Suggestions}}
+  <div class="post suggestion">
+    <div><span class="by">{{.By}} · {{date .Time}}</span>{{if .Added}}<a class="state added" href="/library/s/{{$.Data.Token}}?e={{.Added.Key}}">added</a>{{else}}<span class="state">pending</span>{{end}}</div>
+    <div class="ref">{{linkify .Ref}}</div>{{if .Note}}<div class="note-text">“{{linkify .Note}}”</div>{{end}}
+  </div>
+  {{else}}<p class="muted">Nothing yet.</p>{{end}}
+  <form method="post" action="/library/s/{{.Token}}/suggest" class="stack-form">
+    <textarea name="ref" rows="1" required maxlength="2000" placeholder="DOI, arXiv ID, URL, or BibTeX" aria-label="Paper"></textarea>
+    <input name="note" maxlength="2000" placeholder="Why (optional)" aria-label="Why">
+    <button class="primary">Suggest</button>
+  </form>
+  </section>
+  {{end}}
+{{end}}{{end}}
+</aside>
+</div>{{end}}

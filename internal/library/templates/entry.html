@@ -1,0 +1,6 @@
+{{define "content"}}
+<div class="page">
+{{template "pane" .}}
+{{with .Data}}{{if .Token}}<p><a href="/library/s/{{.Token}}">‹ Back to the share</a></p>{{end}}{{end}}
+</div>
+{{end}}

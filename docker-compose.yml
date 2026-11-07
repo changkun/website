@@ -11,13 +11,16 @@ services:
     image: website:latest
     deploy:
       replicas: 1
-    # .env is optional: without it the site serves and /ideas/ answers 503.
+    # .env is optional: without it the site serves, and /ideas/ and /library/
+    # answer 503.
     env_file:
       - path: .env
         required: false
     # The folders served at /<folder>/, such as the books and the blog.
     volumes:
       - /www/changkun.de:/www/changkun.de:ro
+      # The library's cache.json and state/, written by the server.
+      - ./data:/data
     environment:
       WWW_DIR: /www/changkun.de
       WWW_CORS: /demos/

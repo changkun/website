@@ -8,6 +8,8 @@ One Go binary serves changkun.de:
 - `/ideas/` is an API that polishes, translates, and expands an idea with LLMs,
   then commits it as bilingual markdown to
   [changkun/blog](https://github.com/changkun/blog).
+- `/library/` is Changkun's Zotero library, browsable by the owner and
+  shareable by topic. See [Library](#library).
 
 ## Usage
 
@@ -19,7 +21,8 @@ $ make build && make up
 `make build` runs the tests, builds a Linux binary, and builds the image.
 
 The site needs no configuration. Without the ideas credentials, the site still
-serves and `/ideas/` answers 503.
+serves and `/ideas/` answers 503; without the Zotero credentials, `/library/`
+answers 503.
 
 ## Layout
 
@@ -31,6 +34,7 @@ serves and `/ideas/` answers 503.
 | `internal/ideas/` | The ideas API |
 | `internal/ideas/prompts/` | Model prompts, as Go text templates embedded in the binary |
 | `internal/research/` | The research page, rendered from a checkout of changkun/research |
+| `internal/library/` | The library: Zotero sync, owner pages, shares, comments |
 
 ## Folders
 
@@ -99,10 +103,83 @@ and be issued to a client in `AUTH_ALLOWED_CLIENTS` for a principal in
 `AUTH_ALLOWED_PRINCIPALS`. Both checks matter: any latere account can get a
 valid token, for any latere client.
 
+## Library
+
+`/library/` serves the Zotero library. Zotero is the only source of entries
+and topics (collections); the server keeps a cache it can rebuild at any time
+and owns only shares and the comments on them. The design, with its reasoning,
+is in [the design doc](https://claude.ai/artifact/4jUmk2S2wv4XXSe6fsWab2).
+
+### Run it locally
+
+With the 1Password CLI signed in:
+
+```
+$ make run
+```
+
+This serves the site at <http://localhost:8080>, syncs your library into `./data`, and serves it at
+<http://localhost:8080/library/>. Without `op`, the site runs and `/library/`
+answers 503. `LIBRARY_DEV_OWNER=1` makes requests from
+this machine the owner, so no login is needed; it has no effect behind a
+proxy. Share links work locally too: open one in a private window.
+
+### Data
+
+```
+$LIBRARY_DIR/
+  cache.json        Zotero items and collections; rebuilt by sync, safe to delete
+  state/            the only data that exists nowhere else; back it up
+    shares.yaml     every share: title, topics, members, tokens
+    <id>.jsonl      one per share: comments, suggestions, hides; append-only
+    read.txt        ids of inbox items marked read
+    session.key     signs the owner's session cookie
+```
+
+Sync runs at start, every `SYNC_INTERVAL`, and on Sync now. It fetches only
+what changed since the cached library version (Zotero Web API v3, read-only
+key). On any error the site keeps serving the last good copy, the owner pages
+show the error, and `/library/healthz` answers 503 once the last good sync is
+an hour old.
+
+### Routes
+
+| Route | Who | Returns |
+|---|---|---|
+| `GET /library/` | owner | Topic tree and all entries |
+| `GET /library/t/<key>` | owner | One topic, with its subtopics' entries |
+| `GET /library/e/<key>` | owner | One entry, with comments from every share |
+| `GET /library/inbox` | owner | Every comment and suggestion, unread in bold |
+| `GET /library/shares` | owner | Every share, its links, revoke |
+| `POST /library/sync` | owner | Sync now |
+| `GET`, `POST /library/login` | owner | latere login, then a session cookie |
+| `GET /library/s/<token>` | member | The share: entries, suggestions, comments |
+| `GET /library/s/<token>/e/<key>` | member | One entry with the share's comments |
+| `GET /library/p/<id>` | anyone | A public share, read-only, without comments |
+| `GET /library/healthz` | anyone | 200, or 503 when sync is stale |
+
+Every list accepts `?q=` (every word must match title, authors, venue, or
+year), `?sort=` (`year`, `title`, `authors`, `venue`, `added`; `-` in front
+for descending; default `-year`) and `?page=`. Share pages also accept `?t=`,
+a topic inside the share. On a wide screen a list page has three panes:
+topics, entries, and the selected entry with its comments; `?e=<key>` selects
+an entry, and an entry's page with `?pane=1` returns only that pane. Adding
+`.bib` to a list's path (`/library/all.bib` for the whole library) returns
+the same entries as BibTeX.
+
+### Login
+
+The login page runs the same browser PKCE flow as the compose box, with
+`/login-sdk.js`, so `https://changkun.de/library/login` must be on the
+`changkun-blog` client's redirect URIs. The token is checked against
+`AUTH_ALLOWED_PRINCIPALS` and `AUTH_ALLOWED_CLIENTS` once, and the server then
+sets its own cookie for 30 days.
+
 ## Configuration
 
-Copy `.env.template` to `.env`. The API needs `LLM_API_KEY` and `GIT_TOKEN`;
-everything else has a default.
+Copy `.env.template` to `.env`. The ideas API needs `LLM_API_KEY` and
+`GIT_TOKEN`, the library `ZOTERO_USER_ID` and `ZOTERO_API_KEY`; everything
+else has a default.
 
 | Variable | Default | Description |
 |---|---|---|
@@ -121,6 +198,12 @@ everything else has a default.
 | `AUTH_ALLOWED_CLIENTS` | `changkun-blog` | Comma-separated OAuth client ids whose tokens are accepted |
 | `AUTH_URL` | `https://auth.latere.ai` | latere auth issuer |
 | `AUTH_JWKS_URL` | `$AUTH_URL/.well-known/jwks.json` | JWKS that verifies tokens |
+| `ZOTERO_USER_ID` | | Zotero user id, from zotero.org/settings/keys |
+| `ZOTERO_API_KEY` | | Read-only Zotero key: library access only, notes and write off |
+| `LIBRARY_DIR` | `/data` | Holds `cache.json` and `state/` |
+| `SYNC_INTERVAL` | `15m` | Time between syncs, at least `1m` |
+| `ZOTERO_API_URL` | `https://api.zotero.org` | Zotero Web API root |
+| `LIBRARY_DEV_OWNER` | | `1` makes requests from this machine the owner, for local runs |
 
 ## License
 
