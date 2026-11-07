@@ -6,11 +6,9 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"io/fs"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,7 +18,7 @@ import (
 )
 
 // withWWW serves the folders of WWW_DIR in front of next, each at /<name>/,
-// as WWW_URLSTAT and WWW_CORS configure. Publishing a folder takes a copy or
+// as WWW_CORS configures. Publishing a folder takes a copy or
 // a clone into WWW_DIR, and no restart. The research folder, a checkout of
 // changkun/research, also has its page rendered; see package research.
 // Without WWW_DIR, it returns next.
@@ -28,10 +26,6 @@ func withWWW(l *log.Logger, next http.Handler) (http.Handler, error) {
 	dir := os.Getenv("WWW_DIR")
 	if dir == "" {
 		return next, nil
-	}
-	counted, err := parseCounted(os.Getenv("WWW_URLSTAT"))
-	if err != nil {
-		return nil, err
 	}
 	cors, err := parseCORS(os.Getenv("WWW_CORS"))
 	if err != nil {
@@ -41,9 +35,8 @@ func withWWW(l *log.Logger, next http.Handler) (http.Handler, error) {
 		l.Printf("WWW_DIR %s is not a folder, no folder is served", dir)
 		return next, nil
 	}
-	l.Printf("serving the folders of %s, counting %d, open to other origins %v", dir, len(counted), cors)
+	l.Printf("serving the folders of %s, open to other origins %v", dir, cors)
 
-	report := func(page, ua string) { go reportUrlstat(l, page, ua) }
 	files := http.FileServer(http.Dir(dir))
 	return &folders{
 		dir:   dir,
@@ -51,10 +44,9 @@ func withWWW(l *log.Logger, next http.Handler) (http.Handler, error) {
 		own: map[string]http.Handler{
 			"research": research.Handler(filepath.Join(dir, "research"), "/research/", files, l),
 		},
-		site:  fsys,
-		count: counted.counter(report),
-		cors:  cors,
-		next:  next,
+		site: fsys,
+		cors: cors,
+		next: next,
 	}, nil
 }
 
@@ -67,8 +59,7 @@ type folders struct {
 	files http.Handler            // serves dir
 	own   map[string]http.Handler // serve the folders they name, in place of files
 	site  fs.FS                   // the embedded site
-	count func(*http.Request)
-	cors  []string // path prefixes that any origin may fetch
+	cors  []string                // path prefixes that any origin may fetch
 	next  http.Handler
 }
 
@@ -82,7 +73,6 @@ func (f *folders) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	f.count(r)
 	for _, p := range f.cors {
 		// The folder itself too, whose answer redirects to the folder/.
 		if strings.HasPrefix(r.URL.Path, p) || r.URL.Path+"/" == p {
@@ -139,69 +129,4 @@ func parseCORS(s string) ([]string, error) {
 		prefixes = append(prefixes, p)
 	}
 	return prefixes, nil
-}
-
-// countedFolder is a folder whose files urlstat counts: the requests below
-// prefix, recorded as pages of origin.
-type countedFolder struct{ prefix, origin string }
-
-type countedFolders []countedFolder
-
-// parseCounted parses WWW_URLSTAT, a comma-separated list of the URLs of
-// folders, such as https://changkun.de/research/.
-func parseCounted(s string) (countedFolders, error) {
-	var counted countedFolders
-	for f := range strings.SplitSeq(s, ",") {
-		if f = strings.TrimSpace(f); f == "" {
-			continue
-		}
-		u, err := url.Parse(f)
-		if err != nil || u.Scheme == "" || u.Host == "" || !strings.HasSuffix(u.Path, "/") {
-			return nil, fmt.Errorf("WWW_URLSTAT must list URLs of folders such as https://changkun.de/research/, got %q", f)
-		}
-		counted = append(counted, countedFolder{prefix: u.Path, origin: u.Scheme + "://" + u.Host})
-	}
-	return counted, nil
-}
-
-// counter returns a func that reports a request below a counted folder to
-// urlstat, as the page at the folder's origin. A folder's own page is left
-// out, since urlstat's client script counts it in the browser. What this
-// counts is what a script cannot: the files a page links to, such as the PDFs
-// of changkun.de/research.
-func (c countedFolders) counter(report func(page, ua string)) func(*http.Request) {
-	return func(r *http.Request) {
-		p := r.URL.Path
-		for _, f := range c {
-			if strings.HasPrefix(p, f.prefix) && p != f.prefix && p != f.prefix+"index.html" {
-				report(f.origin+p, r.UserAgent())
-			}
-		}
-	}
-}
-
-// urlstatEndpoint receives the reports, as from urlstat's client script.
-var (
-	urlstatEndpoint = "https://www.changkun.de/urlstat?report=page+site"
-	urlstatClient   = &http.Client{Timeout: 10 * time.Second}
-)
-
-func reportUrlstat(l *log.Logger, page, ua string) {
-	req, err := http.NewRequest(http.MethodGet, urlstatEndpoint, nil)
-	if err != nil {
-		l.Printf("urlstat: cannot report %s: %v", page, err)
-		return
-	}
-	req.Header.Set("urlstat-url", page)
-	req.Header.Set("urlstat-ua", ua)
-	resp, err := urlstatClient.Do(req)
-	if err != nil {
-		l.Printf("urlstat: cannot report %s: %v", page, err)
-		return
-	}
-	defer resp.Body.Close()
-	io.Copy(io.Discard, resp.Body)
-	if resp.StatusCode != http.StatusOK {
-		l.Printf("urlstat: cannot report %s: %s", page, resp.Status)
-	}
 }

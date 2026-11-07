@@ -27,7 +27,7 @@ serves and `/ideas/` answers 503.
 |---|---|
 | `main.go` | Signal handling, the HTTP server, request logging |
 | `site.go` | The embedded `static/` site and its file server |
-| `www.go` | The folders of `WWW_DIR`, and the downloads reported to urlstat |
+| `www.go` | The folders of `WWW_DIR` |
 | `internal/ideas/` | The ideas API |
 | `internal/ideas/prompts/` | Model prompts, as Go text templates embedded in the binary |
 | `internal/research/` | The research page, rendered from a checkout of changkun/research |
@@ -108,7 +108,6 @@ everything else has a default.
 |---|---|---|
 | `WEBSITE_ADDR` | `0.0.0.0:80` | Listen address |
 | `WWW_DIR` | | Folder whose folders are served. Unset serves none |
-| `WWW_URLSTAT` | | Comma-separated URLs of folders whose file downloads urlstat counts, such as `https://changkun.de/research/` |
 | `WWW_CORS` | | Comma-separated path prefixes any origin may fetch from, such as `/demos/` |
 | `LLM_BASE_URL` | `https://api.latere.ai/v1/models` | Lux gateway root |
 | `LLM_API_KEY` | | Lux Key |

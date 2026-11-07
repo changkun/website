@@ -18,8 +18,8 @@ import (
 )
 
 // wwwDir lays out a WWW_DIR as on the server: a book, a folder without an
-// index, a counted folder whose talk is linked from its dated folder, and a
-// folder named like a page of the embedded site.
+// index, a folder whose talk is linked from its dated folder, and a folder
+// named like a page of the embedded site.
 func wwwDir(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
@@ -47,12 +47,8 @@ func wwwDir(t *testing.T) string {
 }
 
 // testFolders serves dir as production does, with a next that answers "site".
-func testFolders(t *testing.T, dir string, report func(page, ua string)) *folders {
+func testFolders(t *testing.T, dir string) *folders {
 	t.Helper()
-	counted, err := parseCounted("https://changkun.de/research/")
-	if err != nil {
-		t.Fatal(err)
-	}
 	cors, err := parseCORS("/demos/")
 	if err != nil {
 		t.Fatal(err)
@@ -61,7 +57,6 @@ func testFolders(t *testing.T, dir string, report func(page, ua string)) *folder
 		dir:   dir,
 		files: http.FileServer(http.Dir(dir)),
 		site:  fsys,
-		count: counted.counter(report),
 		cors:  cors,
 		next: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, "site")
@@ -70,7 +65,7 @@ func testFolders(t *testing.T, dir string, report func(page, ua string)) *folder
 }
 
 func TestFolders(t *testing.T) {
-	f := testFolders(t, wwwDir(t), func(string, string) {})
+	f := testFolders(t, wwwDir(t))
 	for _, tt := range []struct {
 		path string
 		code int
@@ -103,28 +98,8 @@ func TestFolders(t *testing.T) {
 	}
 }
 
-func TestFoldersCount(t *testing.T) {
-	var reported []string
-	f := testFolders(t, wwwDir(t), func(page, ua string) {
-		reported = append(reported, page+" "+ua)
-	})
-	for _, path := range []string{
-		"/research/talks/t.pdf",
-		"/research/",           // the page, which its script counts
-		"/research/index.html", // the page too
-		"/book/ch1.html",       // not counted
-	} {
-		r := httptest.NewRequest(http.MethodGet, path, nil)
-		r.Header.Set("User-Agent", "reader")
-		f.ServeHTTP(httptest.NewRecorder(), r)
-	}
-	if want := []string{"https://changkun.de/research/talks/t.pdf reader"}; !slices.Equal(reported, want) {
-		t.Errorf("reported %q, want %q", reported, want)
-	}
-}
-
 func TestFoldersCORS(t *testing.T) {
-	f := testFolders(t, wwwDir(t), func(string, string) {})
+	f := testFolders(t, wwwDir(t))
 	for path, want := range map[string]string{
 		"/demos/bunny.obj": "*",
 		"/demos":           "*", // the redirect to /demos/
@@ -140,11 +115,10 @@ func TestFoldersCORS(t *testing.T) {
 }
 
 // TestFoldersOwn checks that a folder with a handler of its own is served by
-// it, behind what every folder gets: the hidden files kept back, the counting
-// and the CORS headers.
+// it, behind what every folder gets: the hidden files kept back and the CORS
+// headers.
 func TestFoldersOwn(t *testing.T) {
-	var reported []string
-	f := testFolders(t, wwwDir(t), func(page, ua string) { reported = append(reported, page) })
+	f := testFolders(t, wwwDir(t))
 	f.own = map[string]http.Handler{
 		"research": http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, "own "+r.URL.Path)
@@ -160,9 +134,6 @@ func TestFoldersOwn(t *testing.T) {
 		if got := w.Body.String(); got != want {
 			t.Errorf("%s: got %q, want %q", path, got, want)
 		}
-	}
-	if want := []string{"https://changkun.de/research/talks/t.pdf"}; !slices.Equal(reported, want) {
-		t.Errorf("reported %q, want %q", reported, want)
 	}
 	if w := request(f, "/research/x"); w.Header().Get("Access-Control-Allow-Origin") != "*" {
 		t.Error("a folder with its own handler lost its CORS headers")
@@ -182,7 +153,7 @@ func TestFoldersOutlastWriteTimeout(t *testing.T) {
 		time.Sleep(300 * time.Millisecond)
 		io.WriteString(w, "late")
 	})
-	f := testFolders(t, wwwDir(t), func(string, string) {})
+	f := testFolders(t, wwwDir(t))
 	f.files, f.next = slow, slow
 
 	s := httptest.NewUnstartedServer(f)
@@ -204,22 +175,6 @@ func TestFoldersOutlastWriteTimeout(t *testing.T) {
 	if resp, err := s.Client().Get(s.URL + "/"); err == nil {
 		resp.Body.Close()
 		t.Error("a slow page of the site arrived, so the write timeout this test relies on did not apply")
-	}
-}
-
-func TestParseCounted(t *testing.T) {
-	got, err := parseCounted(" https://changkun.de/research/ , https://changkun.de/demos/ ")
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := countedFolders{{"/research/", "https://changkun.de"}, {"/demos/", "https://changkun.de"}}
-	if !slices.Equal(got, want) {
-		t.Errorf("got %v, want %v", got, want)
-	}
-	for _, bad := range []string{"changkun.de/research/", "https://changkun.de/research", "/research/"} {
-		if _, err := parseCounted(bad); err == nil {
-			t.Errorf("parseCounted(%q) did not fail", bad)
-		}
 	}
 }
 
@@ -254,12 +209,11 @@ func TestWithWWW(t *testing.T) {
 	}
 
 	t.Setenv("WWW_DIR", wwwDir(t))
-	t.Setenv("WWW_URLSTAT", "changkun.de/research/")
+	t.Setenv("WWW_CORS", "demos/")
 	if _, err := withWWW(l, next); err == nil {
-		t.Error("a malformed WWW_URLSTAT did not fail")
+		t.Error("a malformed WWW_CORS did not fail")
 	}
 
-	t.Setenv("WWW_URLSTAT", "https://changkun.de/research/")
 	t.Setenv("WWW_CORS", "/demos/")
 	if h, err := withWWW(l, next); err != nil {
 		t.Errorf("a valid configuration failed: %v", err)
