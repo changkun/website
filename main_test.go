@@ -164,7 +164,7 @@ func TestNotifyShutdown(t *testing.T) {
 func startSite(t *testing.T, env ...string) (addr string, out *lockedBuffer, site *exec.Cmd) {
 	t.Helper()
 
-	bin := filepath.Join(t.TempDir(), "main")
+	bin := filepath.Join(t.TempDir(), "website")
 	build := exec.Command("go", "build", "-o", bin, ".")
 	if b, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("cannot build the site: %v\n%s", err, b)
@@ -179,7 +179,7 @@ func startSite(t *testing.T, env ...string) (addr string, out *lockedBuffer, sit
 
 	out = &lockedBuffer{}
 	site = exec.Command(bin)
-	site.Env = append(append(os.Environ(), "MAIN_ADDR="+addr), env...)
+	site.Env = append(append(os.Environ(), "WEBSITE_ADDR="+addr), env...)
 	site.Stdout, site.Stderr = out, out
 	if err := site.Start(); err != nil {
 		t.Fatalf("cannot start the site: %v", err)

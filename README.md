@@ -81,7 +81,7 @@ everything else has a default.
 
 | Variable | Default | Description |
 |---|---|---|
-| `MAIN_ADDR` | `0.0.0.0:80` | Listen address |
+| `WEBSITE_ADDR` | `0.0.0.0:80` | Listen address |
 | `LLM_BASE_URL` | `https://api.latere.ai/v1/models` | Lux gateway root |
 | `LLM_API_KEY` | | Lux Key |
 | `LLM_MODEL` | `anthropic/claude-opus-5.5` | Writes the deep dive |

@@ -5,18 +5,16 @@
 name: website
 
 services:
-  main:
+  website:
     container_name: website
     restart: always
-    image: main:latest
+    image: website:latest
     deploy:
       replicas: 1
     # .env is optional: without it the site serves and /ideas/ answers 503.
     env_file:
       - path: .env
         required: false
-    environment:
-      MAIN_ADDR: main:80
     logging:
       driver: json-file
       options:

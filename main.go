@@ -27,7 +27,7 @@ func main() {
 	ctx, stop := notifyShutdown(context.Background())
 	defer stop()
 
-	if err := run(ctx, os.Getenv("MAIN_ADDR"), l); err != nil {
+	if err := run(ctx, os.Getenv("WEBSITE_ADDR"), l); err != nil {
 		l.Fatalf("changkun.de stopped: %v", err)
 	}
 	l.Println("goodbye!")

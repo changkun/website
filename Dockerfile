@@ -5,6 +5,6 @@
 FROM alpine
 # The ideas API calls the model gateway and the GitHub API over TLS.
 RUN apk add --no-cache ca-certificates
-COPY main /app/main
+COPY website /app/website
 EXPOSE 80
-CMD ["/app/main"]
+CMD ["/app/website"]
