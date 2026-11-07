@@ -18,7 +18,7 @@ import (
 	"syscall"
 	"time"
 
-	"changkun.de/x/main/internal/ideas"
+	"changkun.de/x/website/internal/ideas"
 )
 
 func main() {

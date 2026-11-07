@@ -1,4 +1,4 @@
-module changkun.de/x/main
+module changkun.de/x/website
 
 go 1.27.0
 
