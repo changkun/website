@@ -231,6 +231,7 @@ table.members tr.revoked { color: var(--text-secondary); text-decoration: line-t
 .stack-form { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
 .pane .post.suggestion { display: block; }
 .pane .post.suggestion .state { float: right; }
+.kind .open { margin-left: auto; font-size: 14px; }
 .kind { display: flex; align-items: center; gap: 6px; margin: 14px 0 0; color: var(--text-secondary); font-size: 13px; }
 
 ul.tree, .side ul { list-style: none; margin: 0; padding: 0; columns: auto; }
