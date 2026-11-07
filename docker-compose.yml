@@ -16,14 +16,17 @@ services:
     env_file:
       - path: .env
         required: false
-    # The folders served at /<folder>/, such as the books and the blog.
+    # The folders served at /<folder>/, such as the books and the blog, and
+    # golang.design's folder, which its repositories publish to.
     volumes:
       - /www/changkun.de:/www/changkun.de:ro
+      - /www/golang.design:/www/golang.design:ro
       # The library's cache.json and state/, written by the server.
       - ./data:/data
     environment:
       WWW_DIR: /www/changkun.de
       WWW_CORS: /demos/
+      WWW_SITES: golang.design=/www/golang.design
     logging:
       driver: json-file
       options:
