@@ -110,41 +110,6 @@
     });
   }
 
-  // Elastic scroll for each column. Safari and Firefox bounce a scrolling
-  // column on their own; Chromium bounces only the window, which would move
-  // all three columns, so here a column pulls past its end and springs back.
-  var chromium = navigator.userAgentData && navigator.userAgentData.brands.some(function (b) { return b.brand === 'Chromium'; });
-  if (app && chromium) {
-    app.querySelectorAll('.side, .list, .pane').forEach(function (col) {
-      var raw = 0, timer = null;
-      function release() {
-        raw = 0;
-        col.classList.add('springing');
-        col.style.setProperty('--pull', '0px');
-      }
-      col.addEventListener('wheel', function (ev) {
-        if (!wide.matches || ev.ctrlKey || ev.deltaMode !== 0 || Math.abs(ev.deltaX) > Math.abs(ev.deltaY)) return;
-        var top = col.scrollTop <= 0;
-        var end = col.scrollTop + col.clientHeight >= col.scrollHeight - 1;
-        if (!raw && !(ev.deltaY < 0 && top) && !(ev.deltaY > 0 && end)) return;
-        var next = raw - ev.deltaY;
-        if (raw && (next > 0) !== (raw > 0)) { // pushed back past the end: scroll normally
-          clearTimeout(timer);
-          release();
-          return;
-        }
-        ev.preventDefault();
-        raw = next;
-        var h = col.clientHeight, x = Math.abs(raw);
-        var pull = (1 - 1 / (x * 0.55 / h + 1)) * h * (raw < 0 ? -1 : 1);
-        col.classList.remove('springing');
-        col.style.setProperty('--pull', pull.toFixed(1) + 'px');
-        clearTimeout(timer);
-        timer = setTimeout(release, 120);
-      }, { passive: false });
-    });
-  }
-
   // The row named by ?e= starts selected.
   var start = new URL(location.href).searchParams.get('e');
   if (start) {

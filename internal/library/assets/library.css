@@ -89,11 +89,10 @@ main:has(> .app) { padding: 0; }
 @media (min-width: 901px) {
   body:has(main > .app) { height: 100dvh; }
   main:has(> .app) { min-height: 0; overflow: hidden; }
-  /* Only the columns bounce, each on its own; the window stays still. */
+  /* The window stays still; a browser that bounces scrolling columns, such
+     as Safari, bounces each one on its own. */
   html:has(.app), html:has(.app) body { overscroll-behavior: none; }
   .app > * { overscroll-behavior: contain; }
-  .app > * > * { transform: translateY(var(--pull, 0px)); }
-  .app > .springing > * { transition: transform .4s cubic-bezier(.2, .8, .2, 1); }
 }
 .page { max-width: 1000px; }
 header.site {
