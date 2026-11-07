@@ -15,6 +15,13 @@ services:
     env_file:
       - path: .env
         required: false
+    # The folders served at /<folder>/, such as the books and the blog.
+    volumes:
+      - /www/changkun.de:/www/changkun.de:ro
+    environment:
+      WWW_DIR: /www/changkun.de
+      WWW_URLSTAT: https://changkun.de/research/
+      WWW_CORS: /demos/
     logging:
       driver: json-file
       options:
