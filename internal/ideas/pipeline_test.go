@@ -5,6 +5,7 @@
 package ideas
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"io"
@@ -14,6 +15,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"unicode/utf8"
 )
 
 // commit is one file the pipeline wrote to GitHub.
@@ -247,5 +249,53 @@ func assertContains(t *testing.T, where, s string, want ...string) {
 		if !strings.Contains(s, w) {
 			t.Errorf("%s is missing %q:\n%s", where, w, s)
 		}
+	}
+}
+
+// TestFetchURLKeepsWholeRunes covers the two byte limits on a linked page, the
+// read limit and maxPageText. Either can land inside a multi-byte character,
+// and the half character reached the model as a stray U+FFFD.
+func TestFetchURLKeepsWholeRunes(t *testing.T) {
+	const han = "标" // three bytes, so a byte limit not divisible by three splits one
+
+	tests := []struct {
+		name string
+		page string
+		want string
+	}{
+		{
+			// 4096 bytes is 1365 characters and one byte of the next.
+			name: "cut at maxPageText",
+			page: strings.Repeat(han, 2000),
+			want: strings.Repeat(han, maxPageText/3),
+		},
+		{
+			// Markup fills most of the read limit, so the text that survives
+			// it is under maxPageText and the read limit is the only cut. It
+			// leaves 4061 bytes of text: 1353 characters and two bytes.
+			name: "cut at the read limit",
+			page: strings.Repeat("<i></i>", 4101) + strings.Repeat(han, 2000),
+			want: strings.Repeat(han, 1353),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				_, _ = io.WriteString(w, tt.page)
+			}))
+			defer srv.Close()
+
+			got, err := fetchURL(context.Background(), srv.URL)
+			if err != nil {
+				t.Fatalf("fetchURL() error: %v", err)
+			}
+			if !utf8.ValidString(got) {
+				t.Fatalf("fetchURL() returned invalid UTF-8, ending %q", got[len(got)-4:])
+			}
+			if got != tt.want {
+				t.Fatalf("fetchURL() = %d bytes, want %d", len(got), len(tt.want))
+			}
+		})
 	}
 }

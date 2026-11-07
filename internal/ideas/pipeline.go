@@ -211,5 +211,7 @@ func fetchURL(ctx context.Context, url string) (string, error) {
 	if len(text) > maxPageText {
 		text = text[:maxPageText]
 	}
-	return text, nil
+	// Both limits count bytes, so either can split a multi-byte character.
+	// Drop the partial one rather than send the model half of it.
+	return strings.ToValidUTF8(text, ""), nil
 }
