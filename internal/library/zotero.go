@@ -52,6 +52,7 @@ type collectionJSON struct {
 	Data struct {
 		Name             string          `json:"name"`
 		ParentCollection json.RawMessage `json:"parentCollection"` // false or a key
+		Deleted          json.RawMessage `json:"deleted"`          // in the trash
 	} `json:"data"`
 }
 

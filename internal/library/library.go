@@ -116,6 +116,10 @@ func (s *Service) loadCache() cacheFile {
 		s.log.Printf("library: cache.json is unreadable, a full sync rebuilds it: %v", err)
 		return cacheFile{}
 	}
+	if c.Format != cacheFormat {
+		s.log.Printf("library: cache.json is format %d, not %d; a full sync rebuilds it", c.Format, cacheFormat)
+		return cacheFile{}
+	}
 	// The cache was written by the last successful sync, so the status line
 	// can say when that was, even after a restart.
 	if fi, err := os.Stat(name); err == nil {
