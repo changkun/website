@@ -30,6 +30,7 @@ serves and `/ideas/` answers 503.
 | `www.go` | The folders of `WWW_DIR`, and the downloads reported to urlstat |
 | `internal/ideas/` | The ideas API |
 | `internal/ideas/prompts/` | Model prompts, as Go text templates embedded in the binary |
+| `internal/research/` | The research page, rendered from a checkout of changkun/research |
 
 ## Folders
 
@@ -42,6 +43,15 @@ listed, and symlinks are followed. Hidden files, such as `.git`, are not
 served. A name the embedded site has, such as `books`, stays the site's.
 
 File responses have no write timeout, since some are 80 MB.
+
+`research` is a checkout of
+[changkun/research](https://github.com/changkun/research), so a `git pull`
+there publishes a paper or a change to the page. The website renders
+`/research/` from the checkout's `README.md`, again whenever it changes, and
+serves the page's stylesheet and portrait from the binary. A talk at
+`/research/talks/<name>.pdf`, where `/talk/<name>.pdf` redirects, is found in
+the dated folder that holds it. Without a `README.md` the folder is served like
+any other.
 
 ## Ideas API
 

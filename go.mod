@@ -2,7 +2,10 @@ module changkun.de/x/website
 
 go 1.27.0
 
-require latere.ai/x/pkg v0.94.0
+require (
+	github.com/yuin/goldmark v1.8.7
+	latere.ai/x/pkg v0.94.0
+)
 
 require (
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect

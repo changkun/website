@@ -15,11 +15,15 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"changkun.de/x/website/internal/research"
 )
 
 // withWWW serves the folders of WWW_DIR in front of next, each at /<name>/,
 // as WWW_URLSTAT and WWW_CORS configure. Publishing a folder takes a copy or
-// a clone into WWW_DIR, and no restart. Without WWW_DIR, it returns next.
+// a clone into WWW_DIR, and no restart. The research folder, a checkout of
+// changkun/research, also has its page rendered; see package research.
+// Without WWW_DIR, it returns next.
 func withWWW(l *log.Logger, next http.Handler) (http.Handler, error) {
 	dir := os.Getenv("WWW_DIR")
 	if dir == "" {
@@ -40,9 +44,13 @@ func withWWW(l *log.Logger, next http.Handler) (http.Handler, error) {
 	l.Printf("serving the folders of %s, counting %d, open to other origins %v", dir, len(counted), cors)
 
 	report := func(page, ua string) { go reportUrlstat(l, page, ua) }
+	files := http.FileServer(http.Dir(dir))
 	return &folders{
 		dir:   dir,
-		files: http.FileServer(http.Dir(dir)),
+		files: files,
+		own: map[string]http.Handler{
+			"research": research.Handler(filepath.Join(dir, "research"), "/research/", files, l),
+		},
 		site:  fsys,
 		count: counted.counter(report),
 		cors:  cors,
@@ -56,8 +64,9 @@ func withWWW(l *log.Logger, next http.Handler) (http.Handler, error) {
 // next, so a folder cannot shadow the site.
 type folders struct {
 	dir   string
-	files http.Handler // serves dir
-	site  fs.FS        // the embedded site
+	files http.Handler            // serves dir
+	own   map[string]http.Handler // serve the folders they name, in place of files
+	site  fs.FS                   // the embedded site
 	count func(*http.Request)
 	cors  []string // path prefixes that any origin may fetch
 	next  http.Handler
@@ -86,6 +95,10 @@ func (f *folders) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Some files are 80 MB. A slow reader takes longer than the server's
 	// write timeout, which is set for the API.
 	http.NewResponseController(w).SetWriteDeadline(time.Time{})
+	if h, ok := f.own[name]; ok {
+		h.ServeHTTP(w, r)
+		return
+	}
 	f.files.ServeHTTP(w, r)
 }
 

@@ -139,6 +139,42 @@ func TestFoldersCORS(t *testing.T) {
 	}
 }
 
+// TestFoldersOwn checks that a folder with a handler of its own is served by
+// it, behind what every folder gets: the hidden files kept back, the counting
+// and the CORS headers.
+func TestFoldersOwn(t *testing.T) {
+	var reported []string
+	f := testFolders(t, wwwDir(t), func(page, ua string) { reported = append(reported, page) })
+	f.own = map[string]http.Handler{
+		"research": http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			io.WriteString(w, "own "+r.URL.Path)
+		}),
+	}
+	f.cors = []string{"/research/"}
+	for path, want := range map[string]string{
+		"/research/talks/t.pdf": "own /research/talks/t.pdf",
+		"/research/.git/config": "404 page not found\n",
+		"/book/ch1.html":        "chapter 1",
+	} {
+		w := request(f, path)
+		if got := w.Body.String(); got != want {
+			t.Errorf("%s: got %q, want %q", path, got, want)
+		}
+	}
+	if want := []string{"https://changkun.de/research/talks/t.pdf"}; !slices.Equal(reported, want) {
+		t.Errorf("reported %q, want %q", reported, want)
+	}
+	if w := request(f, "/research/x"); w.Header().Get("Access-Control-Allow-Origin") != "*" {
+		t.Error("a folder with its own handler lost its CORS headers")
+	}
+}
+
+func request(h http.Handler, path string) *httptest.ResponseRecorder {
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest(http.MethodGet, path, nil))
+	return w
+}
+
 // TestFoldersOutlastWriteTimeout checks that a file slower than the server's
 // write timeout still arrives, while the rest of the site keeps the timeout.
 func TestFoldersOutlastWriteTimeout(t *testing.T) {
