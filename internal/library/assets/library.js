@@ -4,6 +4,14 @@
 (function () {
   'use strict';
 
+  // The header is fixed; --hdr keeps the page below it.
+  var header = document.querySelector('header.site');
+  if (header) {
+    var fit = function () { document.documentElement.style.setProperty('--hdr', header.offsetHeight + 'px'); };
+    fit();
+    if (window.ResizeObserver) new ResizeObserver(fit).observe(header);
+  }
+
   var sync = document.querySelector('form[action="/library/sync"] input[name=next]');
   if (sync) sync.value = location.pathname + location.search;
 

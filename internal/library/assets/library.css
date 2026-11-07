@@ -37,10 +37,13 @@
   }
 }
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+/* The document scrolls, so the browser's elastic scroll works; the header is
+   fixed, so it stays still. --hdr is the header's height, kept by library.js. */
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: var(--hdr, 53px); }
 body {
   margin: 0;
+  padding-top: var(--hdr, 53px);
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -80,10 +83,21 @@ form.inline { display: inline; }
 label { display: block; margin: 6px 0; }
 label.check { display: inline-flex; gap: 4px; align-items: center; }
 
-main { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 0 clamp(16px, 3vw, 40px) 48px; }
-main:has(> .app) { overflow: hidden; padding: 0; }
+main { flex: 1; padding: 0 clamp(16px, 3vw, 40px) 48px; }
+main:has(> .app) { padding: 0; }
+/* On a wide screen the three panes fill the window and each scrolls. */
+@media (min-width: 901px) {
+  body:has(main > .app) { height: 100dvh; }
+  main:has(> .app) { min-height: 0; overflow: hidden; }
+}
 .page { max-width: 1000px; }
 header.site {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--bg);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -238,7 +252,7 @@ details.settings summary { cursor: pointer; color: var(--text-secondary); font-s
 .pane .close { float: right; margin: 10px 0 0 12px; font-size: 20px; line-height: 20px; color: var(--text-secondary); }
 .head .actions-line { display: flex; gap: 16px; margin: 4px 0 0; }
 .head .actions-line a { color: var(--link); }
-.app > * { overflow: auto; overscroll-behavior: contain; min-height: 0; }
+.app > * { overflow: auto; min-height: 0; }
 .side { background: var(--bg-raised); padding: 12px 8px 24px; font-size: 14px; }
 .side .side-box > summary { display: none; }
 .side details { margin: 0; }
@@ -300,7 +314,6 @@ table.entries tr.row.sel td a { text-decoration: none; }
 }
 
 @media (max-width: 900px) {
-  main:has(> .app) { overflow: auto; }
   .app { display: block; height: auto; }
   .grip { display: none; }
   .app > * { overflow: visible; }
