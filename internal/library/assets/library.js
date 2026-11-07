@@ -156,6 +156,48 @@
     if (row) location.href = row.dataset.href;
   });
 
+  // The filter updates the list as you type. Enter still submits the form,
+  // which is also how it works without this script.
+  var filter = document.querySelector('form.filter');
+  if (filter) {
+    var q = filter.querySelector('input[name=q]');
+    var typing = null, seq = 0;
+    q.addEventListener('input', function () {
+      clearTimeout(typing);
+      typing = setTimeout(refresh, 150);
+    });
+    filter.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      clearTimeout(typing);
+      refresh();
+    });
+    function refresh() {
+      var u = new URL(filter.getAttribute('action'), location.href);
+      new FormData(filter).forEach(function (v, k) { if (v) u.searchParams.set(k, v); });
+      var e = new URL(location.href).searchParams.get('e');
+      if (e) u.searchParams.set('e', e);
+      var n = ++seq;
+      fetch(u, { credentials: 'same-origin' }).then(function (res) {
+        if (!res.ok) throw new Error(res.status);
+        return res.text();
+      }).then(function (html) {
+        if (n !== seq) return; // a later keystroke has its own request
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        ['form.filter .count', '.results'].forEach(function (sel) {
+          var from = doc.querySelector(sel), to = document.querySelector(sel);
+          if (from && to) to.replaceWith(from);
+        });
+        history.replaceState(null, '', u);
+        if (sync) sync.value = u.pathname + u.search;
+        cur = -1;
+        if (e) {
+          var i = rows().findIndex(function (r) { return r.dataset.key === e; });
+          if (i >= 0) select(i, false);
+        }
+      }).catch(function () { filter.submit(); });
+    }
+  }
+
   document.querySelectorAll('input.link-field').forEach(function (f) {
     f.addEventListener('focus', function () { f.select(); });
   });
