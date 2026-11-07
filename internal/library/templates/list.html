@@ -1,30 +1,38 @@
-{{define "content"}}{{with .Data}}
+{{define "content"}}<div class="app">
+<aside class="side">{{with .Data}}{{template "side" (side "/library/t/" "/library/" "My Library" (not .Topic) .Tree)}}{{end}}</aside>
+<section class="list">
+{{with .Data}}
 <div class="head">
-  <h1>{{if .Topic}}{{.Topic.Name}}{{else}}Library{{end}}</h1>
-  <p class="meta">{{if .Path}}<a href="/library/">Library</a>{{range .Path}} / <a href="/library/t/{{.Key}}">{{.Name}}</a>{{end}}{{end}}{{if .Unsorted}}{{if .Path}} · {{end}}{{.Unsorted}} entries are in no topic{{end}}</p>
+  <h1>{{if .Topic}}{{.Topic.Name}}{{else}}My Library{{end}}</h1>
+  {{if or .Path .Unsorted}}<p class="meta">{{range $i, $c := .Path}}{{if $i}} / {{end}}<a href="/library/t/{{$c.Key}}">{{$c.Name}}</a>{{end}}{{if .Unsorted}}{{.Unsorted}} entries are in no topic{{end}}</p>{{end}}
 </div>
-{{if .Tree}}{{template "topics" (topics (or (and .Topic "Subtopics") "Topics") "/library/t/" "" "" .Tree)}}{{end}}
-{{if .Topic}}
-<details class="share-form">
-  <summary>Share this topic</summary>
-  <form method="post" action="/library/shares">
-    <input type="hidden" name="topic" value="{{.Topic.Key}}">
-    <label>Title <input name="title" value="{{.Topic.Name}}"></label>
-    <label>Names, one per line; each gets their own link
-      <textarea name="names" rows="3" placeholder="Alice&#10;Bob"></textarea></label>
-    <label class="check"><input type="checkbox" name="public"> Also readable by anyone, without comments</label>
-    <button class="primary">Create share</button>
-  </form>
-  {{if .Shares}}
-  <form method="post" action="/library/shares">
-    <input type="hidden" name="topic" value="{{.Topic.Key}}">
-    <label>Or add this topic to
-      <select name="share">{{range .Shares}}<option value="{{.ID}}">{{.Title}}</option>{{end}}</select></label>
-    <button>Add</button>
-  </form>
-  {{end}}
-</details>
-{{end}}
 {{end}}
 {{template "table" .}}
-{{end}}
+</section>
+<aside class="pane" id="pane">
+{{with .Pane}}{{template "pane" .}}{{else}}{{with .Data}}
+  <p class="muted empty">Select an entry to see its details and comments.</p>
+  {{if .Topic}}
+  <section class="share-form">
+    <h2>Share this topic</h2>
+    <form method="post" action="/library/shares">
+      <input type="hidden" name="topic" value="{{.Topic.Key}}">
+      <label>Title <input name="title" value="{{.Topic.Name}}"></label>
+      <label>Names, one per line; each gets their own link
+        <textarea name="names" rows="3" placeholder="Alice&#10;Bob"></textarea></label>
+      <label class="check"><input type="checkbox" name="public"> Also readable by anyone, without comments</label>
+      <button class="primary">Create share</button>
+    </form>
+    {{if .Shares}}
+    <form method="post" action="/library/shares">
+      <input type="hidden" name="topic" value="{{.Topic.Key}}">
+      <label>Or add this topic to
+        <select name="share">{{range .Shares}}<option value="{{.ID}}">{{.Title}}</option>{{end}}</select></label>
+      <button>Add</button>
+    </form>
+    {{end}}
+  </section>
+  {{end}}
+{{end}}{{end}}
+</aside>
+</div>{{end}}

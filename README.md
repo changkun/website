@@ -161,7 +161,9 @@ an hour old.
 Every list accepts `?q=` (every word must match title, authors, venue, or
 year), `?sort=` (`year`, `title`, `authors`, `venue`, `added`; `-` in front
 for descending; default `-year`) and `?page=`. Share pages also accept `?t=`,
-a topic inside the share. Adding
+a topic inside the share. On a wide screen a list page has three panes:
+topics, entries, and the selected entry with its comments; `?e=<key>` selects
+an entry, and an entry's page with `?pane=1` returns only that pane. Adding
 `.bib` to a list's path (`/library/all.bib` for the whole library) returns
 the same entries as BibTeX.
 

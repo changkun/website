@@ -39,12 +39,15 @@ var funcs = template.FuncMap{
 	"date": func(t time.Time) string { return t.UTC().Format("2006-01-02 15:04") },
 	"add":  func(a, b int) int { return a + b },
 	"join": strings.Join,
-	// topics is the arguments of the "topics" template: a line of topic links
-	// base+key, after an optional label and an optional "All" link.
-	"topics": func(label, base, all, cur string, nodes []*node) map[string]any {
-		return map[string]any{"label": label, "base": base, "all": all, "cur": cur, "nodes": nodes}
+	// side is the arguments of the "side" template: the topic tree, each
+	// topic linking to base+key, under a first link that shows everything.
+	"side": func(base, allHref, allName string, allCurrent bool, nodes []*node) map[string]any {
+		return map[string]any{"base": base, "allHref": allHref, "allName": allName, "allCurrent": allCurrent, "nodes": nodes}
 	},
-	"linkify": linkify,
+	"tree":     func(base string, nodes []*node) map[string]any { return map[string]any{"base": base, "nodes": nodes} },
+	"icon":     typeIcon,
+	"typeName": typeName,
+	"linkify":  linkify,
 	"plural": func(n int, one, many string) string {
 		if n == 1 {
 			return fmt.Sprintf("%d %s", n, one)
@@ -62,11 +65,11 @@ var funcs = template.FuncMap{
 
 // pages are parsed once: layout.html plus one page each.
 var pages = func() map[string]*template.Template {
-	layout := template.Must(template.New("layout.html").Funcs(funcs).ParseFS(templatesFS, "templates/layout.html"))
+	layout := template.Must(template.New("layout.html").Funcs(funcs).ParseFS(templatesFS, "templates/layout.html", "templates/pane.html"))
 	names, _ := fs.Glob(templatesFS, "templates/*.html")
-	out := map[string]*template.Template{}
+	out := map[string]*template.Template{"pane": layout}
 	for _, n := range names {
-		if n == "templates/layout.html" {
+		if n == "templates/layout.html" || n == "templates/pane.html" {
 			continue
 		}
 		t := template.Must(template.Must(layout.Clone()).ParseFS(templatesFS, n))
@@ -86,6 +89,7 @@ type view struct {
 	Fetched int // items fetched so far, while a sync runs
 	Total   int
 	Data    any
+	Pane    *view // the entry shown in the right pane of a list page, if any
 }
 
 func (s *Service) render(w http.ResponseWriter, r *http.Request, status int, name string, v view) {
@@ -101,6 +105,31 @@ func (s *Service) render(w http.ResponseWriter, r *http.Request, status int, nam
 	if err := pages[name].ExecuteTemplate(w, "layout.html", v); err != nil {
 		s.log.Printf("library: render %s: %v", name, err)
 	}
+}
+
+// renderEntry writes an entry page, or with ?pane= only the right pane of a
+// list page, which the script loads when a row is selected.
+func (s *Service) renderEntry(w http.ResponseWriter, r *http.Request, v view) {
+	if !r.URL.Query().Has("pane") {
+		s.render(w, r, http.StatusOK, "entry", v)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "private, no-store")
+	if err := pages["pane"].ExecuteTemplate(w, "pane", v); err != nil {
+		s.log.Printf("library: render pane: %v", err)
+	}
+}
+
+// listBack returns the address of the list page a pane was loaded into, from
+// ?back=, if it is under prefix, and "" otherwise. Forms in the pane return
+// there.
+func listBack(r *http.Request, prefix string) string {
+	b := r.FormValue("back")
+	if !strings.HasPrefix(b, prefix) || strings.ContainsAny(b, "\\\r\n") {
+		return ""
+	}
+	return b
 }
 
 func (s *Service) notFound(w http.ResponseWriter, r *http.Request) {
@@ -388,25 +417,20 @@ type node struct {
 	Name     string
 	Count    int
 	Children []*node
-	Current  bool // the topic the page is narrowed to
+	Current  bool // the topic the page shows
+	Open     bool // Current is this node or below it, so the tree shows it open
 }
 
-// flat lists nodes and every node below them, parents first.
-func flat(nodes []*node) []*node {
-	var out []*node
+// mark sets Current on the node with key and Open on it and its ancestors,
+// and reports whether key is among nodes.
+func mark(nodes []*node, key string) bool {
+	found := false
 	for _, n := range nodes {
-		out = append(out, n)
-		out = append(out, flat(n.Children)...)
+		n.Current = key != "" && n.Key == key
+		n.Open = mark(n.Children, key) || n.Current
+		found = found || n.Open
 	}
-	return out
-}
-
-// mark sets Current on the node with key, if any.
-func mark(nodes []*node, key string) {
-	for _, n := range nodes {
-		n.Current = n.Key == key
-		mark(n.Children, key)
-	}
+	return found
 }
 
 // tree returns the topics below each of roots, which are included.
@@ -456,11 +480,14 @@ func (s *Service) home(w http.ResponseWriter, r *http.Request) {
 			unsorted++
 		}
 	}
-	s.render(w, r, http.StatusOK, "list", view{Title: "Library", Owner: true, Base: Prefix + "e/", Data: &listPage{
-		Tree:     ix.tree(ix.children[""], Prefix),
-		List:     newList(r, Prefix, ix.sorted, s.commentCounts("")),
-		Unsorted: unsorted,
-	}})
+	l := newList(r, Prefix, ix.sorted, s.commentCounts(""))
+	s.render(w, r, http.StatusOK, "list", view{Title: "Library", Owner: true, Base: Prefix + "e/",
+		Pane: pane(r, l, func(e *Entry) *entryPage { return s.ownerPane(ix, e) }),
+		Data: &listPage{
+			Tree:     ix.tree(ix.children[""], Prefix),
+			List:     l,
+			Unsorted: unsorted,
+		}})
 }
 
 func (s *Service) topic(w http.ResponseWriter, r *http.Request) {
@@ -476,13 +503,18 @@ func (s *Service) topic(w http.ResponseWriter, r *http.Request) {
 		writeBib(w, c.Name, filtered(r, es))
 		return
 	}
-	s.render(w, r, http.StatusOK, "list", view{Title: c.Name, Owner: true, Base: Prefix + "e/", Data: &listPage{
-		Topic:  c,
-		Path:   ix.path(key),
-		Tree:   ix.tree(ix.children[key], Prefix),
-		List:   newList(r, Prefix+"t/"+key, es, s.commentCounts("")),
-		Shares: s.store.allShares(),
-	}})
+	l := newList(r, Prefix+"t/"+key, es, s.commentCounts(""))
+	tree := ix.tree(ix.children[""], Prefix)
+	mark(tree, key)
+	s.render(w, r, http.StatusOK, "list", view{Title: c.Name, Owner: true, Base: Prefix + "e/",
+		Pane: pane(r, l, func(e *Entry) *entryPage { return s.ownerPane(ix, e) }),
+		Data: &listPage{
+			Topic:  c,
+			Path:   ix.path(key),
+			Tree:   tree,
+			List:   l,
+			Shares: s.store.allShares(),
+		}})
 }
 
 // entryPage is the data of an entry page.
@@ -492,6 +524,7 @@ type entryPage struct {
 	Threads []thread
 	Token   string // a member's token, for the comment form
 	Done    string // a message after posting
+	Back    string // the list page the pane is shown in; "" on the entry page
 }
 
 // thread is the comments of one share on one entry.
@@ -528,6 +561,13 @@ func (s *Service) ownerEntry(w http.ResponseWriter, r *http.Request) {
 		s.notFound(w, r)
 		return
 	}
+	p := s.ownerPane(ix, e)
+	p.Back = listBack(r, Prefix)
+	s.renderEntry(w, r, view{Title: e.Title, Owner: true, Base: Prefix + "e/", Data: p})
+}
+
+// ownerPane is an entry as the owner sees it, with comments from every share.
+func (s *Service) ownerPane(ix *index, e *Entry) *entryPage {
 	p := &entryPage{Entry: e, Topics: ix.topicPaths(e, func(string) bool { return true })}
 	for _, sh := range s.store.allShares() {
 		var posts []*Post
@@ -540,7 +580,23 @@ func (s *Service) ownerEntry(w http.ResponseWriter, r *http.Request) {
 			p.Threads = append(p.Threads, thread{Share: sh, Posts: posts})
 		}
 	}
-	s.render(w, r, http.StatusOK, "entry", view{Title: e.Title, Owner: true, Base: Prefix + "e/", Data: p})
+	return p
+}
+
+// pane returns the right pane for ?e= on a list page, or nil.
+func pane(r *http.Request, list *list, build func(*Entry) *entryPage) *view {
+	key := r.URL.Query().Get("e")
+	if key == "" {
+		return nil
+	}
+	for _, row := range list.Rows {
+		if row.Key == key {
+			p := build(row.Entry)
+			p.Back = r.URL.RequestURI()
+			return &view{Data: p}
+		}
+	}
+	return nil
 }
 
 // inboxItem is a post as the inbox lists it.
@@ -769,8 +825,7 @@ type sharePage struct {
 	Member      *Member // nil on the public page
 	Token       string
 	Tree        []*node
-	TreeBase    string  // a topic's link is TreeBase + its key
-	Topics      []*node // the share's topics below its root, in one line
+	TreeBase    string // a topic's link is TreeBase + its key
 	List        *list
 	Comments    []*Post // on the whole share
 	Suggestions []suggestion
@@ -838,9 +893,8 @@ func (s *Service) sharePage(w http.ResponseWriter, r *http.Request, sh *Share, m
 	p := &sharePage{Share: sh, Member: m, Token: token, Tree: ix.tree(sh.Topics, path), TreeBase: path + "?t=",
 		Done: r.URL.Query().Get("done"), Error: r.URL.Query().Get("error")}
 	mark(p.Tree, t)
-	p.Topics = flat(p.Tree)
 	if len(p.Tree) == 1 { // the one root topic is the whole share, which "All" shows
-		p.Topics = p.Topics[1:]
+		p.Tree = p.Tree[0].Children
 	}
 	counts := map[string]int{}
 	if m != nil { // the public sees no comments
@@ -856,7 +910,8 @@ func (s *Service) sharePage(w http.ResponseWriter, r *http.Request, sh *Share, m
 	}
 	p.List = newList(r, path, shown, counts)
 	p.List.T = t
-	s.render(w, r, http.StatusOK, "share", view{Title: sh.Title, Base: path + "/e/", Data: p})
+	s.render(w, r, http.StatusOK, "share", view{Title: sh.Title, Base: path + "/e/", Data: p,
+		Pane: pane(r, p.List, func(e *Entry) *entryPage { return s.sharePane(ix, sh, m, token, e) })})
 }
 
 func (s *Service) memberEntry(w http.ResponseWriter, r *http.Request) {
@@ -885,14 +940,23 @@ func (s *Service) shareEntry(w http.ResponseWriter, r *http.Request, sh *Share, 
 		s.notFound(w, r)
 		return
 	}
-	e := ix.entries[key]
+	p := s.sharePane(ix, sh, m, token, ix.entries[key])
+	p.Done = r.URL.Query().Get("done")
+	p.Back = listBack(r, path)
+	s.renderEntry(w, r, view{Title: p.Title, Base: path + "/e/", Data: p})
+}
+
+// sharePane is an entry as a share's member or the public sees it: only the
+// share's topics, and the share's comments for a member.
+func (s *Service) sharePane(ix *index, sh *Share, m *Member, token string, e *Entry) *entryPage {
+	key := e.Key
 	inShare := map[string]bool{}
 	for _, t := range sh.Topics {
 		for _, ck := range ix.subtree(t) {
 			inShare[ck] = true
 		}
 	}
-	p := &entryPage{Entry: e, Token: token, Done: r.URL.Query().Get("done"),
+	p := &entryPage{Entry: e, Token: token,
 		Topics: ix.topicPaths(e, func(ck string) bool { return inShare[ck] })}
 	// A topic path shows only the part inside the share.
 	for i, tp := range p.Topics {
@@ -912,12 +976,24 @@ func (s *Service) shareEntry(w http.ResponseWriter, r *http.Request, sh *Share, 
 		}
 		p.Threads = []thread{{Share: sh, Posts: posts}}
 	}
-	s.render(w, r, http.StatusOK, "entry", view{Title: e.Title, Base: path + "/e/", Data: p})
+	return p
 }
 
 // back returns to the page a member posted from, with a message.
+// A form in the right pane returns to the list page it was shown in.
 func back(w http.ResponseWriter, r *http.Request, token, entry, key, msg string) {
 	path := Prefix + "s/" + token
+	if b := listBack(r, path); b != "" {
+		if u, err := url.Parse(b); err == nil {
+			q := u.Query()
+			q.Del("done")
+			q.Del("error")
+			q.Set(key, msg)
+			u.RawQuery = q.Encode()
+			http.Redirect(w, r, u.String(), http.StatusSeeOther)
+			return
+		}
+	}
 	if entry != "" {
 		path += "/e/" + entry
 	}

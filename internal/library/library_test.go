@@ -452,12 +452,30 @@ func TestShares(t *testing.T) {
 		t.Fatal("public page still served")
 	}
 
+	// The right pane: ?e= on a list shows the entry, ?pane= returns only the
+	// pane, and a comment posted from the pane returns to the list.
+	if body := get(t, h, "/library/s/"+alice+"?e=AAAA", false).Body.String(); !strings.Contains(body, `class="pane"`) || !strings.Contains(body, "Comment on this paper") {
+		t.Fatalf("share page with ?e=:\n%s", body)
+	}
+	if body := get(t, h, "/library/s/"+alice+"/e/AAAA?pane=1", false).Body.String(); strings.Contains(body, "<html") || !strings.Contains(body, "Pollux") {
+		t.Fatalf("pane fragment:\n%s", body)
+	}
+	rec = post(t, h, "/library/s/"+alice+"/comment", url.Values{"entry": {"AAAA"}, "text": {"From the pane."}, "back": {"/library/s/" + alice + "?e=AAAA"}}, false)
+	if loc := rec.Header().Get("Location"); !strings.HasPrefix(loc, "/library/s/"+alice+"?") || !strings.Contains(loc, "e=AAAA") || !strings.Contains(loc, "done=") {
+		t.Fatalf("comment from the pane went to %q", loc)
+	}
+	rec = post(t, h, "/library/s/"+alice+"/comment", url.Values{"entry": {"AAAA"}, "text": {"x"}, "back": {"https://evil.example/"}}, false)
+	if loc := rec.Header().Get("Location"); !strings.HasPrefix(loc, "/library/s/"+alice+"/e/AAAA") {
+		t.Fatalf("comment with a foreign back went to %q", loc)
+	}
+
 	// State survives a restart.
 	st, err := openStore(filepath.Join(s.dir, "state"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(st.shares) != 1 || len(st.posts[sh.ID]) != 3 || !st.read[posts[0].ID] {
+	// 3 posts and a hide above, plus the 2 comments from the pane.
+	if len(st.shares) != 1 || len(st.posts[sh.ID]) != 5 || !st.read[posts[0].ID] {
 		t.Fatalf("reloaded state: %d shares, %d posts", len(st.shares), len(st.posts[sh.ID]))
 	}
 	raw, _ := os.ReadFile(filepath.Join(s.dir, "state", "shares.yaml"))

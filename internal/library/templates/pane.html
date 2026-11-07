@@ -1,0 +1,43 @@
+{{define "pane"}}{{$owner := .Owner}}{{with .Data}}
+<article class="entry">
+  <p class="kind"><svg class="ti ti-{{icon .Type}}" aria-hidden="true"><use href="#i-{{icon .Type}}"/></svg> {{typeName .Type}}{{if .Year}} · {{.Year}}{{end}}</p>
+  <h1>{{.Title}}</h1>
+  <p class="authors">{{join .Authors ", "}}</p>
+  <table class="fields">
+    {{if .Venue}}<tr><th>Venue</th><td>{{.Venue}}</td></tr>{{end}}
+    {{if .DOI}}<tr><th>DOI</th><td><a href="https://doi.org/{{.DOI}}" rel="noopener noreferrer" target="_blank">{{.DOI}}</a></td></tr>{{end}}
+    {{if .URL}}<tr><th>URL</th><td><a href="{{.URL}}" rel="noopener noreferrer" target="_blank">{{.URL}}</a></td></tr>{{end}}
+    {{if .Topics}}<tr><th>Topics</th><td>{{range $i, $p := .Topics}}{{if $i}}<br>{{end}}{{range $j, $c := $p}}{{if $j}} / {{end}}{{if $owner}}<a href="/library/t/{{$c.Key}}">{{$c.Name}}</a>{{else}}{{$c.Name}}{{end}}{{end}}{{end}}</td></tr>{{end}}
+    {{if .Tags}}<tr><th>Tags</th><td>{{join .Tags ", "}}</td></tr>{{end}}
+    {{range .Other}}<tr><th>{{index . 0}}</th><td>{{linkify (index . 1)}}</td></tr>{{end}}
+  </table>
+  {{if .Abstract}}<h2>Abstract</h2><p class="abstract">{{.Abstract}}</p>{{end}}
+  {{if .BibTeX}}
+  <h2>BibTeX <button type="button" class="copy" data-bib="{{.BibTeX}}">Copy</button></h2>
+  <pre class="bibtex">{{.BibTeX}}</pre>
+  {{end}}
+</article>
+<section class="comments" id="comments">
+{{if $owner}}
+  {{range .Threads}}{{$sid := .Share.ID}}
+  <h2>Comments in “{{.Share.Title}}”</h2>
+  {{range .Posts}}
+  <div class="post"><span class="by">{{.By}} · {{date .Time}}</span> {{linkify .Text}}
+    <form method="post" action="/library/shares/{{$sid}}/hide" class="inline"><input type="hidden" name="post" value="{{.ID}}"><input type="hidden" name="next" value="{{or $.Data.Back (print "/library/e/" $.Data.Key)}}"><button class="link">Hide</button></form></div>
+  {{end}}
+  {{else}}<h2>Comments</h2><p class="muted">No comments in any share.</p>{{end}}
+{{else if .Token}}
+  <h2>Comments</h2>
+  {{if .Done}}<p class="note good">{{.Done}}</p>{{end}}
+  {{range .Threads}}{{range .Posts}}
+  <div class="post"><span class="by">{{.By}} · {{date .Time}}</span> {{linkify .Text}}</div>
+  {{else}}<p class="muted">None yet.</p>{{end}}{{end}}
+  <form method="post" action="/library/s/{{.Token}}/comment" class="line-form">
+    <input type="hidden" name="entry" value="{{.Key}}">
+    {{with .Back}}<input type="hidden" name="back" value="{{.}}">{{end}}
+    <textarea name="text" rows="1" required maxlength="2000" placeholder="Comment on this paper" aria-label="Comment"></textarea>
+    <button class="primary">Post</button>
+  </form>
+{{end}}
+</section>
+{{end}}{{end}}

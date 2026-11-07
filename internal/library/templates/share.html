@@ -1,19 +1,24 @@
-{{define "content"}}{{with .Data}}
+{{define "content"}}<div class="app">
+{{with .Data}}
+<aside class="side">{{template "side" (side .TreeBase .List.Path "All topics" (not .List.T) .Tree)}}</aside>
+<section class="list">
 <div class="head">
   <h1>{{.Share.Title}}</h1>
-  <p class="meta">Shared by Changkun Ou{{if .Member}} with {{.Member.Name}}{{end}}{{if .Member}} · this link is yours, please do not pass it on{{end}}</p>
+  <p class="meta">Shared by Changkun Ou{{if .Member}} with {{.Member.Name}} · this link is yours, please do not pass it on{{end}}</p>
 </div>
 {{if .Done}}<p class="note good">{{.Done}}</p>{{end}}
 {{if .Error}}<p class="note bad">{{.Error}}</p>{{end}}
-{{if .Topics}}{{template "topics" (topics "" .TreeBase .List.Path .List.T .Topics)}}{{end}}
 {{end}}
 {{template "table" .}}
-{{with .Data}}{{if .Member}}
-<section id="comments">
+</section>
+<aside class="pane" id="pane">
+{{with .Pane}}{{template "pane" .}}{{else}}{{with .Data}}
+  {{if .Member}}
+  <section class="comments" id="comments">
   <h2>Discussion</h2>
   {{range .Comments}}
   <div class="post"><span class="by">{{.By}} · {{date .Time}}</span> {{linkify .Text}}</div>
-  {{else}}<p class="muted">Nothing yet. Comments on one paper go on its page.</p>{{end}}
+  {{else}}<p class="muted">Nothing yet. Select a paper to comment on it.</p>{{end}}
   <form method="post" action="/library/s/{{.Token}}/comment" class="line-form">
     <textarea name="text" rows="1" required maxlength="2000" placeholder="Comment on the whole share, as {{.Member.Name}}" aria-label="Comment"></textarea>
     <button class="primary">Post</button>
@@ -22,16 +27,17 @@
   <h2>Suggested</h2>
   {{range .Suggestions}}
   <div class="post suggestion">
-    <span class="by">{{.By}} · {{date .Time}}</span>
-    <span class="ref">{{linkify .Ref}}</span>{{if .Note}} <span class="note-text">“{{linkify .Note}}”</span>{{end}}
-    {{if .Added}}<a class="state added" href="/library/s/{{$.Data.Token}}/e/{{.Added.Key}}">added</a>{{else}}<span class="state">pending</span>{{end}}
+    <div><span class="by">{{.By}} · {{date .Time}}</span>{{if .Added}}<a class="state added" href="/library/s/{{$.Data.Token}}?e={{.Added.Key}}">added</a>{{else}}<span class="state">pending</span>{{end}}</div>
+    <div class="ref">{{linkify .Ref}}</div>{{if .Note}}<div class="note-text">“{{linkify .Note}}”</div>{{end}}
   </div>
   {{else}}<p class="muted">Nothing yet.</p>{{end}}
-  <form method="post" action="/library/s/{{.Token}}/suggest" class="line-form">
+  <form method="post" action="/library/s/{{.Token}}/suggest" class="stack-form">
     <textarea name="ref" rows="1" required maxlength="2000" placeholder="DOI, arXiv ID, URL, or BibTeX" aria-label="Paper"></textarea>
     <input name="note" maxlength="2000" placeholder="Why (optional)" aria-label="Why">
     <button class="primary">Suggest</button>
   </form>
-</section>
+  </section>
+  {{else}}<p class="muted empty">Select an entry to see its details.</p>{{end}}
 {{end}}{{end}}
-{{end}}
+</aside>
+</div>{{end}}

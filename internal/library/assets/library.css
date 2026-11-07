@@ -1,5 +1,6 @@
-/* changkun.de/library. System sans-serif, ink text, blue links, one list
- * layout: a table with one 30px line per entry, using the full window width. */
+/* changkun.de/library. System sans-serif, ink text, blue links. List pages
+ * have three panes like Zotero's: the topic tree, the entries, and the
+ * selected entry with its comments. Phones get one column. */
 :root {
   --bg: #ffffff;
   --bg-raised: #f4f4f4;
@@ -35,9 +36,11 @@
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
+html, body { height: 100%; }
 body {
   margin: 0;
-  padding: 0 clamp(16px, 3vw, 40px) 48px;
+  display: flex;
+  flex-direction: column;
   background: var(--bg);
   color: var(--text);
   font: 15px/24px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
@@ -74,12 +77,15 @@ form.inline { display: inline; }
 label { display: block; margin: 6px 0; }
 label.check { display: inline-flex; gap: 4px; align-items: center; }
 
+main { flex: 1; min-height: 0; overflow: auto; padding: 0 clamp(16px, 3vw, 40px) 48px; }
+main:has(> .app) { overflow: hidden; padding: 0; }
+.page { max-width: 1000px; }
 header.site {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 14px 0 10px;
+  padding: 10px clamp(16px, 2vw, 24px);
   border-bottom: 1px solid var(--border);
 }
 .site-name { font-weight: 650; color: var(--text); }
@@ -87,7 +93,7 @@ header nav { display: flex; gap: 20px; align-items: center; color: var(--text-se
 header nav a { color: var(--text-secondary); }
 header nav a:hover { color: var(--text); }
 header nav .synced { color: var(--text-secondary); font-size: 13px; }
-.status { margin: 10px 0 0; padding: 6px 10px; border-radius: 6px; background: var(--bg-raised); color: var(--text-secondary); }
+.status { margin: 8px clamp(16px, 2vw, 24px) 0; padding: 6px 10px; border-radius: 6px; background: var(--bg-raised); color: var(--text-secondary); }
 .head .meta { margin: 0; color: var(--text-secondary); }
 .head .meta a { color: var(--text-secondary); }
 nav.topics { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: baseline; margin: 16px 0 4px; }
@@ -104,9 +110,6 @@ nav.topics a.current .n { color: inherit; opacity: 0.8; }
 
 details { margin: 8px 0; }
 summary { cursor: pointer; color: var(--text-secondary); }
-ul.tree { list-style: none; margin: 2px 0; padding-left: 0; columns: 4 280px; column-gap: 32px; }
-ul.tree ul { columns: auto; padding-left: 18px; list-style: none; }
-ul.tree li { break-inside: avoid; }
 .share-form form { max-width: 520px; margin: 6px 0 12px; }
 
 .filter { display: flex; gap: 16px; align-items: center; margin: 16px 0 8px; flex-wrap: wrap; }
@@ -201,6 +204,79 @@ table.members tr.revoked { color: var(--text-secondary); text-decoration: line-t
   table.entries .a, table.entries .v, table.entries .c,
   table.entries th.a, table.entries th.v, table.entries th.c { display: none; }
   .keys { display: none; }
-  ul.tree { columns: 1; }
   header.site { flex-wrap: wrap; }
+}
+
+/* Three panes. Each scrolls on its own. */
+.app { display: grid; grid-template-columns: 240px minmax(0, 1fr) 380px; height: 100%; }
+.app > * { overflow: auto; min-height: 0; }
+.side { background: var(--bg-raised); border-right: 1px solid var(--border); padding: 12px 8px 24px; font-size: 14px; }
+.side .side-box > summary { display: none; }
+.side details { margin: 0; }
+.list { padding: 0 20px 32px; }
+.list .head h1 { margin-top: 18px; }
+.pane { border-left: 1px solid var(--border); padding: 4px 20px 32px; }
+.pane .empty { margin-top: 24px; }
+.pane h1 { font-size: 19px; line-height: 26px; margin: 6px 0 4px; }
+.pane h2 { font-size: 15px; margin: 22px 0 6px; }
+.pane .abstract { font-size: 14px; line-height: 1.55; }
+.pane pre.bibtex { font-size: 12px; line-height: 18px; }
+.pane table.fields { font-size: 14px; }
+.pane .line-form { flex-direction: column; }
+.pane .line-form textarea { min-height: 60px; }
+.pane .line-form button, .stack-form button { align-self: flex-start; }
+.stack-form { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.pane .post.suggestion { display: block; }
+.pane .post.suggestion .state { float: right; }
+.kind { display: flex; align-items: center; gap: 6px; margin: 14px 0 0; color: var(--text-secondary); font-size: 13px; }
+
+ul.tree, .side ul { list-style: none; margin: 0; padding: 0; columns: auto; }
+.side ul ul { padding-left: 14px; }
+.side li { break-inside: avoid; }
+.side summary { list-style: none; cursor: pointer; display: block; color: inherit; }
+.side summary::-webkit-details-marker { display: none; }
+.side a.node { display: block; padding: 2px 8px 2px 20px; border-radius: 5px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; }
+.side summary > a.node::before { content: '›'; position: absolute; left: 7px; color: var(--text-secondary); transition: transform .1s; }
+.side details[open] > summary > a.node::before { transform: rotate(90deg); }
+.side a.node:hover { background: var(--link-tint); text-decoration: none; }
+.side a.node.current { background: var(--link); color: #fff; }
+.side a.node .n { color: var(--text-secondary); font-size: 12px; margin-left: 2px; }
+.side a.node.current .n { color: inherit; opacity: .8; }
+
+table.entries .i { width: 30px; padding: 0 0 0 8px; }
+svg.ti { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; flex: none; }
+.ti-article { color: #2a5bd7; }
+.ti-conf { color: #7a4ad0; }
+.ti-preprint { color: #c2622a; }
+.ti-report { color: #4c6a85; }
+.ti-book, .ti-chapter { color: #9a6b2f; }
+.ti-thesis { color: #b23b3b; }
+.ti-web { color: #1d8a8a; }
+.ti-code { color: #555; }
+.ti-data { color: #2f8a46; }
+.ti-slides, .ti-media { color: #b0408a; }
+.ti-doc { color: var(--text-secondary); }
+@media (prefers-color-scheme: dark) {
+  .ti-article { color: #8cb0ff; } .ti-conf { color: #b79bff; } .ti-preprint { color: #f0a070; }
+  .ti-report { color: #9db8d0; } .ti-book, .ti-chapter { color: #d8ab6e; } .ti-thesis { color: #f08a8a; }
+  .ti-web { color: #6fd0d0; } .ti-code { color: #bbb; } .ti-data { color: #7fd395; } .ti-slides, .ti-media { color: #f08ace; }
+}
+table.entries tr.row { cursor: default; }
+table.entries tr.row.sel td { background: var(--link); color: #fff; }
+table.entries tr.row.sel td a, table.entries tr.row.sel svg.ti { color: #fff; text-decoration: none; }
+
+@media (max-width: 1600px) {
+  table.entries .v, table.entries th.v { display: none; }
+}
+@media (max-width: 1100px) {
+  .app { grid-template-columns: 220px minmax(0, 1fr) 340px; }
+}
+@media (max-width: 900px) {
+  main:has(> .app) { overflow: auto; }
+  .app { display: block; height: auto; }
+  .app > * { overflow: visible; }
+  .side { border: 0; border-bottom: 1px solid var(--border); padding: 8px; }
+  .side .side-box > summary { display: block; color: var(--text-secondary); padding: 0 8px 4px; }
+  .pane { border: 0; border-top: 1px solid var(--border); }
+  .pane .empty { display: none; }
 }
