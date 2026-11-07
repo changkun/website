@@ -6,9 +6,7 @@ package main
 
 import (
 	"context"
-	"embed"
 	"errors"
-	"io/fs"
 	"log"
 	"net"
 	"net/http"
@@ -23,20 +21,6 @@ import (
 
 func init() {
 	log.SetPrefix("main")
-}
-
-var (
-	//go:embed static/*
-	static embed.FS
-	fsys   fs.FS
-)
-
-func init() {
-	subFS, err := fs.Sub(static, "static")
-	if err != nil {
-		panic(err)
-	}
-	fsys = subFS
 }
 
 func main() {

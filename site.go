@@ -5,9 +5,22 @@
 package main
 
 import (
+	"embed"
 	"io/fs"
 	"net/http"
 )
+
+//go:embed static/*
+var static embed.FS
+
+// fsys is the site with the static/ prefix stripped, so paths match URLs.
+var fsys = func() fs.FS {
+	sub, err := fs.Sub(static, "static")
+	if err != nil {
+		panic(err)
+	}
+	return sub
+}()
 
 // statusPages are the pages whose content announces an HTTP error. Serving
 // them with 200 would tell a crawler the error page is a real page.
