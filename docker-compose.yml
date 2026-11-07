@@ -2,11 +2,11 @@
 # Use of this source code is governed by a MIT
 # license that can be found in the LICENSE file.
 
-# Compose would otherwise name the stack after the clone's folder.
-name: main
+name: website
 
 services:
   main:
+    container_name: website
     restart: always
     image: main:latest
     deploy:
