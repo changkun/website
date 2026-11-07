@@ -482,7 +482,7 @@ func (s *Service) home(w http.ResponseWriter, r *http.Request) {
 	}
 	l := newList(r, Prefix, ix.sorted, s.commentCounts(""))
 	s.render(w, r, http.StatusOK, "list", view{Title: "Library", Owner: true, Base: Prefix + "e/",
-		Pane: pane(r, l, func(e *Entry) *entryPage { return s.ownerPane(ix, e) }),
+		Pane: pane(r, true, l, func(e *Entry) *entryPage { return s.ownerPane(ix, e) }),
 		Data: &listPage{
 			Tree:     ix.tree(ix.children[""], Prefix),
 			List:     l,
@@ -507,7 +507,7 @@ func (s *Service) topic(w http.ResponseWriter, r *http.Request) {
 	tree := ix.tree(ix.children[""], Prefix)
 	mark(tree, key)
 	s.render(w, r, http.StatusOK, "list", view{Title: c.Name, Owner: true, Base: Prefix + "e/",
-		Pane: pane(r, l, func(e *Entry) *entryPage { return s.ownerPane(ix, e) }),
+		Pane: pane(r, true, l, func(e *Entry) *entryPage { return s.ownerPane(ix, e) }),
 		Data: &listPage{
 			Topic:  c,
 			Path:   ix.path(key),
@@ -584,7 +584,7 @@ func (s *Service) ownerPane(ix *index, e *Entry) *entryPage {
 }
 
 // pane returns the right pane for ?e= on a list page, or nil.
-func pane(r *http.Request, list *list, build func(*Entry) *entryPage) *view {
+func pane(r *http.Request, owner bool, list *list, build func(*Entry) *entryPage) *view {
 	key := r.URL.Query().Get("e")
 	if key == "" {
 		return nil
@@ -593,7 +593,7 @@ func pane(r *http.Request, list *list, build func(*Entry) *entryPage) *view {
 		if row.Key == key {
 			p := build(row.Entry)
 			p.Back = r.URL.RequestURI()
-			return &view{Data: p}
+			return &view{Owner: owner, Data: p}
 		}
 	}
 	return nil
@@ -911,7 +911,7 @@ func (s *Service) sharePage(w http.ResponseWriter, r *http.Request, sh *Share, m
 	p.List = newList(r, path, shown, counts)
 	p.List.T = t
 	s.render(w, r, http.StatusOK, "share", view{Title: sh.Title, Base: path + "/e/", Data: p,
-		Pane: pane(r, p.List, func(e *Entry) *entryPage { return s.sharePane(ix, sh, m, token, e) })})
+		Pane: pane(r, false, p.List, func(e *Entry) *entryPage { return s.sharePane(ix, sh, m, token, e) })})
 }
 
 func (s *Service) memberEntry(w http.ResponseWriter, r *http.Request) {

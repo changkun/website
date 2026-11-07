@@ -1,5 +1,6 @@
 {{define "content"}}<div class="app">
 <aside class="side">{{with .Data}}{{template "side" (side "/library/t/" "/library/" "My Library" (not .Topic) .Tree)}}{{end}}</aside>
+<div class="grip" data-grip="side" title="Drag to resize; double-click to reset"></div>
 <section class="list">
 {{with .Data}}
 <div class="head">
@@ -9,6 +10,7 @@
 {{end}}
 {{template "table" .}}
 </section>
+<div class="grip" data-grip="pane" title="Drag to resize; double-click to reset"></div>
 <aside class="pane" id="pane">
 {{with .Pane}}{{template "pane" .}}{{else}}{{with .Data}}
   <p class="muted empty">Select an entry to see its details and comments.</p>

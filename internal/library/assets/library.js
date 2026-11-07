@@ -61,6 +61,45 @@
     }, 80);
   }
 
+  // The grips between the panes resize them. The widths are kept in this
+  // browser; a double-click resets one.
+  var app = document.querySelector('.app');
+  var widths = { side: [160, 520], pane: [260, 900] };
+  function store(k, v) { try { if (v) localStorage.setItem('library.' + k, v); else localStorage.removeItem('library.' + k); } catch (e) {} }
+  function stored(k) { try { return localStorage.getItem('library.' + k); } catch (e) { return null; } }
+  if (app) {
+    ['side', 'pane'].forEach(function (k) {
+      var v = stored(k);
+      if (v) app.style.setProperty('--' + k + '-w', v);
+    });
+    app.querySelectorAll('.grip').forEach(function (g) {
+      var k = g.dataset.grip;
+      g.addEventListener('pointerdown', function (ev) {
+        ev.preventDefault();
+        g.setPointerCapture(ev.pointerId);
+        g.classList.add('drag');
+        app.classList.add('resizing');
+      });
+      g.addEventListener('pointermove', function (ev) {
+        if (!g.hasPointerCapture(ev.pointerId)) return;
+        var box = app.getBoundingClientRect();
+        var w = k === 'side' ? ev.clientX - box.left : box.right - ev.clientX;
+        w = Math.round(Math.max(widths[k][0], Math.min(widths[k][1], w, box.width - 420)));
+        app.style.setProperty('--' + k + '-w', w + 'px');
+      });
+      g.addEventListener('pointerup', function (ev) {
+        g.releasePointerCapture(ev.pointerId);
+        g.classList.remove('drag');
+        app.classList.remove('resizing');
+        store(k, app.style.getPropertyValue('--' + k + '-w'));
+      });
+      g.addEventListener('dblclick', function () {
+        app.style.removeProperty('--' + k + '-w');
+        store(k, null);
+      });
+    });
+  }
+
   // The row named by ?e= starts selected.
   var start = new URL(location.href).searchParams.get('e');
   if (start) {

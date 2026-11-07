@@ -452,6 +452,11 @@ func TestShares(t *testing.T) {
 		t.Fatal("public page still served")
 	}
 
+	// The owner's list with ?e= shows the entry's comments in the pane.
+	if body := get(t, h, "/library/t/GPU?e=AAAA", true).Body.String(); !strings.Contains(body, "From the pane.") && !strings.Contains(body, "Comments in") {
+		t.Fatalf("owner pane:\n%s", body)
+	}
+
 	// The right pane: ?e= on a list shows the entry, ?pane= returns only the
 	// pane, and a comment posted from the pane returns to the list.
 	if body := get(t, h, "/library/s/"+alice+"?e=AAAA", false).Body.String(); !strings.Contains(body, `class="pane"`) || !strings.Contains(body, "Comment on this paper") {

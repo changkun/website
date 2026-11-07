@@ -208,14 +208,17 @@ table.members tr.revoked { color: var(--text-secondary); text-decoration: line-t
 }
 
 /* Three panes. Each scrolls on its own. */
-.app { display: grid; grid-template-columns: 240px minmax(0, 1fr) 380px; height: 100%; }
+.app { display: grid; grid-template-columns: var(--side-w, 240px) 5px minmax(0, 1fr) 5px var(--pane-w, 380px); height: 100%; }
+.grip { cursor: col-resize; background: var(--border); background-clip: content-box; padding: 0 2px; touch-action: none; }
+.grip:hover, .grip.drag { background: var(--link); padding: 0 1px; }
+.app.resizing { user-select: none; cursor: col-resize; }
 .app > * { overflow: auto; min-height: 0; }
-.side { background: var(--bg-raised); border-right: 1px solid var(--border); padding: 12px 8px 24px; font-size: 14px; }
+.side { background: var(--bg-raised); padding: 12px 8px 24px; font-size: 14px; }
 .side .side-box > summary { display: none; }
 .side details { margin: 0; }
 .list { padding: 0 20px 32px; }
 .list .head h1 { margin-top: 18px; }
-.pane { border-left: 1px solid var(--border); padding: 4px 20px 32px; }
+.pane { padding: 4px 20px 32px; }
 .pane .empty { margin-top: 24px; }
 .pane h1 { font-size: 19px; line-height: 26px; margin: 6px 0 4px; }
 .pane h2 { font-size: 15px; margin: 22px 0 6px; }
@@ -268,12 +271,11 @@ table.entries tr.row.sel td a, table.entries tr.row.sel svg.ti { color: #fff; te
 @media (max-width: 1600px) {
   table.entries .v, table.entries th.v { display: none; }
 }
-@media (max-width: 1100px) {
-  .app { grid-template-columns: 220px minmax(0, 1fr) 340px; }
-}
+
 @media (max-width: 900px) {
   main:has(> .app) { overflow: auto; }
   .app { display: block; height: auto; }
+  .grip { display: none; }
   .app > * { overflow: visible; }
   .side { border: 0; border-bottom: 1px solid var(--border); padding: 8px; }
   .side .side-box > summary { display: block; color: var(--text-secondary); padding: 0 8px 4px; }

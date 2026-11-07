@@ -1,6 +1,7 @@
 {{define "content"}}<div class="app">
 {{with .Data}}
 <aside class="side">{{template "side" (side .TreeBase .List.Path "All topics" (not .List.T) .Tree)}}</aside>
+<div class="grip" data-grip="side" title="Drag to resize; double-click to reset"></div>
 <section class="list">
 <div class="head">
   <h1>{{.Share.Title}}</h1>
@@ -11,6 +12,7 @@
 {{end}}
 {{template "table" .}}
 </section>
+<div class="grip" data-grip="pane" title="Drag to resize; double-click to reset"></div>
 <aside class="pane" id="pane">
 {{with .Pane}}{{template "pane" .}}{{else}}{{with .Data}}
   {{if .Member}}
