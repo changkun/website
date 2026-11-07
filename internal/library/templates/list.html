@@ -4,8 +4,8 @@
 <section class="list">
 {{with .Data}}
 <div class="head">
-  <h1>{{if .Topic}}{{.Topic.Name}}{{else}}My Library{{end}}</h1>
-  {{if or .Path .Unsorted}}<p class="meta">{{range $i, $c := .Path}}{{if $i}} / {{end}}<a href="/library/t/{{$c.Key}}">{{$c.Name}}</a>{{end}}{{if .Unsorted}}{{.Unsorted}} entries are in no topic{{end}}</p>{{end}}
+  <h1>{{if .Path}}{{range $i, $c := .Path}}{{if not $i}}{{if eq (len $.Data.Path) 1}}{{$c.Name}}{{else}}<a class="up" href="/library/t/{{$c.Key}}">{{$c.Name}}</a>{{end}}{{else}}<span class="sub"> › {{if eq (add $i 1) (len $.Data.Path)}}{{$c.Name}}{{else}}<a href="/library/t/{{$c.Key}}">{{$c.Name}}</a>{{end}}</span>{{end}}{{end}}{{else}}My Library{{end}}</h1>
+  {{if .Unsorted}}<p class="meta">{{.Unsorted}} entries are in no topic</p>{{end}}
 </div>
 {{end}}
 {{template "table" .}}

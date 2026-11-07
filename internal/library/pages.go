@@ -89,11 +89,13 @@ type view struct {
 	Fetched int // items fetched so far, while a sync runs
 	Total   int
 	Data    any
-	Pane    *view // the entry shown in the right pane of a list page, if any
+	Pane    *view  // the entry shown in the right pane of a list page, if any
+	Home    string // where "Library" in the header leads: the owner's library or the share
 }
 
 func (s *Service) render(w http.ResponseWriter, r *http.Request, status int, name string, v view) {
 	if v.Owner {
+		v.Home = Prefix
 		v.Unread = s.unread()
 		v.Synced, v.SyncErr, _ = s.status()
 		v.Fetched, v.Total = s.progress()
@@ -828,7 +830,8 @@ type sharePage struct {
 	Member      *Member // nil on the public page
 	Token       string
 	Tree        []*node
-	TreeBase    string // a topic's link is TreeBase + its key
+	TreeBase    string        // a topic's link is TreeBase + its key
+	Sub         []*Collection // the selected topic's path below the share's topic, if one is selected
 	List        *list
 	Comments    []*Post // on the whole share
 	Suggestions []suggestion
@@ -896,6 +899,20 @@ func (s *Service) sharePage(w http.ResponseWriter, r *http.Request, sh *Share, m
 	p := &sharePage{Share: sh, Member: m, Token: token, Tree: ix.tree(sh.Topics, path), TreeBase: path + "?t=",
 		Done: r.URL.Query().Get("done"), Error: r.URL.Query().Get("error")}
 	mark(p.Tree, t)
+	if t != "" {
+		// The path from the share's own topic down to t, without it.
+		path := ix.path(t)
+		for i, c := range path {
+			if slices.Contains(sh.Topics, c.Key) {
+				if len(sh.Topics) == 1 {
+					i++ // the share's title already names its one topic
+				}
+				path = path[i:]
+				break
+			}
+		}
+		p.Sub = path
+	}
 	if len(p.Tree) == 1 { // the one root topic is the whole share, which "All" shows
 		p.Tree = p.Tree[0].Children
 	}
@@ -913,7 +930,7 @@ func (s *Service) sharePage(w http.ResponseWriter, r *http.Request, sh *Share, m
 	}
 	p.List = newList(r, path, shown, counts)
 	p.List.T = t
-	s.render(w, r, http.StatusOK, "share", view{Title: sh.Title, Base: path + "/e/", Data: p,
+	s.render(w, r, http.StatusOK, "share", view{Title: sh.Title, Base: path + "/e/", Home: path, Data: p,
 		Pane: pane(r, false, path+"/e/", p.List, func(e *Entry) *entryPage { return s.sharePane(ix, sh, m, token, e) })})
 }
 

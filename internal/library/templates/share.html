@@ -4,7 +4,7 @@
 <div class="grip" data-grip="side" title="Drag to resize; double-click to reset"></div>
 <section class="list">
 <div class="head">
-  <h1>{{.Share.Title}}</h1>
+  <h1>{{if .Sub}}<a class="up" href="{{.List.Path}}">{{.Share.Title}}</a>{{range .Sub}}<span class="sub"> › {{.Name}}</span>{{end}}{{else}}{{.Share.Title}}{{end}}</h1>
   <p class="meta">Shared by Changkun Ou{{if .Member}} with {{.Member.Name}} · this link is yours, please do not pass it on{{end}}</p>
 </div>
 {{if .Done}}<p class="note good">{{.Done}}</p>{{end}}

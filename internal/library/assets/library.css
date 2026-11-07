@@ -88,7 +88,12 @@ header.site {
   padding: 10px clamp(16px, 2vw, 24px);
   border-bottom: 1px solid var(--border);
 }
-.site-name { font-weight: 650; color: var(--text); }
+.site-name { font-weight: 650; display: flex; align-items: baseline; gap: 10px; }
+.site-name a, .site-name span { color: var(--text); }
+.site-name .sep { color: var(--text-secondary); font-weight: 400; }
+h1 a.up { color: inherit; }
+h1 .sub { font-weight: 400; color: var(--link); }
+h1 .sub a { color: inherit; }
 header nav { display: flex; gap: 20px; align-items: center; color: var(--text-secondary); }
 header nav a { color: var(--text-secondary); }
 header nav a:hover { color: var(--text); }

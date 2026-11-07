@@ -29,11 +29,10 @@
   <symbol id="i-media" viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="9" rx="1"/><path d="M7 6.3v3.4L10 8z"/></symbol>
 </svg>
 <header class="site">
-  <a class="site-name" href="/">changkun.de</a>
+  <div class="site-name"><a href="/">Changkun Ou</a><span class="sep">|</span>{{if .Home}}<a href="{{.Home}}">Library</a>{{else}}<span>Library</span>{{end}}</div>
   {{if .Owner}}
   <nav>
     {{if not (or .Total .SyncErr)}}<span class="synced">Synced {{ago .Synced}}</span>{{end}}
-    <a href="/library/">Library</a>
     <a href="/library/inbox">Inbox{{if .Unread}} <b>({{.Unread}})</b>{{end}}</a>
     <a href="/library/shares">Shares</a>
     <form method="post" action="/library/sync" class="inline">
