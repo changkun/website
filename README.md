@@ -3,6 +3,8 @@
 One Go binary serves changkun.de:
 
 - `/` serves the static site embedded from `static/`.
+- `/<folder>/` serves each folder of `WWW_DIR`, such as the books and the
+  blog. See [Folders](#folders).
 - `/ideas/` is an API that polishes, translates, and expands an idea with LLMs,
   then commits it as bilingual markdown to
   [changkun/blog](https://github.com/changkun/blog).
@@ -25,8 +27,21 @@ serves and `/ideas/` answers 503.
 |---|---|
 | `main.go` | Signal handling, the HTTP server, request logging |
 | `site.go` | The embedded `static/` site and its file server |
+| `www.go` | The folders of `WWW_DIR`, and the downloads reported to urlstat |
 | `internal/ideas/` | The ideas API |
 | `internal/ideas/prompts/` | Model prompts, as Go text templates embedded in the binary |
+
+## Folders
+
+A folder of `WWW_DIR` is served at `/<folder>/` from the moment it exists, so
+publishing one takes an `rsync` or a `git clone` into `WWW_DIR`, and no
+restart. In production `WWW_DIR` is `/www/changkun.de`, mounted read-only.
+
+Folders are served like files on disk: a folder without an `index.html` is
+listed, and symlinks are followed. Hidden files, such as `.git`, are not
+served. A name the embedded site has, such as `books`, stays the site's.
+
+File responses have no write timeout, since some are 80 MB.
 
 ## Ideas API
 
@@ -82,6 +97,9 @@ everything else has a default.
 | Variable | Default | Description |
 |---|---|---|
 | `WEBSITE_ADDR` | `0.0.0.0:80` | Listen address |
+| `WWW_DIR` | | Folder whose folders are served. Unset serves none |
+| `WWW_URLSTAT` | | Comma-separated URLs of folders whose file downloads urlstat counts, such as `https://changkun.de/research/` |
+| `WWW_CORS` | | Comma-separated path prefixes any origin may fetch from, such as `/demos/` |
 | `LLM_BASE_URL` | `https://api.latere.ai/v1/models` | Lux gateway root |
 | `LLM_API_KEY` | | Lux Key |
 | `LLM_MODEL` | `anthropic/claude-opus-5.5` | Writes the deep dive |

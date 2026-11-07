@@ -2,8 +2,8 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-// Main serves changkun.de: the embedded static site and, when configured, the
-// ideas API under /ideas/.
+// Main serves changkun.de: the embedded static site, the folders of WWW_DIR,
+// and, when configured, the ideas API under /ideas/.
 package main
 
 import (
@@ -58,8 +58,13 @@ func notifyShutdown(parent context.Context) (context.Context, context.CancelFunc
 
 // serve serves on ln until ctx is done, then drains in-flight requests.
 func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
+	site, err := withWWW(l, FileServer(fsys))
+	if err != nil {
+		ln.Close()
+		return err
+	}
 	r := http.NewServeMux()
-	r.Handle("/", FileServer(fsys))
+	r.Handle("/", site)
 	r.Handle(ideas.Prefix, ideas.Handler(ideas.New(l), l))
 	s := &http.Server{
 		Handler:           logging(l)(r),
@@ -86,7 +91,7 @@ func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 	}()
 
 	l.Printf("changkun.de is serving on %s...", ln.Addr())
-	err := s.Serve(ln)
+	err = s.Serve(ln)
 	<-done
 	if errors.Is(err, http.ErrServerClosed) {
 		return nil
