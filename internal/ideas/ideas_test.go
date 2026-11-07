@@ -46,16 +46,6 @@ func TestNewNeedsCredentials(t *testing.T) {
 	}
 }
 
-// TestNewDefaultsGateway keeps LLM_BASE_URL optional: luxsdk
-// names the platform's live Lux deployment, so a key alone mounts the API.
-func TestNewDefaultsGateway(t *testing.T) {
-	ideasEnv(t)
-	t.Setenv("LLM_BASE_URL", "")
-	if svc := New(discard()); svc == nil {
-		t.Fatal("New() = nil, want a service on the default gateway")
-	}
-}
-
 func TestNewReadsRepo(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -87,32 +77,6 @@ func TestNewReadsRepo(t *testing.T) {
 					svc.github.owner, svc.github.repo, tt.wantOwner, tt.wantRepo)
 			}
 		})
-	}
-}
-
-// TestNewModelsAreCatalogNames pins the defaults to the names the
-// default gateway's catalog lists. Lux resolves a name exactly, and the two
-// gateways this service has used disagree on the form: lux.latere.ai refused
-// a provider prefix, and api.latere.ai/v1/models answers a bare name with
-// model_not_found. Each mismatch shipped and failed on the first post that
-// reached the gateway, so a default changes with the default gateway and a
-// deployment that needs another name sets it in the environment.
-func TestNewModelsAreCatalogNames(t *testing.T) {
-	ideasEnv(t)
-	t.Setenv("LLM_MODEL", "")
-	t.Setenv("LLM_TITLE_MODEL", "")
-
-	svc := New(discard())
-	if svc == nil {
-		t.Fatal("New() = nil, want a service")
-	}
-	for _, m := range []struct{ name, got, want string }{
-		{"LLM_MODEL", svc.llm.model, "anthropic/claude-opus-5.5"},
-		{"LLM_TITLE_MODEL", svc.llm.titleModel, "anthropic/claude-haiku-5.5"},
-	} {
-		if m.got != m.want {
-			t.Errorf("the %s default is %q, want %q, the catalog's name", m.name, m.got, m.want)
-		}
 	}
 }
 

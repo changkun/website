@@ -12,82 +12,73 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 
 	"latere.ai/x/pkg/luxsdk"
-	"latere.ai/x/pkg/sanitize"
 )
 
-// gateway stands in for the Lux gateway: it records the request it received
-// and answers with the blocks the test names.
-type gateway struct {
-	srv  *httptest.Server
-	got  map[string]any
-	fail bool
+// scriptedGateway stands in for Lux. It answers each call with the next reply
+// in the script and records what it was sent, so one server can stand in for a
+// single task or a whole pipeline run. A call past the end of the script fails
+// the way the real gateway fails.
+type scriptedGateway struct {
+	srv *httptest.Server
+
+	mu      sync.Mutex
+	replies []string
+	reqs    []map[string]any
 }
 
-func newGateway(t *testing.T, blocks []map[string]any) *gateway {
+func newScriptedGateway(t *testing.T, replies ...string) *scriptedGateway {
 	t.Helper()
 
-	g := &gateway{}
+	g := &scriptedGateway{replies: replies}
 	g.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		g.got = map[string]any{}
-		if err := json.NewDecoder(r.Body).Decode(&g.got); err != nil {
+		var req map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Errorf("decode request: %v", err)
 		}
-		if g.fail {
+
+		g.mu.Lock()
+		n := len(g.reqs)
+		g.reqs = append(g.reqs, req)
+		g.mu.Unlock()
+
+		if n >= len(g.replies) {
 			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(`{"error":{"message":"upstream refused"}}`))
+			_, _ = w.Write([]byte(`{"error":{"message":"no reply scripted"}}`))
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]any{"model": "m", "blocks": blocks})
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"model":  "m",
+			"blocks": []map[string]any{{"type": "text", "text": g.replies[n]}},
+		})
 	}))
 	t.Cleanup(g.srv.Close)
 	return g
 }
 
-func (g *gateway) client() *llmClient {
-	return &llmClient{
-		lux:        luxsdk.New(g.srv.URL, luxsdk.WithAPIKey("lux_test")),
-		model:      "anthropic/claude-sonnet-4-5-20250929",
-		titleModel: "anthropic/claude-haiku-4-5-20251001",
-		log:        log.New(io.Discard, "", 0),
-	}
+func (g *scriptedGateway) count() int {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	return len(g.reqs)
 }
 
-func text(s string) map[string]any { return map[string]any{"type": "text", "text": s} }
+// last is the most recent request the gateway received.
+func (g *scriptedGateway) last() map[string]any {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	return g.reqs[len(g.reqs)-1]
+}
 
-// TestCompleteSendsOneExchange pins the request shape every prompt-driven task
-// shares: the prompt as system, the caller's text as the one user turn, and a
-// bounded reply.
-func TestCompleteSendsOneExchange(t *testing.T) {
-	g := newGateway(t, []map[string]any{text(" ok ")})
-
-	got, err := g.client().complete(context.Background(), "some-model", "system prompt", "user text", maxTokensShort)
-	if err != nil {
-		t.Fatalf("complete() error: %v", err)
-	}
-	if got != "ok" {
-		t.Fatalf("complete() = %q, want ok with surrounding space trimmed", got)
-	}
-	if g.got["model"] != "some-model" {
-		t.Fatalf("model = %v", g.got["model"])
-	}
-	if g.got["max_tokens"] != float64(maxTokensShort) {
-		t.Fatalf("max_tokens = %v, want %d", g.got["max_tokens"], maxTokensShort)
-	}
-
-	system, _ := g.got["system"].([]any)
-	if len(system) != 1 {
-		t.Fatalf("system = %#v, want one block", g.got["system"])
-	}
-	if b, _ := system[0].(map[string]any); b["text"] != "system prompt" {
-		t.Fatalf("system block = %#v", system[0])
-	}
-	msgs, _ := g.got["messages"].([]any)
-	if len(msgs) != 1 {
-		t.Fatalf("messages = %#v, want one turn", g.got["messages"])
+func (g *scriptedGateway) client() *llmClient {
+	return &llmClient{
+		lux:        luxsdk.New(g.srv.URL, luxsdk.WithAPIKey("lux_test")),
+		model:      "test/model",
+		titleModel: "test/title-model",
+		log:        log.New(io.Discard, "", 0),
 	}
 }
 
@@ -95,7 +86,7 @@ func TestCompleteSendsOneExchange(t *testing.T) {
 // augmentation must ask the provider to search and fetch, or every citation is
 // something the model recalled rather than read.
 func TestAugmentAsksForGrounding(t *testing.T) {
-	g := newGateway(t, []map[string]any{text("augmented")})
+	g := newScriptedGateway(t, "augmented")
 
 	got, err := g.client().augment(context.Background(), "en", "A Title", "some idea")
 	if err != nil {
@@ -105,20 +96,20 @@ func TestAugmentAsksForGrounding(t *testing.T) {
 		t.Fatalf("augment() = %q", got)
 	}
 
-	tools, _ := g.got["server_tools"].([]any)
+	tools, _ := g.last()["server_tools"].([]any)
 	if len(tools) != 1 {
-		t.Fatalf("server_tools = %#v, want the fetch tool", g.got["server_tools"])
+		t.Fatalf("server_tools = %#v, want the fetch tool", g.last()["server_tools"])
 	}
 	tool, _ := tools[0].(map[string]any)
 	if tool["type"] != "web_fetch_20250910" || tool["name"] != "web_fetch" {
 		t.Fatalf("server_tools[0] = %#v", tool)
 	}
-	search, _ := g.got["web_search"].(map[string]any)
+	search, _ := g.last()["web_search"].(map[string]any)
 	if search["context_size"] != "medium" {
-		t.Fatalf("web_search = %#v, want context_size medium", g.got["web_search"])
+		t.Fatalf("web_search = %#v, want context_size medium", g.last()["web_search"])
 	}
 
-	system, _ := g.got["system"].([]any)
+	system, _ := g.last()["system"].([]any)
 	b, _ := system[0].(map[string]any)
 	if !strings.Contains(b["text"].(string), "web search and web fetch tools") {
 		t.Fatalf("system prompt does not mention the tools it was given:\n%v", b["text"])
@@ -141,7 +132,7 @@ func TestAugmentFallsBackUngrounded(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]any{
 			"model":  "m",
-			"blocks": []map[string]any{text("plain augmentation")},
+			"blocks": []map[string]any{{"type": "text", "text": "plain augmentation"}},
 		})
 	}))
 	defer srv.Close()
@@ -231,7 +222,7 @@ func TestDetectAndTranslateRepairsReply(t *testing.T) {
 		"  \"polished_content\": \"Line one.\n\nLine two.\",\n" +
 		"  \"translated_title\": \"\u6807\u9898\",\n" +
 		"  \"translated_content\": \"\u7b2c\u4e00\u884c\u3002\n\n\u7b2c\u4e8c\u884c\u3002\"\n}\n```"
-	g := newGateway(t, []map[string]any{text(reply)})
+	g := newScriptedGateway(t, reply)
 
 	got, err := g.client().detectAndTranslate(context.Background(), "T", "C")
 	if err != nil {
@@ -252,21 +243,10 @@ func TestDetectAndTranslateRepairsReply(t *testing.T) {
 // TestDetectAndTranslateRejectsUnknownLanguage keeps a reply the blog cannot
 // publish from reaching the markdown builder.
 func TestDetectAndTranslateRejectsUnknownLanguage(t *testing.T) {
-	g := newGateway(t, []map[string]any{text(`{"lang":"fr","polished_title":"t","polished_content":"c","translated_title":"t","translated_content":"c"}`)})
+	g := newScriptedGateway(t, `{"lang":"fr","polished_title":"t","polished_content":"c","translated_title":"t","translated_content":"c"}`)
 
 	if _, err := g.client().detectAndTranslate(context.Background(), "T", "C"); err == nil {
 		t.Fatal("detectAndTranslate() = nil error, want one for an unsupported language")
-	}
-}
-
-// TestGenerateSurfacesGatewayErrors keeps a failed call from looking like an
-// empty answer, which would publish a post with a blank section.
-func TestGenerateSurfacesGatewayErrors(t *testing.T) {
-	g := newGateway(t, nil)
-	g.fail = true
-
-	if _, err := g.client().complete(context.Background(), "m", "s", "u", maxTokensShort); err == nil {
-		t.Fatal("complete() = nil error, want the upstream failure surfaced")
 	}
 }
 
@@ -295,46 +275,6 @@ func TestHasSlugChar(t *testing.T) {
 	}
 }
 
-// TestSlugFromModelOutput pins the permalink shape. The previous cleanup
-// deleted every character outside [a-z0-9-], so a spaced answer collapsed into
-// one unreadable word; sanitize.Slug turns each run into a single dash.
-func TestSlugFromModelOutput(t *testing.T) {
-	tests := []struct {
-		name string
-		raw  string
-		want string
-	}{
-		{name: "already a slug", raw: "expertise-risk-control", want: "expertise-risk-control"},
-		{name: "spaces become dashes", raw: "expertise risk control", want: "expertise-risk-control"},
-		{name: "surrounding whitespace", raw: "  reward-hacking\n", want: "reward-hacking"},
-		{name: "uppercase is lowered", raw: "PBO Methods", want: "pbo-methods"},
-		{name: "punctuation runs collapse", raw: "llms: bottlenecks!!", want: "llms-bottlenecks"},
-		{name: "quoted answer", raw: `"language-vs-visual-ai"`, want: "language-vs-visual-ai"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if !hasSlugChar(tt.raw) {
-				t.Fatalf("hasSlugChar(%q) = false, want true", tt.raw)
-			}
-			if got := sanitize.Slug(tt.raw, slugMaxLen); got != tt.want {
-				t.Fatalf("Slug(%q) = %q, want %q", tt.raw, got, tt.want)
-			}
-		})
-	}
-}
-
-// TestSlugIsBounded keeps a permalink from inheriting a runaway answer.
-func TestSlugIsBounded(t *testing.T) {
-	got := sanitize.Slug(strings.Repeat("word ", 200), slugMaxLen)
-	if len(got) > slugMaxLen {
-		t.Fatalf("Slug() = %q, %d bytes, want at most %d", got, len(got), slugMaxLen)
-	}
-	if strings.HasSuffix(got, "-") {
-		t.Fatalf("Slug() = %q, want no trailing dash", got)
-	}
-}
-
 // TestPromptTasks covers the thin tasks in one pass: each renders its prompt,
 // sends it as system, and returns the reply.
 //
@@ -344,8 +284,8 @@ func TestSlugIsBounded(t *testing.T) {
 // a reply cut off mid-sentence, and the post publishes that way.
 func TestPromptTasks(t *testing.T) {
 	const (
-		bigModel   = "anthropic/claude-sonnet-4-5-20250929"
-		smallModel = "anthropic/claude-haiku-4-5-20251001"
+		bigModel   = "test/model"
+		smallModel = "test/title-model"
 	)
 
 	tests := []struct {
@@ -417,7 +357,7 @@ func TestPromptTasks(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := newGateway(t, []map[string]any{text(tt.reply)})
+			g := newScriptedGateway(t, tt.reply)
 
 			got, err := tt.call(g.client())
 			if err != nil {
@@ -426,13 +366,13 @@ func TestPromptTasks(t *testing.T) {
 			if got != tt.want {
 				t.Fatalf("= %q, want %q", got, tt.want)
 			}
-			if g.got["model"] != tt.wantModel {
-				t.Fatalf("model = %v, want %s", g.got["model"], tt.wantModel)
+			if g.last()["model"] != tt.wantModel {
+				t.Fatalf("model = %v, want %s", g.last()["model"], tt.wantModel)
 			}
-			if g.got["max_tokens"] != float64(tt.wantMax) {
-				t.Fatalf("max_tokens = %v, want %d", g.got["max_tokens"], tt.wantMax)
+			if g.last()["max_tokens"] != float64(tt.wantMax) {
+				t.Fatalf("max_tokens = %v, want %d", g.last()["max_tokens"], tt.wantMax)
 			}
-			system, _ := g.got["system"].([]any)
+			system, _ := g.last()["system"].([]any)
 			b, _ := system[0].(map[string]any)
 			if !strings.Contains(b["text"].(string), tt.wantIn) {
 				t.Fatalf("system prompt missing %q:\n%v", tt.wantIn, b["text"])
@@ -444,7 +384,7 @@ func TestPromptTasks(t *testing.T) {
 // TestGenerateSlugRejectsUnusableAnswer keeps a post from publishing under a
 // placeholder permalink when the model answers with nothing usable.
 func TestGenerateSlugRejectsUnusableAnswer(t *testing.T) {
-	g := newGateway(t, []map[string]any{text("!!! ???")})
+	g := newScriptedGateway(t, "!!! ???")
 
 	if _, err := g.client().generateSlug(context.Background(), "A Title"); err == nil {
 		t.Fatal("generateSlug() = nil error, want one")

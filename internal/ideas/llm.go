@@ -146,6 +146,8 @@ func (c *llmClient) detectAndTranslate(ctx context.Context, title, content strin
 			return nil, fmt.Errorf("parse translation response: %w (raw: %s)", err, raw)
 		}
 	}
+	// The answer's lang is not used, the source language is detected locally,
+	// but a reply naming neither language is not one to trust.
 	if result.Lang != "en" && result.Lang != "zh" {
 		return nil, fmt.Errorf("unexpected language: %q", result.Lang)
 	}

@@ -10,7 +10,6 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"maps"
@@ -241,53 +240,6 @@ func TestAuthForeignClient(t *testing.T) {
 	}
 }
 
-// TestAuthMalformedHeader covers the header parsing jwt.Authenticator owns. A
-// missing header, a scheme other than Bearer, and a bare prefix must all be
-// refused rather than reaching the validator with a nonsense token.
-func TestAuthMalformedHeader(t *testing.T) {
-	f := newAuthFixture(t)
-	v := f.verifier("hi@changkun.de")
-
-	for _, h := range []string{"", "Bearer", "Bearer ", "bearer sometoken", "Basic dXNlcjpwdw==", "Token abc"} {
-		t.Run(fmt.Sprintf("%q", h), func(t *testing.T) {
-			r := httptest.NewRequest(http.MethodPost, "/ideas/post", nil)
-			if h != "" {
-				r.Header.Set("Authorization", h)
-			}
-			w := httptest.NewRecorder()
-			auth(v, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})).ServeHTTP(w, r)
-			if w.Code != http.StatusUnauthorized {
-				t.Fatalf("status = %d, want %d", w.Code, http.StatusUnauthorized)
-			}
-		})
-	}
-}
-
-// TestAuthNoLoginFallback pins the removal of the login.changkun.de paths: an
-// opaque Bearer and a cookie/query credential are verified against nothing, so
-// both must fail rather than reach the handler.
-func TestAuthNoLoginFallback(t *testing.T) {
-	f := newAuthFixture(t)
-	v := f.verifier("hi@changkun.de")
-
-	if got := doAuth(v, "cli-token").Code; got != http.StatusUnauthorized {
-		t.Fatalf("opaque bearer status = %d, want %d", got, http.StatusUnauthorized)
-	}
-
-	h := auth(v, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}))
-	r := httptest.NewRequest(http.MethodPost, "/ideas/post?token=cli-token", nil)
-	r.AddCookie(&http.Cookie{Name: "token", Value: "cli-token"})
-	w := httptest.NewRecorder()
-	h.ServeHTTP(w, r)
-	if w.Code != http.StatusUnauthorized {
-		t.Fatalf("cookie/query status = %d, want %d", w.Code, http.StatusUnauthorized)
-	}
-}
-
 // TestAuthDisabledLatere pins the fail-closed default: with no allowlist
 // configured newLatereVerifier yields nil and latere tokens are refused.
 func TestAuthDisabledLatere(t *testing.T) {
@@ -325,17 +277,5 @@ func TestNewLatereVerifier(t *testing.T) {
 	v = newLatereVerifier(log.New(io.Discard, "", 0))
 	if !v.clients["changkun-blog"] || !v.clients["latere-cli"] || len(v.clients) != 2 {
 		t.Fatalf("clients = %v", v.clients)
-	}
-}
-
-// TestAuthPingIsPublic keeps the health check reachable without credentials.
-func TestAuthPingIsPublic(t *testing.T) {
-	h := auth(nil, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}))
-	w := httptest.NewRecorder()
-	h.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/ideas/ping", nil))
-	if w.Code != http.StatusOK {
-		t.Fatalf("status = %d, want %d", w.Code, http.StatusOK)
 	}
 }

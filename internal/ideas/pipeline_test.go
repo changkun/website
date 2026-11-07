@@ -14,62 +14,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
-
-	"latere.ai/x/pkg/luxsdk"
 )
-
-// scriptedGateway answers each call with the next reply in the script, so one
-// server can stand in for a whole pipeline run. A call past the end of the
-// script fails the way the real gateway fails.
-type scriptedGateway struct {
-	srv *httptest.Server
-
-	mu      sync.Mutex
-	replies []string
-	calls   int
-}
-
-func newScriptedGateway(t *testing.T, replies ...string) *scriptedGateway {
-	t.Helper()
-
-	g := &scriptedGateway{replies: replies}
-	g.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		io.Copy(io.Discard, r.Body)
-
-		g.mu.Lock()
-		n := g.calls
-		g.calls++
-		g.mu.Unlock()
-
-		if n >= len(g.replies) {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(`{"error":{"message":"no reply scripted"}}`))
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]any{
-			"model":  "m",
-			"blocks": []map[string]any{{"type": "text", "text": g.replies[n]}},
-		})
-	}))
-	t.Cleanup(g.srv.Close)
-	return g
-}
-
-func (g *scriptedGateway) count() int {
-	g.mu.Lock()
-	defer g.mu.Unlock()
-	return g.calls
-}
-
-func (g *scriptedGateway) client() *llmClient {
-	return &llmClient{
-		lux:        luxsdk.New(g.srv.URL, luxsdk.WithAPIKey("lux_test")),
-		model:      "test/model",
-		titleModel: "test/title-model",
-		log:        log.New(io.Discard, "", 0),
-	}
-}
 
 // commit is one file the pipeline wrote to GitHub.
 type commit struct {

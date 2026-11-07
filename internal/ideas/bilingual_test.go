@@ -1,3 +1,7 @@
+// Copyright 2025 Changkun Ou. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file.
+
 package ideas
 
 import "testing"
@@ -61,7 +65,7 @@ func TestDetectLang(t *testing.T) {
 }
 
 func TestNormalizeTranslateResult(t *testing.T) {
-	t.Run("forces source language and swaps inverted payload", func(t *testing.T) {
+	t.Run("swaps an inverted payload", func(t *testing.T) {
 		tr := &translateResult{
 			Lang:              "en",
 			PolishedTitle:     "English Title",
@@ -71,9 +75,6 @@ func TestNormalizeTranslateResult(t *testing.T) {
 		}
 
 		got := normalizeTranslateResult(tr, "zh")
-		if got.Lang != "zh" {
-			t.Fatalf("lang = %q, want zh", got.Lang)
-		}
 		if got.PolishedTitle != "中文标题" || got.PolishedContent != "这是一段中文内容。" {
 			t.Fatalf("polished fields not swapped: %+v", got)
 		}

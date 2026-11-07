@@ -49,28 +49,16 @@ func detectLang(s string) string {
 	return "en"
 }
 
-func normalizeTranslateResult(tr *translateResult, sourceLang string) *translateResult {
-	if tr == nil {
-		return nil
-	}
+// normalizeTranslateResult trims the model's answer for an idea written in
+// lang, and swaps the halves back when the model returned them inverted.
+func normalizeTranslateResult(tr *translateResult, lang string) *translateResult {
 	n := *tr
-	n.Lang = strings.TrimSpace(n.Lang)
 	n.PolishedTitle = strings.TrimSpace(n.PolishedTitle)
 	n.PolishedContent = strings.TrimSpace(n.PolishedContent)
 	n.TranslatedTitle = strings.TrimSpace(n.TranslatedTitle)
 	n.TranslatedContent = strings.TrimSpace(n.TranslatedContent)
 
-	if sourceLang == "en" || sourceLang == "zh" {
-		n.Lang = sourceLang
-	}
-
-	polishedLang := detectLang(n.PolishedContent)
-	translatedLang := detectLang(n.TranslatedContent)
-	if n.Lang == "en" && polishedLang == "zh" && translatedLang == "en" {
-		n.PolishedTitle, n.TranslatedTitle = n.TranslatedTitle, n.PolishedTitle
-		n.PolishedContent, n.TranslatedContent = n.TranslatedContent, n.PolishedContent
-	}
-	if n.Lang == "zh" && polishedLang == "en" && translatedLang == "zh" {
+	if detectLang(n.PolishedContent) == otherLang(lang) && detectLang(n.TranslatedContent) == lang {
 		n.PolishedTitle, n.TranslatedTitle = n.TranslatedTitle, n.PolishedTitle
 		n.PolishedContent, n.TranslatedContent = n.TranslatedContent, n.PolishedContent
 	}
@@ -78,19 +66,8 @@ func normalizeTranslateResult(tr *translateResult, sourceLang string) *translate
 }
 
 func isUsableTranslateResult(tr *translateResult) bool {
-	if tr == nil {
-		return false
-	}
-	if tr.Lang != "en" && tr.Lang != "zh" {
-		return false
-	}
-	if !isLikelyTitle(tr.PolishedTitle) || !isLikelyTitle(tr.TranslatedTitle) {
-		return false
-	}
-	if strings.TrimSpace(tr.PolishedContent) == "" || strings.TrimSpace(tr.TranslatedContent) == "" {
-		return false
-	}
-	return true
+	return isLikelyTitle(tr.PolishedTitle) && isLikelyTitle(tr.TranslatedTitle) &&
+		strings.TrimSpace(tr.PolishedContent) != "" && strings.TrimSpace(tr.TranslatedContent) != ""
 }
 
 func isLikelyTitle(s string) bool {

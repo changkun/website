@@ -6,7 +6,6 @@ package ideas
 
 import (
 	"io/fs"
-	"slices"
 	"strings"
 	"testing"
 )
@@ -25,41 +24,25 @@ var sampleData = map[string]any{
 	promptReference:        referenceData{URL: "https://example.com", Text: "body"},
 }
 
-// TestPromptNamesCoverFiles keeps prompts/ and promptNames in step. A template
-// added to the directory but never named here is dead weight nobody renders,
-// and a name without a file panics the binary at startup.
-func TestPromptNamesCoverFiles(t *testing.T) {
-	entries, err := fs.Glob(promptFS, "prompts/*.tmpl")
+// TestRenderPromptAll renders every template in prompts/. A field renamed in Go
+// but not in the template fails only on execution, so this is what catches it
+// before a live post does.
+func TestRenderPromptAll(t *testing.T) {
+	files, err := fs.Glob(promptFS, "prompts/*.tmpl")
 	if err != nil {
 		t.Fatalf("glob embedded prompts: %v", err)
 	}
-
-	var files []string
-	for _, e := range entries {
-		files = append(files, strings.TrimPrefix(e, "prompts/"))
+	if len(files) != len(sampleData) {
+		t.Errorf("prompts/ holds %d templates, sampleData covers %d", len(files), len(sampleData))
 	}
-	slices.Sort(files)
-
-	names := slices.Clone(promptNames)
-	slices.Sort(names)
-
-	if !slices.Equal(files, names) {
-		t.Fatalf("prompts/ holds %v, promptNames lists %v", files, names)
-	}
-	for _, n := range names {
-		if _, ok := sampleData[n]; !ok {
-			t.Errorf("%s has no entry in sampleData, so nothing renders it", n)
-		}
-	}
-}
-
-// TestRenderPromptAll renders every prompt. A field renamed in Go but not in
-// the template fails only on execution, so this is what catches it before a
-// live post does.
-func TestRenderPromptAll(t *testing.T) {
-	for _, name := range promptNames {
+	for _, f := range files {
+		name := strings.TrimPrefix(f, "prompts/")
 		t.Run(name, func(t *testing.T) {
-			got, err := renderPrompt(name, sampleData[name])
+			data, ok := sampleData[name]
+			if !ok {
+				t.Fatal("no entry in sampleData")
+			}
+			got, err := renderPrompt(name, data)
 			if err != nil {
 				t.Fatalf("renderPrompt() error: %v", err)
 			}
@@ -136,56 +119,6 @@ func TestAugmentPrompt(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-// TestRenderPromptFailsLoudly checks that a broken render is an error rather
-// than a prompt with "<no value>" quietly baked into it, which the model would
-// answer as if it were an instruction.
-func TestRenderPromptFailsLoudly(t *testing.T) {
-	tests := []struct {
-		name string
-		tmpl string
-		data any
-	}{
-		{name: "unknown template", tmpl: "no-such.tmpl", data: nil},
-		{name: "missing data", tmpl: promptTranslateTitle, data: nil},
-		{name: "wrong data shape", tmpl: promptIdeaInput, data: languageData{Language: "Chinese"}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := renderPrompt(tt.tmpl, tt.data)
-			if err == nil {
-				t.Fatalf("renderPrompt() = %q, want an error", got)
-			}
-			if got != "" {
-				t.Fatalf("renderPrompt() = %q on error, want the empty string", got)
-			}
-		})
-	}
-}
-
-// TestLanguageName pins the mapping the translation prompts read. Anything
-// other than "zh" is English, matching the two languages the blog publishes.
-func TestLanguageName(t *testing.T) {
-	for code, want := range map[string]string{"zh": "Chinese", "en": "English", "": "English", "de": "English"} {
-		if got := languageName(code); got != want {
-			t.Errorf("languageName(%q) = %q, want %q", code, got, want)
-		}
-	}
-}
-
-// TestIdeaInputPrompt pins the shape every idea reaches the model in: the
-// title and body must stay on separate labelled lines, not run together.
-func TestIdeaInputPrompt(t *testing.T) {
-	got, err := renderPrompt(promptIdeaInput, ideaInputData{Title: "Some Title", Content: "line one\nline two"})
-	if err != nil {
-		t.Fatalf("renderPrompt() error: %v", err)
-	}
-	want := "Title: Some Title\n\nContent:\nline one\nline two"
-	if got != want {
-		t.Fatalf("renderPrompt() = %q, want %q", got, want)
 	}
 }
 

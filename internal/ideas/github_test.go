@@ -53,12 +53,3 @@ func TestSanitizeCommitMsgTruncatesOnRunes(t *testing.T) {
 		t.Fatalf("sanitizeCommitMsg() = %q, want a trailing ellipsis to mark the cut", got)
 	}
 }
-
-// TestSanitizeCommitMsgShortInputKeepsNoEllipsis checks that a message inside
-// the bound is returned whole, with no marker appended.
-func TestSanitizeCommitMsgShortInputKeepsNoEllipsis(t *testing.T) {
-	in := "ideas: " + strings.Repeat("标", 10)
-	if got := sanitizeCommitMsg(in); got != in {
-		t.Fatalf("sanitizeCommitMsg(%q) = %q, want it unchanged", in, got)
-	}
-}

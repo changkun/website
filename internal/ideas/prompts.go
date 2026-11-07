@@ -11,9 +11,8 @@ import (
 	"text/template"
 )
 
-// Prompt names, one per file in prompts/. Every template the service can
-// render is listed here, and TestPromptNamesCoverFiles fails if the directory
-// and this list ever disagree.
+// Prompt names, one per file in prompts/. TestRenderPromptAll renders each file
+// in the directory with its entry in sampleData.
 const (
 	promptAugment          = "augment.tmpl"
 	promptTitle            = "title.tmpl"
@@ -25,13 +24,6 @@ const (
 	promptIdeaInput        = "idea_input.tmpl"
 	promptReference        = "reference.tmpl"
 )
-
-// promptNames is the full set, for iteration in tests.
-var promptNames = []string{
-	promptAugment, promptTitle, promptImprove, promptDetectTranslate,
-	promptSlug, promptTranslateTitle, promptTranslateContent,
-	promptIdeaInput, promptReference,
-}
 
 // promptFS carries the templates into the binary, so a deployed server needs
 // no files beside it and cannot drift from the prompts it was built with.
