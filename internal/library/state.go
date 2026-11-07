@@ -47,12 +47,12 @@ type Post struct {
 	ID     string    `json:"id"`
 	Time   time.Time `json:"t"`
 	By     string    `json:"by"`
-	Type   string    `json:"type"`             // comment, suggest, or hide
+	Type   string    `json:"type"`             // comment, suggest, hide, or unhide
 	Entry  string    `json:"entry,omitempty"`  // comment: item key, or "" for the share
 	Text   string    `json:"text,omitempty"`   // comment
 	Ref    string    `json:"ref,omitempty"`    // suggest: DOI, arXiv ID, URL, or BibTeX
 	Note   string    `json:"note,omitempty"`   // suggest
-	Target string    `json:"target,omitempty"` // hide: the post id
+	Target string    `json:"target,omitempty"` // hide, unhide: the post id
 
 	Share string `json:"-"` // the share it belongs to
 }
@@ -345,10 +345,10 @@ func (s *store) appendPost(shareID string, p Post) (*Post, error) {
 		return nil, fs.ErrNotExist
 	}
 	now := time.Now().UTC()
-	if p.Type != "hide" {
+	if !p.isMark() {
 		n := 0
 		for _, q := range s.posts[shareID] {
-			if q.By == p.By && q.Type != "hide" && now.Sub(q.Time) < 24*time.Hour {
+			if q.By == p.By && !q.isMark() && now.Sub(q.Time) < 24*time.Hour {
 				n++
 			}
 		}
@@ -382,9 +382,22 @@ func (s *store) appendPost(shareID string, p Post) (*Post, error) {
 	return &p, nil
 }
 
+// isMark reports whether p hides or unhides another post, rather than being
+// a comment or suggestion itself.
+func (p *Post) isMark() bool { return p.Type == "hide" || p.Type == "unhide" }
+
 // visiblePosts returns the comments and suggestions of share id that are not
 // hidden, oldest first. An empty id returns those of every share.
-func (s *store) visiblePosts(id string) []*Post {
+func (s *store) visiblePosts(id string) []*Post { return s.filterPosts(id, false) }
+
+// hiddenPosts returns the comments and suggestions of share id that are
+// hidden, oldest first. An empty id returns those of every share.
+func (s *store) hiddenPosts(id string) []*Post { return s.filterPosts(id, true) }
+
+// filterPosts returns the comments and suggestions of share id, or of every share,
+// whose hidden state is hidden. A post is hidden when its latest mark is a
+// hide.
+func (s *store) filterPosts(id string, hidden bool) []*Post {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	var out []*Post
@@ -392,14 +405,14 @@ func (s *store) visiblePosts(id string) []*Post {
 		if id != "" && sh.ID != id {
 			continue
 		}
-		hidden := map[string]bool{}
+		h := map[string]bool{}
 		for _, p := range s.posts[sh.ID] {
-			if p.Type == "hide" {
-				hidden[p.Target] = true
+			if p.isMark() {
+				h[p.Target] = p.Type == "hide"
 			}
 		}
 		for _, p := range s.posts[sh.ID] {
-			if p.Type != "hide" && !hidden[p.ID] {
+			if !p.isMark() && h[p.ID] == hidden {
 				c := *p
 				out = append(out, &c)
 			}

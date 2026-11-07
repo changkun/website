@@ -27,6 +27,7 @@
     <form method="post" action="/library/shares/{{$sid}}/hide" class="inline"><input type="hidden" name="post" value="{{.ID}}"><input type="hidden" name="next" value="{{or $.Data.Back (print "/library/e/" $.Data.Key)}}"><button class="link">Hide</button></form></div>
   {{end}}
   {{else}}<h2>Comments</h2><p class="muted">No comments in any share.</p>{{end}}
+  {{if .Hidden}}<p class="muted"><a href="/library/inbox?hidden=1">{{plural .Hidden "hidden comment" "hidden comments"}}</a></p>{{end}}
 {{else if .Token}}
   <h2>Comments</h2>
   {{if .Done}}<p class="note good">{{.Done}}</p>{{end}}

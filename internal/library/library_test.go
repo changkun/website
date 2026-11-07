@@ -440,6 +440,19 @@ func TestShares(t *testing.T) {
 		t.Fatalf("unread = %d, visible = %d; want 0 and 1", s.unread(), len(s.store.visiblePosts(sh.ID)))
 	}
 
+	// The hidden post is listed under Hidden, and Unhide brings it back.
+	if body := get(t, h, "/library/inbox", true).Body.String(); !strings.Contains(body, "Hidden (1)") {
+		t.Fatalf("inbox without a Hidden link:\n%s", body)
+	}
+	if body := get(t, h, "/library/inbox?hidden=1", true).Body.String(); !strings.Contains(body, "arXiv:2101.00001") || !strings.Contains(body, "Unhide") {
+		t.Fatalf("hidden inbox:\n%s", body)
+	}
+	post(t, h, "/library/shares/"+sh.ID+"/unhide", url.Values{"post": {posts[1].ID}}, true)
+	if n := len(s.store.visiblePosts(sh.ID)); n != 2 || len(s.store.hiddenPosts(sh.ID)) != 0 {
+		t.Fatalf("after unhide: visible = %d; want 2", n)
+	}
+	post(t, h, "/library/shares/"+sh.ID+"/hide", url.Values{"post": {posts[1].ID}}, true)
+
 	// Revoking Bob leaves Alice working.
 	post(t, h, "/library/shares/"+sh.ID+"/revoke", url.Values{"token": {bob}}, true)
 	if get(t, h, "/library/s/"+bob, false).Code != http.StatusNotFound || get(t, h, "/library/s/"+alice, false).Code != http.StatusOK {
@@ -479,8 +492,9 @@ func TestShares(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// 3 posts and a hide above, plus the 2 comments from the pane.
-	if len(st.shares) != 1 || len(st.posts[sh.ID]) != 5 || !st.read[posts[0].ID] {
+	// 3 posts, a hide, an unhide and a hide above, plus the 2 comments from
+	// the pane.
+	if len(st.shares) != 1 || len(st.posts[sh.ID]) != 7 || !st.read[posts[0].ID] {
 		t.Fatalf("reloaded state: %d shares, %d posts", len(st.shares), len(st.posts[sh.ID]))
 	}
 	raw, _ := os.ReadFile(filepath.Join(s.dir, "state", "shares.yaml"))

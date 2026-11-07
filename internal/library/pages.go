@@ -179,7 +179,8 @@ func (s *Service) routes() http.Handler {
 	m.HandleFunc("POST /library/shares/{id}", own(s.updateShare))
 	m.HandleFunc("POST /library/shares/{id}/members", own(s.addMembers))
 	m.HandleFunc("POST /library/shares/{id}/revoke", own(s.revoke))
-	m.HandleFunc("POST /library/shares/{id}/hide", own(s.hide))
+	m.HandleFunc("POST /library/shares/{id}/hide", own(s.mark("hide")))
+	m.HandleFunc("POST /library/shares/{id}/unhide", own(s.mark("unhide")))
 
 	m.HandleFunc("GET /library/s/{token}", s.memberShare)
 	m.HandleFunc("GET /library/s/{token}/e/{key}", s.memberEntry)
@@ -544,6 +545,7 @@ type entryPage struct {
 	Token   string // a member's token, for the comment form
 	Done    string // a message after posting
 	Back    string // the list page the pane is shown in; "" on the entry page
+	Hidden  int    // owner: hidden comments on the entry, listed in the inbox
 }
 
 // Close is the list page without this entry selected.
@@ -612,6 +614,11 @@ func (s *Service) ownerPane(ix *index, e *Entry) *entryPage {
 		if len(posts) > 0 {
 			p.Threads = append(p.Threads, thread{Share: sh, Posts: posts})
 		}
+		for _, q := range s.store.hiddenPosts(sh.ID) {
+			if q.Type == "comment" && q.Entry == e.Key {
+				p.Hidden++
+			}
+		}
 	}
 	return p
 }
@@ -641,14 +648,27 @@ type inboxItem struct {
 	Read       bool
 }
 
+// inboxPage is the data of the inbox: the visible posts, or with ?hidden=1
+// the hidden ones.
+type inboxPage struct {
+	Items       []inboxItem
+	Hidden      bool
+	HiddenCount int
+}
+
 func (s *Service) inbox(w http.ResponseWriter, r *http.Request) {
 	ix := s.ix.Load()
 	titles := map[string]string{}
 	for _, sh := range s.store.allShares() {
 		titles[sh.ID] = sh.Title
 	}
+	hidden := r.URL.Query().Get("hidden") == "1"
+	posts := s.store.visiblePosts("")
+	if hidden {
+		posts = s.store.hiddenPosts("")
+	}
 	var items []inboxItem
-	for _, p := range slices.Backward(s.store.visiblePosts("")) {
+	for _, p := range slices.Backward(posts) {
 		it := inboxItem{Post: p, ShareTitle: titles[p.Share], Read: s.store.isRead(p.ID)}
 		if p.Entry != "" {
 			if e := ix.entries[p.Entry]; e != nil {
@@ -659,7 +679,8 @@ func (s *Service) inbox(w http.ResponseWriter, r *http.Request) {
 		}
 		items = append(items, it)
 	}
-	s.render(w, r, http.StatusOK, "inbox", view{Title: "Inbox", Owner: true, Base: Prefix + "e/", Data: items})
+	s.render(w, r, http.StatusOK, "inbox", view{Title: "Inbox", Owner: true, Base: Prefix + "e/",
+		Data: inboxPage{Items: items, Hidden: hidden, HiddenCount: len(s.store.hiddenPosts(""))}})
 }
 
 func (s *Service) markRead(w http.ResponseWriter, r *http.Request) {
@@ -834,10 +855,15 @@ func (s *Service) revoke(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, Prefix+"shares#"+id, http.StatusSeeOther)
 }
 
-// hide hides a comment or suggestion, by appending a hide record.
-func (s *Service) hide(w http.ResponseWriter, r *http.Request) {
+// mark hides or unhides a comment or suggestion, by appending a record of
+// type typ. Hidden posts are listed at /library/inbox?hidden=1.
+func (s *Service) mark(typ string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) { s.markPost(w, r, typ) }
+}
+
+func (s *Service) markPost(w http.ResponseWriter, r *http.Request, typ string) {
 	id := r.PathValue("id")
-	if _, err := s.store.appendPost(id, Post{By: "owner", Type: "hide", Target: r.FormValue("post")}); err != nil {
+	if _, err := s.store.appendPost(id, Post{By: "owner", Type: typ, Target: r.FormValue("post")}); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			s.notFound(w, r)
 			return
