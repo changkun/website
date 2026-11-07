@@ -38,7 +38,7 @@
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-html, body { height: 100%; }
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 body {
   margin: 0;
   display: flex;
@@ -80,7 +80,7 @@ form.inline { display: inline; }
 label { display: block; margin: 6px 0; }
 label.check { display: inline-flex; gap: 4px; align-items: center; }
 
-main { flex: 1; min-height: 0; overflow: auto; padding: 0 clamp(16px, 3vw, 40px) 48px; }
+main { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 0 clamp(16px, 3vw, 40px) 48px; }
 main:has(> .app) { overflow: hidden; padding: 0; }
 .page { max-width: 1000px; }
 header.site {
@@ -238,7 +238,7 @@ details.settings summary { cursor: pointer; color: var(--text-secondary); font-s
 .pane .close { float: right; margin: 10px 0 0 12px; font-size: 20px; line-height: 20px; color: var(--text-secondary); }
 .head .actions-line { display: flex; gap: 16px; margin: 4px 0 0; }
 .head .actions-line a { color: var(--link); }
-.app > * { overflow: auto; min-height: 0; }
+.app > * { overflow: auto; overscroll-behavior: contain; min-height: 0; }
 .side { background: var(--bg-raised); padding: 12px 8px 24px; font-size: 14px; }
 .side .side-box > summary { display: none; }
 .side details { margin: 0; }
