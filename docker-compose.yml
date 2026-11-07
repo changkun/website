@@ -8,8 +8,7 @@ services:
     image: main:latest
     deploy:
       replicas: 1
-    # The site needs no configuration. The ideas API needs credentials, and
-    # stays unmounted without them, so a host with no .env still serves.
+    # .env is optional: without it the site serves and /ideas/ answers 503.
     env_file:
       - path: .env
         required: false
