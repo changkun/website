@@ -94,8 +94,8 @@ func TestLogging(t *testing.T) {
 	}
 }
 
-// The site must answer real requests over TCP and stop cleanly when its
-// context is cancelled.
+// TestServe checks that serve answers over TCP and returns nil once ctx is
+// cancelled.
 func TestServe(t *testing.T) {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -139,8 +139,8 @@ func TestServe(t *testing.T) {
 	}
 }
 
-// Docker and Kubernetes stop a container with SIGTERM. Listening for SIGINT
-// alone let a container stop skip the graceful shutdown path.
+// TestNotifyShutdown checks both signals: containers stop with SIGTERM,
+// terminals send SIGINT.
 func TestNotifyShutdown(t *testing.T) {
 	for _, sig := range []syscall.Signal{syscall.SIGTERM, syscall.SIGINT} {
 		t.Run(sig.String(), func(t *testing.T) {
@@ -159,8 +159,8 @@ func TestNotifyShutdown(t *testing.T) {
 	}
 }
 
-// startSite builds the shipped binary, runs it with env added to the
-// environment, and returns once it answers. The caller stops it.
+// startSite builds and starts the binary with env added to the environment,
+// and returns once it answers.
 func startSite(t *testing.T, env ...string) (addr string, out *lockedBuffer, site *exec.Cmd) {
 	t.Helper()
 
@@ -198,7 +198,7 @@ func startSite(t *testing.T, env ...string) (addr string, out *lockedBuffer, sit
 	return "", nil, nil
 }
 
-// get reads one response body and its status from the running site.
+// get returns the status and body of GET path.
 func get(t *testing.T, addr, path string) (int, []byte) {
 	t.Helper()
 	resp, err := http.Get("http://" + addr + path)
@@ -213,11 +213,8 @@ func get(t *testing.T, addr, path string) (int, []byte) {
 	return resp.StatusCode, body
 }
 
-// The shipped binary must read MAIN_ADDR, serve the embedded site, and exit
-// cleanly on the SIGTERM that a container stop sends.
-//
-// It runs here without any ideas credentials, which is the case that must
-// keep working: serving changkun.de cannot depend on the API's configuration.
+// TestBinaryEndToEnd runs the binary without ideas credentials. It must still
+// serve the site, answer /ideas/ with 503, and exit cleanly on SIGTERM.
 func TestBinaryEndToEnd(t *testing.T) {
 	if testing.Short() {
 		t.Skip("the end to end test builds the binary")
@@ -248,9 +245,8 @@ func TestBinaryEndToEnd(t *testing.T) {
 	}
 }
 
-// One process serves both the site and the ideas API. Before they were merged
-// these answered on two containers, and the API reached callers through a
-// traefik router of its own.
+// TestBinaryServesSiteAndIdeas runs the binary with ideas credentials, and
+// checks that one process serves both the site and the API.
 func TestBinaryServesSiteAndIdeas(t *testing.T) {
 	if testing.Short() {
 		t.Skip("the end to end test builds the binary")
@@ -279,8 +275,8 @@ func TestBinaryServesSiteAndIdeas(t *testing.T) {
 	}
 }
 
-// lockedBuffer collects the subprocess output that Wait and the test read
-// from different goroutines.
+// lockedBuffer collects subprocess output, which the test reads while the
+// process writes it.
 type lockedBuffer struct {
 	mu  sync.Mutex
 	buf bytes.Buffer

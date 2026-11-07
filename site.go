@@ -13,7 +13,7 @@ import (
 //go:embed static/*
 var static embed.FS
 
-// fsys is the site with the static/ prefix stripped, so paths match URLs.
+// fsys is static/ with the prefix stripped, so its paths match URL paths.
 var fsys = func() fs.FS {
 	sub, err := fs.Sub(static, "static")
 	if err != nil {
@@ -22,16 +22,15 @@ var fsys = func() fs.FS {
 	return sub
 }()
 
-// statusPages are the pages whose content announces an HTTP error. Serving
-// them with 200 would tell a crawler the error page is a real page.
+// statusPages are served with the error status their content shows, so
+// crawlers do not index them as real pages.
 var statusPages = map[string]int{
 	"/401.html": http.StatusUnauthorized,
 	"/404.html": http.StatusNotFound,
 }
 
-// FileServer returns a handler that serves the contents of fsys, exactly like
-// http.FileServerFS, except that the pages listed in statusPages carry the
-// status code their content announces.
+// FileServer is http.FileServerFS(fsys), except that statusPages are served
+// with their error status.
 func FileServer(fsys fs.FS) http.Handler {
 	files := http.FileServerFS(fsys)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -42,9 +41,8 @@ func FileServer(fsys fs.FS) http.Handler {
 	})
 }
 
-// statusOverride replaces the 200 that the wrapped handler would write with
-// code. Any other status the handler chooses (a redirect, 304 Not Modified,
-// 206 Partial Content, an error) passes through untouched.
+// statusOverride replaces a 200 with code. Any other status, such as a
+// redirect, 304, or 206, passes through.
 type statusOverride struct {
 	http.ResponseWriter
 	code    int
@@ -69,5 +67,5 @@ func (s *statusOverride) Write(b []byte) (int, error) {
 	return s.ResponseWriter.Write(b)
 }
 
-// Unwrap exposes the underlying writer to http.ResponseController.
+// Unwrap lets http.ResponseController reach the wrapped writer.
 func (s *statusOverride) Unwrap() http.ResponseWriter { return s.ResponseWriter }

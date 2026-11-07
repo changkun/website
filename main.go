@@ -2,6 +2,8 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
+// Main serves changkun.de: the embedded static site and, when configured, the
+// ideas API under /ideas/.
 package main
 
 import (
@@ -20,7 +22,7 @@ import (
 )
 
 func main() {
-	l := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile|log.Lmsgprefix)
+	l := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)
 
 	ctx, stop := notifyShutdown(context.Background())
 	defer stop()
@@ -31,8 +33,7 @@ func main() {
 	l.Println("goodbye!")
 }
 
-// run serves the site on addr until ctx is cancelled. An empty addr means
-// port 80 on every interface, which is what the container exposes.
+// run serves on addr until ctx is done. An empty addr means 0.0.0.0:80.
 func run(ctx context.Context, addr string, l *log.Logger) error {
 	if addr == "" {
 		addr = "0.0.0.0:80"
@@ -44,10 +45,8 @@ func run(ctx context.Context, addr string, l *log.Logger) error {
 	return serve(ctx, ln, l)
 }
 
-// notifyShutdown returns a context that is cancelled when the site is asked to
-// stop. Container runtimes send SIGTERM, a terminal sends SIGINT; both must
-// reach the graceful shutdown path. Once the first signal arrives the handlers
-// are removed again, so a second one terminates the process immediately.
+// notifyShutdown returns a context cancelled by SIGINT or SIGTERM. The handler
+// is removed after the first signal, so a second one kills the process.
 func notifyShutdown(parent context.Context) (context.Context, context.CancelFunc) {
 	ctx, stop := signal.NotifyContext(parent, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -57,8 +56,7 @@ func notifyShutdown(parent context.Context) (context.Context, context.CancelFunc
 	return ctx, stop
 }
 
-// serve answers requests on ln until ctx is cancelled, then drains the
-// in-flight ones. A clean shutdown reports no error.
+// serve serves on ln until ctx is done, then drains in-flight requests.
 func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 	r := http.NewServeMux()
 	r.Handle("/", FileServer(fsys))
@@ -68,10 +66,8 @@ func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 		ErrorLog:          l,
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
-		// The ideas API waits on a model gateway, so the write budget is
-		// its slowest call rather than the file server's fastest.
-		WriteTimeout: 2 * time.Minute,
-		IdleTimeout:  time.Minute,
+		WriteTimeout:      2 * time.Minute, // /ideas/improve waits on a model
+		IdleTimeout:       time.Minute,
 	}
 
 	done := make(chan struct{})
@@ -98,6 +94,7 @@ func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 	return err
 }
 
+// logging logs the client IP, method, and path of every request.
 func logging(logger *log.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -109,6 +106,8 @@ func logging(logger *log.Logger) func(http.Handler) http.Handler {
 	}
 }
 
+// readIP returns the client IP from X-Forwarded-For, X-Real-Ip, or the remote
+// address, in that order, or "unknown".
 func readIP(r *http.Request) string {
 	forwarded, _, _ := strings.Cut(r.Header.Get("X-Forwarded-For"), ",")
 	if clientIP := strings.TrimSpace(forwarded); clientIP != "" {
@@ -119,7 +118,7 @@ func readIP(r *http.Request) string {
 	}
 	ip, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr))
 	if err != nil {
-		return "unknown" // use unknown to guarantee non empty string
+		return "unknown"
 	}
 	return ip
 }

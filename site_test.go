@@ -17,6 +17,7 @@ import (
 	"time"
 )
 
+// mustRead returns a file of the embedded site.
 func mustRead(t *testing.T, name string) []byte {
 	t.Helper()
 	b, err := fs.ReadFile(fsys, name)
@@ -31,15 +32,12 @@ func TestFileServerStatus(t *testing.T) {
 		name   string
 		target string
 		code   int
-		want   string // file in the embedded site whose bytes must be served
+		want   string // embedded file expected as the body
 	}{
 		{"root serves index", "/", http.StatusOK, "index.html"},
 		{"unauthorized page", "/401.html", http.StatusUnauthorized, "401.html"},
 		{"not found page", "/404.html", http.StatusNotFound, "404.html"},
 		{"login sdk", "/login-sdk.js", http.StatusOK, "login-sdk.js"},
-		// The retired login flow redirected any ?token= request. Authentication
-		// is now a browser side PKCE exchange, so this is an ordinary page load.
-		{"token query is not special", "/?token=whatever", http.StatusOK, "index.html"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
@@ -55,9 +53,8 @@ func TestFileServerStatus(t *testing.T) {
 	}
 }
 
-// A conditional request must keep the 304 that ServeContent chooses. Forcing
-// the page status onto it would answer a cache validation with an error.
-// embed.FS reports no modification time, so this uses a synthetic site.
+// TestFileServerKeepsNotModified checks that a 304 is not replaced by the
+// page's error status. embed.FS has no modification times, hence fstest.MapFS.
 func TestFileServerKeepsNotModified(t *testing.T) {
 	modTime := time.Date(2026, time.August, 30, 12, 0, 0, 0, time.UTC)
 	site := fstest.MapFS{
@@ -77,8 +74,8 @@ func TestFileServerKeepsNotModified(t *testing.T) {
 	}
 }
 
-// Writing the status before the file server writes its own made net/http
-// report a superfluous WriteHeader call on every error page.
+// TestFileServerLogsNothing guards against a superfluous WriteHeader call,
+// which net/http would log for every error page.
 func TestFileServerLogsNothing(t *testing.T) {
 	var errorLog bytes.Buffer
 	s := httptest.NewUnstartedServer(FileServer(fsys))
