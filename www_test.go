@@ -127,7 +127,9 @@ func TestFoldersCORS(t *testing.T) {
 	f := testFolders(t, wwwDir(t), func(string, string) {})
 	for path, want := range map[string]string{
 		"/demos/bunny.obj": "*",
+		"/demos":           "*", // the redirect to /demos/
 		"/book/ch1.html":   "",
+		"/book":            "",
 	} {
 		w := httptest.NewRecorder()
 		f.ServeHTTP(w, httptest.NewRequest(http.MethodGet, path, nil))

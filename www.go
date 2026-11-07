@@ -75,7 +75,8 @@ func (f *folders) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	f.count(r)
 	for _, p := range f.cors {
-		if strings.HasPrefix(r.URL.Path, p) {
+		// The folder itself too, whose answer redirects to the folder/.
+		if strings.HasPrefix(r.URL.Path, p) || r.URL.Path+"/" == p {
 			w.Header().Set("Access-Control-Allow-Headers", "*")
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
