@@ -1,5 +1,6 @@
 {{define "pane"}}{{$owner := .Owner}}{{with .Data}}
 <article class="entry">
+  {{if .Back}}<a class="close" href="{{.Close}}" aria-label="Close" title="Close">×</a>{{end}}
   <p class="kind"><svg class="ti ti-{{icon .Type}}" aria-hidden="true"><use href="#i-{{icon .Type}}"/></svg> {{typeName .Type}}{{if .Year}} · {{.Year}}{{end}}{{if .Back}}<a class="open" href="{{$.Base}}{{.Key}}">Open page ›</a>{{end}}</p>
   <h1>{{.Title}}</h1>
   <p class="authors">{{join .Authors ", "}}</p>

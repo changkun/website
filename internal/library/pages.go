@@ -91,6 +91,7 @@ type view struct {
 	Data    any
 	Pane    *view  // the entry shown in the right pane of a list page, if any
 	Home    string // where "Library" in the header leads: the owner's library or the share
+	Show    string // ?show=: the panel the right pane opens with when no entry is selected
 }
 
 func (s *Service) render(w http.ResponseWriter, r *http.Request, status int, name string, v view) {
@@ -100,6 +101,7 @@ func (s *Service) render(w http.ResponseWriter, r *http.Request, status int, nam
 		v.Synced, v.SyncErr, _ = s.status()
 		v.Fetched, v.Total = s.progress()
 	}
+	v.Show = r.URL.Query().Get("show")
 	h := w.Header()
 	h.Set("Content-Type", "text/html; charset=utf-8")
 	h.Set("Cache-Control", "private, no-store")
@@ -239,6 +241,18 @@ type row struct {
 func (l *list) Prev() string      { return l.link(l.Page - 1) }
 func (l *list) Next() string      { return l.link(l.Page + 1) }
 func (l *list) link(p int) string { return l.url(l.Sort, p) }
+
+// Here is the list's own address, without a selected entry or panel.
+func (l *list) Here() string { return l.url(l.Sort, l.Page) }
+
+// Panel is the list's address with the right pane open on a panel.
+func (l *list) Panel(name string) string {
+	u, _ := url.Parse(l.Here())
+	q := u.Query()
+	q.Set("show", name)
+	u.RawQuery = q.Encode()
+	return u.String()
+}
 
 // url is the list's address with the given sort and page, keeping the filter
 // and topic.
@@ -530,6 +544,20 @@ type entryPage struct {
 	Token   string // a member's token, for the comment form
 	Done    string // a message after posting
 	Back    string // the list page the pane is shown in; "" on the entry page
+}
+
+// Close is the list page without this entry selected.
+func (p *entryPage) Close() string {
+	u, err := url.Parse(p.Back)
+	if err != nil {
+		return Prefix
+	}
+	q := u.Query()
+	for _, k := range []string{"e", "show", "done", "error"} {
+		q.Del(k)
+	}
+	u.RawQuery = q.Encode()
+	return u.String()
 }
 
 // thread is the comments of one share on one entry.

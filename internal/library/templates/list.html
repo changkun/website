@@ -1,4 +1,4 @@
-{{define "content"}}<div class="app">
+{{define "content"}}<div class="app{{if not (or .Pane (and (eq .Show "share") .Data.Topic))}} no-pane{{end}}">
 <aside class="side">{{with .Data}}{{template "side" (side "/library/t/" "/library/" "My Library" (not .Topic) .Tree)}}{{end}}</aside>
 <div class="grip" data-grip="side" title="Drag to resize; double-click to reset"></div>
 <section class="list">
@@ -6,6 +6,7 @@
 <div class="head">
   <h1>{{if .Path}}{{range $i, $c := .Path}}{{if not $i}}{{if eq (len $.Data.Path) 1}}{{$c.Name}}{{else}}<a class="up" href="/library/t/{{$c.Key}}">{{$c.Name}}</a>{{end}}{{else}}<span class="sub"> › {{if eq (add $i 1) (len $.Data.Path)}}{{$c.Name}}{{else}}<a href="/library/t/{{$c.Key}}">{{$c.Name}}</a>{{end}}</span>{{end}}{{end}}{{else}}My Library{{end}}</h1>
   {{if .Unsorted}}<p class="meta">{{.Unsorted}} entries are in no topic</p>{{end}}
+  {{if .Topic}}<p class="actions-line"><a href="{{.List.Panel "share"}}">Share this topic</a></p>{{end}}
 </div>
 {{end}}
 {{template "table" .}}
@@ -13,7 +14,7 @@
 <div class="grip" data-grip="pane" title="Drag to resize; double-click to reset"></div>
 <aside class="pane" id="pane">
 {{with .Pane}}{{template "pane" .}}{{else}}{{with .Data}}
-  <p class="muted empty">Select an entry to see its details and comments.</p>
+  {{if .Topic}}<a class="close" href="{{.List.Here}}" aria-label="Close" title="Close">×</a>{{end}}
   {{if .Topic}}
   <section class="share-form">
     <h2>Share this topic</h2>

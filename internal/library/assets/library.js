@@ -40,8 +40,10 @@
   // reload or a shared address shows the same entry.
   function show(row) {
     if (!pane || !wide.matches) return;
+    if (app) app.classList.remove('no-pane');
     var u = new URL(location.href);
     u.searchParams.set('e', row.dataset.key);
+    u.searchParams.delete('show');
     u.searchParams.delete('done');
     u.searchParams.delete('error');
     history.replaceState(null, '', u);
@@ -120,6 +122,17 @@
     var confirmBtn = ev.target.closest('[data-confirm]');
     if (confirmBtn && !confirm(confirmBtn.dataset.confirm)) {
       ev.preventDefault();
+      return;
+    }
+    var close = ev.target.closest('.pane .close');
+    if (close && app && wide.matches) { // hide the pane without a reload
+      ev.preventDefault();
+      app.classList.add('no-pane');
+      var rs = rows();
+      if (rs[cur]) rs[cur].classList.remove('sel');
+      cur = -1;
+      history.replaceState(null, '', close.getAttribute('href'));
+      if (sync) sync.value = location.pathname + location.search;
       return;
     }
     var row = ev.target.closest('tr.row');
