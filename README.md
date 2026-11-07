@@ -11,6 +11,8 @@ One Go binary serves changkun.de:
 - `/library/` is Changkun's Zotero library, browsable by the owner and
   shareable by topic. See [Library](#library).
 
+It also serves golang.design, from a folder. See [Sites](#sites).
+
 ## Usage
 
 ```
@@ -30,7 +32,7 @@ answers 503.
 |---|---|
 | `main.go` | Signal handling, the HTTP server, request logging |
 | `site.go` | The embedded `static/` site and its file server |
-| `www.go` | The folders of `WWW_DIR` |
+| `www.go` | The folders of `WWW_DIR` and the sites of `WWW_SITES` |
 | `internal/ideas/` | The ideas API |
 | `internal/ideas/prompts/` | Model prompts, as Go text templates embedded in the binary |
 | `internal/research/` | The research page, rendered from a checkout of changkun/research |
@@ -56,6 +58,15 @@ serves the page's stylesheet and portrait from the binary. A talk at
 `/research/talks/<name>.pdf`, where `/talk/<name>.pdf` redirects, is found in
 the dated folder that holds it. Without a `README.md` the folder is served like
 any other.
+
+## Sites
+
+A site that `WWW_SITES` lists is served from a folder of its own, under the
+rules of the folders above: every path of the host, and of its `www.` name,
+comes from the folder, and none of changkun.de's pages or APIs answer for it.
+In production golang.design is `/www/golang.design`, mounted read-only, which
+its repositories publish to. A missing file is a plain 404, which traefik
+replaces with the folder's `404.html`.
 
 ## Ideas API
 
@@ -186,6 +197,7 @@ else has a default.
 | `WEBSITE_ADDR` | `0.0.0.0:80` | Listen address |
 | `WWW_DIR` | | Folder whose folders are served. Unset serves none |
 | `WWW_CORS` | | Comma-separated path prefixes any origin may fetch from, such as `/demos/` |
+| `WWW_SITES` | | Comma-separated `host=folder` pairs, such as `golang.design=/www/golang.design`. Each host, and its `www.` name, is served from its folder |
 | `LLM_BASE_URL` | `https://api.latere.ai/v1/models` | Lux gateway root |
 | `LLM_API_KEY` | | Lux Key |
 | `LLM_MODEL` | `anthropic/claude-opus-5.5` | Writes the deep dive |

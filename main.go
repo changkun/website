@@ -4,7 +4,8 @@
 
 // Main serves changkun.de: the embedded static site, the folders of WWW_DIR,
 // and, when configured, the ideas API under /ideas/ and the library under
-// /library/.
+// /library/. It also serves the sites WWW_SITES lists, such as golang.design,
+// each from a folder of its own.
 package main
 
 import (
@@ -65,6 +66,13 @@ func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 		ln.Close()
 		return err
 	}
+	// The sites are answered before the routes, which are changkun.de's.
+	r := http.NewServeMux()
+	h, err := withSites(l, r)
+	if err != nil {
+		ln.Close()
+		return err
+	}
 	lib, err := library.New(l)
 	if err != nil {
 		ln.Close()
@@ -72,12 +80,11 @@ func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 	}
 	lib.Run(ctx)
 
-	r := http.NewServeMux()
 	r.Handle("/", site)
 	r.Handle(ideas.Prefix, ideas.Handler(ideas.New(l), l))
 	r.Handle(library.Prefix, library.Handler(lib))
 	s := &http.Server{
-		Handler:           logging(l)(r),
+		Handler:           logging(l)(h),
 		ErrorLog:          l,
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,

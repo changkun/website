@@ -7,6 +7,7 @@ package main
 import (
 	"io"
 	"log"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -219,5 +220,124 @@ func TestWithWWW(t *testing.T) {
 		t.Errorf("a valid configuration failed: %v", err)
 	} else if _, ok := h.(*folders); !ok {
 		t.Errorf("WWW_DIR is not served, got %T", h)
+	}
+}
+
+// siteDir lays out a site's folder as /www/golang.design is: a front page, the
+// 404 page traefik fetches, a book, and a folder without an index.
+func siteDir(t *testing.T) string {
+	t.Helper()
+	dir := t.TempDir()
+	for name, body := range map[string]string{
+		"index.html":                "golang.design",
+		"404.html":                  "not here",
+		"icons/a.svg":               "<svg/>",
+		"under-the-hood/index.html": "book",
+		".git/config":               "secret",
+	} {
+		path := filepath.Join(dir, name)
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return dir
+}
+
+// TestSites checks that a site of WWW_SITES is answered from its folder
+// alone, at its www. name too, and that every other host reaches next.
+func TestSites(t *testing.T) {
+	t.Setenv("WWW_SITES", "golang.design="+siteDir(t))
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, "changkun.de "+r.URL.Path)
+	})
+	h, err := withSites(log.New(io.Discard, "", 0), next)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tt := range []struct {
+		host, path string
+		code       int
+		body       string // the body, or what it starts with
+	}{
+		{"golang.design", "/", http.StatusOK, "golang.design"},
+		{"www.golang.design", "/", http.StatusOK, "golang.design"},
+		{"Golang.Design:443", "/", http.StatusOK, "golang.design"},
+		// What traefik's error page fetches, which it serves with the 404.
+		{"golang.design", "/404.html", http.StatusOK, "not here"},
+		{"golang.design", "/under-the-hood/", http.StatusOK, "book"},
+		{"golang.design", "/under-the-hood", http.StatusMovedPermanently, ""},
+		{"golang.design", "/icons/", http.StatusOK, "<!doctype html>"},
+		{"golang.design", "/.git/config", http.StatusNotFound, "404 page not found"},
+		{"golang.design", "/missing", http.StatusNotFound, "404 page not found"},
+		// changkun.de's routes are not the site's.
+		{"golang.design", "/ideas/", http.StatusNotFound, "404 page not found"},
+		{"golang.design", "/library/", http.StatusNotFound, "404 page not found"},
+		{"changkun.de", "/ideas/", http.StatusOK, "changkun.de /ideas/"},
+		{"api.golang.design", "/", http.StatusOK, "changkun.de /"},
+	} {
+		r := httptest.NewRequest(http.MethodGet, tt.path, nil)
+		r.Host = tt.host
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		if w.Code != tt.code || !strings.HasPrefix(w.Body.String(), tt.body) {
+			t.Errorf("%s%s: got %d %q, want %d %q", tt.host, tt.path, w.Code, w.Body.String(), tt.code, tt.body)
+		}
+	}
+}
+
+func TestParseSites(t *testing.T) {
+	got, err := parseSites(" golang.design=/www/golang.design, www.Poly.red=/www/poly.red ")
+	if want := map[string]string{"golang.design": "/www/golang.design", "poly.red": "/www/poly.red"}; err != nil || !maps.Equal(got, want) {
+		t.Errorf("got %v, %v, want %v", got, err, want)
+	}
+	for _, bad := range []string{
+		"golang.design",
+		"golang.design=",
+		"golang.design=www/golang.design",
+		"=/www/golang.design",
+		"www.=/www/golang.design",
+		"https://golang.design=/www/golang.design",
+		"golang.design:443=/www/golang.design",
+		"golang.design=/a,www.golang.design=/b",
+	} {
+		if _, err := parseSites(bad); err == nil {
+			t.Errorf("parseSites(%q) did not fail", bad)
+		}
+	}
+}
+
+func TestWithSites(t *testing.T) {
+	l := log.New(io.Discard, "", 0)
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, "changkun.de")
+	})
+
+	t.Setenv("WWW_SITES", "")
+	if h, err := withSites(l, next); err != nil {
+		t.Errorf("without WWW_SITES: %v", err)
+	} else if _, ok := h.(*sites); ok {
+		t.Error("without WWW_SITES, sites are served")
+	}
+
+	t.Setenv("WWW_SITES", "golang.design")
+	if _, err := withSites(l, next); err == nil {
+		t.Error("a malformed WWW_SITES did not fail")
+	}
+
+	// A site whose folder is missing is still the site's.
+	t.Setenv("WWW_SITES", "golang.design="+filepath.Join(t.TempDir(), "missing"))
+	h, err := withSites(l, next)
+	if err != nil {
+		t.Fatalf("a missing folder failed: %v", err)
+	}
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	r.Host = "golang.design"
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	if w.Code != http.StatusNotFound {
+		t.Errorf("a site without its folder: got %d %q, want 404", w.Code, w.Body.String())
 	}
 }

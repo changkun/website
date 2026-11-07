@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -292,4 +293,46 @@ func (b *lockedBuffer) String() string {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	return b.buf.String()
+}
+
+// TestServeSites checks that serve answers a site of WWW_SITES before
+// changkun.de's routes, so neither /ideas/ nor /library/ answer for it.
+func TestServeSites(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "index.html"), []byte("golang.design"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("WWW_SITES", "golang.design="+dir)
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("cannot listen: %v", err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	served := make(chan error, 1)
+	go func() { served <- serve(ctx, ln, log.New(io.Discard, "", 0)) }()
+	defer func() {
+		cancel()
+		<-served
+	}()
+
+	for path, want := range map[string]string{
+		"/":         "200 golang.design",
+		"/ideas/":   "404 404 page not found\n",
+		"/library/": "404 404 page not found\n",
+	} {
+		r, err := http.NewRequest(http.MethodGet, "http://"+ln.Addr().String()+path, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		r.Host = "golang.design"
+		resp, err := http.DefaultClient.Do(r)
+		if err != nil {
+			t.Fatalf("cannot reach the site: %v", err)
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if got := strconv.Itoa(resp.StatusCode) + " " + string(body); got != want {
+			t.Errorf("golang.design%s: got %q, want %q", path, got, want)
+		}
+	}
 }
