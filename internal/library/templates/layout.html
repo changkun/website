@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>{{.Title}} · Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/library/assets/library.css">
+</head>
+<body>
+<header class="site">
+  <a class="site-name" href="/">changkun.de</a>
+  {{if .Owner}}
+  <nav>
+    <a href="/library/">Library</a>
+    <a href="/library/inbox">Inbox{{if .Unread}} <b>({{.Unread}})</b>{{end}}</a>
+    <a href="/library/shares">Shares</a>
+    <form method="post" action="/library/sync" class="inline">
+      <input type="hidden" name="next" value="">
+      <button title="Fetch changes from Zotero now">Sync now</button>
+    </form>
+  </nav>
+  {{end}}
+</header>
+{{if .Owner}}
+<p class="status{{if .SyncErr}} bad{{end}}">
+  {{if .SyncErr}}Sync failed: {{.SyncErr}}. Last good sync {{ago .Synced}}; showing that copy.
+  {{else}}Synced {{ago .Synced}}.{{end}}
+</p>
+{{end}}
+<main>
+{{template "content" .}}
+</main>
+<script src="/library/assets/library.js" defer></script>
+</body>
+</html>
+{{define "table"}}{{$base := .Base}}{{with .Data.List}}
+<form class="filter" method="get" action="{{.Path}}">
+  <input type="search" name="q" value="{{.Q}}" placeholder="Filter title, author, venue, year" aria-label="Filter" autocomplete="off">
+  <span class="count">{{if .Q}}{{num .Matched}} of {{end}}{{plural .Total "entry" "entries"}}</span>
+  <a class="bib" href="{{.BibPath}}">Export .bib</a>
+</form>
+{{if .Rows}}
+<table class="entries">
+<thead><tr><th class="y">Year</th><th class="t">Title</th><th class="a">Authors</th><th class="v">Venue</th><th class="c"></th></tr></thead>
+<tbody>
+{{range .Rows}}
+<tr class="row" data-href="{{$base}}{{.Key}}">
+  <td class="y">{{.Year}}</td>
+  <td class="t"><a href="{{$base}}{{.Key}}">{{.Title}}</a></td>
+  <td class="a">{{.ShortAuthors}}</td>
+  <td class="v">{{.Venue}}</td>
+  <td class="c">{{if .Comments}}{{.Comments}}{{end}}</td>
+</tr>
+<tr class="more" hidden>
+  <td></td>
+  <td colspan="4">
+    <div>{{join .Authors ", "}}</div>
+    {{if .Venue}}<div class="muted">{{.Venue}}{{if .Year}}, {{.Year}}{{end}}</div>{{end}}
+    <div class="actions">
+      <a href="{{$base}}{{.Key}}">Open</a>
+      {{with .Link}}<a href="{{.}}" rel="noopener noreferrer" target="_blank">Source ↗</a>{{end}}
+      {{if .BibTeX}}<button type="button" class="copy" data-bib="{{.BibTeX}}">Copy BibTeX</button>{{end}}
+    </div>
+  </td>
+</tr>
+{{end}}
+</tbody>
+</table>
+{{if gt .Pages 1}}
+<p class="pager">
+  {{if gt .Page 1}}<a href="{{.Prev}}">‹ Prev</a>{{end}}
+  {{add .From 1}}–{{.To}} of {{num .Matched}}
+  {{if lt .Page .Pages}}<a href="{{.Next}}">Next ›</a>{{end}}
+</p>
+{{end}}
+{{else}}
+<p class="muted">No entries{{if .Q}} match “{{.Q}}”{{end}}.</p>
+{{end}}
+<p class="keys muted">/ filter · j k move · Enter expand · o open · c copy BibTeX</p>
+{{end}}{{end}}
+
+{{define "tree"}}{{$base := .base}}
+<ul class="tree">
+{{range .nodes}}<li>{{if $base}}<a href="{{$base}}{{.Key}}">{{.Name}}</a>{{else}}{{.Name}}{{end}} <span class="muted">{{.Count}}</span>{{if .Children}}{{template "tree" (tree $base .Children)}}{{end}}</li>
+{{end}}
+</ul>
+{{end}}

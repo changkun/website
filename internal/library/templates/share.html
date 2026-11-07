@@ -1,0 +1,43 @@
+{{define "content"}}{{with .Data}}
+<div class="head">
+  <h1>{{.Share.Title}}</h1>
+  <p class="muted">{{if .Member}}Shared with you, {{.Member.Name}}, by Changkun Ou. This link is yours: please do not pass it on.{{else}}Shared by Changkun Ou.{{end}}</p>
+</div>
+{{if .Done}}<p class="note good">{{.Done}}</p>{{end}}
+{{if .Error}}<p class="note bad">{{.Error}}</p>{{end}}
+{{if .Tree}}
+<details class="topics">
+  <summary>Topics</summary>
+  {{template "tree" (tree "" .Tree)}}
+</details>
+{{end}}
+{{end}}
+{{template "table" .}}
+{{with .Data}}{{if .Member}}
+<section id="comments">
+  <h2>Suggested papers</h2>
+  {{range .Suggestions}}
+  <div class="post">
+    <div class="meta">{{.By}}, {{date .Time}}{{if .Added}} · <b>added</b>: <a href="/library/s/{{$.Data.Token}}/e/{{.Added.Key}}">{{.Added.Title}}</a>{{end}}</div>
+    <div class="ref">{{linkify .Ref}}</div>
+    {{if .Note}}<div>{{linkify .Note}}</div>{{end}}
+  </div>
+  {{else}}<p class="muted">None yet.</p>{{end}}
+  <form method="post" action="/library/s/{{.Token}}/suggest" class="post-form">
+    <label>Suggest a paper: DOI, arXiv ID, URL, or BibTeX
+      <textarea name="ref" rows="2" required maxlength="2000"></textarea></label>
+    <label>Why (optional) <textarea name="note" rows="2" maxlength="2000"></textarea></label>
+    <button>Suggest</button>
+  </form>
+
+  <h2>Comments on this share</h2>
+  {{range .Comments}}
+  <div class="post"><div class="meta">{{.By}}, {{date .Time}}</div><div>{{linkify .Text}}</div></div>
+  {{else}}<p class="muted">None yet. Comments on a paper are on its page.</p>{{end}}
+  <form method="post" action="/library/s/{{.Token}}/comment" class="post-form">
+    <label>Comment as {{.Member.Name}} <textarea name="text" rows="3" required maxlength="2000"></textarea></label>
+    <button>Post</button>
+  </form>
+</section>
+{{end}}{{end}}
+{{end}}

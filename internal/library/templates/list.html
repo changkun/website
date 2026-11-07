@@ -1,0 +1,36 @@
+{{define "content"}}{{with .Data}}
+<div class="head">
+  <h1>{{if .Topic}}{{.Topic.Name}}{{else}}Library{{end}}</h1>
+  {{if .Path}}<p class="crumbs"><a href="/library/">Library</a>{{range .Path}} / <a href="/library/t/{{.Key}}">{{.Name}}</a>{{end}}</p>{{end}}
+</div>
+{{if .Tree}}
+<details class="topics" open>
+  <summary>{{if .Topic}}Subtopics{{else}}Topics{{end}}</summary>
+  {{template "tree" (tree "/library/t/" .Tree)}}
+  {{if .Unsorted}}<p class="muted">{{.Unsorted}} entries are in no topic.</p>{{end}}
+</details>
+{{end}}
+{{if .Topic}}
+<details class="share-form">
+  <summary>Share this topic</summary>
+  <form method="post" action="/library/shares">
+    <input type="hidden" name="topic" value="{{.Topic.Key}}">
+    <label>Title <input name="title" value="{{.Topic.Name}}"></label>
+    <label>Names, one per line; each gets their own link
+      <textarea name="names" rows="3" placeholder="Alice&#10;Bob"></textarea></label>
+    <label class="check"><input type="checkbox" name="public"> Also readable by anyone, without comments</label>
+    <button>Create share</button>
+  </form>
+  {{if .Shares}}
+  <form method="post" action="/library/shares">
+    <input type="hidden" name="topic" value="{{.Topic.Key}}">
+    <label>Or add this topic to
+      <select name="share">{{range .Shares}}<option value="{{.ID}}">{{.Title}}</option>{{end}}</select></label>
+    <button>Add</button>
+  </form>
+  {{end}}
+</details>
+{{end}}
+{{end}}
+{{template "table" .}}
+{{end}}

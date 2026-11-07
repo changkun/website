@@ -3,7 +3,8 @@
 // license that can be found in the LICENSE file.
 
 // Main serves changkun.de: the embedded static site, the folders of WWW_DIR,
-// and, when configured, the ideas API under /ideas/.
+// and, when configured, the ideas API under /ideas/ and the library under
+// /library/.
 package main
 
 import (
@@ -19,6 +20,7 @@ import (
 	"time"
 
 	"changkun.de/x/website/internal/ideas"
+	"changkun.de/x/website/internal/library"
 )
 
 func main() {
@@ -63,9 +65,17 @@ func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 		ln.Close()
 		return err
 	}
+	lib, err := library.New(l)
+	if err != nil {
+		ln.Close()
+		return err
+	}
+	lib.Run(ctx)
+
 	r := http.NewServeMux()
 	r.Handle("/", site)
 	r.Handle(ideas.Prefix, ideas.Handler(ideas.New(l), l))
+	r.Handle(library.Prefix, library.Handler(lib))
 	s := &http.Server{
 		Handler:           logging(l)(r),
 		ErrorLog:          l,
