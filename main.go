@@ -19,10 +19,6 @@ import (
 	"changkun.de/x/main/internal/ideas"
 )
 
-func init() {
-	log.SetPrefix("main")
-}
-
 func main() {
 	l := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile|log.Lmsgprefix)
 
@@ -120,9 +116,6 @@ func readIP(r *http.Request) string {
 	}
 	if clientIP := strings.TrimSpace(r.Header.Get("X-Real-Ip")); clientIP != "" {
 		return clientIP
-	}
-	if addr := r.Header.Get("X-Appengine-Remote-Addr"); addr != "" {
-		return addr
 	}
 	ip, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr))
 	if err != nil {

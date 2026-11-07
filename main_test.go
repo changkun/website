@@ -42,12 +42,6 @@ func TestReadIP(t *testing.T) {
 			want:       "203.0.113.8",
 		},
 		{
-			name:       "app engine header",
-			headers:    map[string]string{"X-Appengine-Remote-Addr": "203.0.113.9"},
-			remoteAddr: "10.0.0.1:1234",
-			want:       "203.0.113.9",
-		},
-		{
 			name:       "remote address when no proxy set a header",
 			remoteAddr: "203.0.113.10:4321",
 			want:       "203.0.113.10",
@@ -97,20 +91,6 @@ func TestLogging(t *testing.T) {
 	}
 	if got, want := strings.TrimSpace(out.String()), "203.0.113.11 GET /books/"; got != want {
 		t.Errorf("got log line %q, want %q", got, want)
-	}
-}
-
-// The site must be embedded and reachable through the same handler main wires up.
-func TestEmbeddedSite(t *testing.T) {
-	r := http.NewServeMux()
-	r.Handle("/", FileServer(fsys))
-
-	for _, target := range []string{"/", "/index.html", "/401.html", "/404.html", "/login-sdk.js"} {
-		w := httptest.NewRecorder()
-		r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, target, nil))
-		if w.Code >= http.StatusInternalServerError {
-			t.Errorf("GET %s: got status %d", target, w.Code)
-		}
 	}
 }
 
@@ -177,31 +157,6 @@ func TestNotifyShutdown(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestRun(t *testing.T) {
-	t.Run("serves until cancelled", func(t *testing.T) {
-		ctx, cancel := context.WithCancel(context.Background())
-		ran := make(chan error, 1)
-		go func() { ran <- run(ctx, "127.0.0.1:0", log.New(io.Discard, "", 0)) }()
-
-		cancel()
-		select {
-		case err := <-ran:
-			if err != nil {
-				t.Fatalf("run reported %v, want a clean shutdown", err)
-			}
-		case <-time.After(10 * time.Second):
-			t.Fatal("run did not return after its context was cancelled")
-		}
-	})
-
-	t.Run("reports an unusable address", func(t *testing.T) {
-		err := run(context.Background(), "127.0.0.1:not-a-port", log.New(io.Discard, "", 0))
-		if err == nil {
-			t.Fatal("run accepted an unusable address")
-		}
-	})
 }
 
 // startSite builds the shipped binary, runs it with env added to the

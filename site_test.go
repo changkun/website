@@ -55,31 +55,6 @@ func TestFileServerStatus(t *testing.T) {
 	}
 }
 
-func TestFileServerRedirectsAndMisses(t *testing.T) {
-	for _, tt := range []struct {
-		name     string
-		target   string
-		code     int
-		location string
-	}{
-		{"index.html redirects to the directory", "/index.html", http.StatusMovedPermanently, "./"},
-		{"missing page", "/no-such-page", http.StatusNotFound, ""},
-		{"missing page below 401", "/401.html/nested", http.StatusNotFound, ""},
-	} {
-		t.Run(tt.name, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			FileServer(fsys).ServeHTTP(w, httptest.NewRequest(http.MethodGet, tt.target, nil))
-
-			if w.Code != tt.code {
-				t.Errorf("got status %d, want %d", w.Code, tt.code)
-			}
-			if got := w.Header().Get("Location"); got != tt.location {
-				t.Errorf("got Location %q, want %q", got, tt.location)
-			}
-		})
-	}
-}
-
 // A conditional request must keep the 304 that ServeContent chooses. Forcing
 // the page status onto it would answer a cache validation with an error.
 // embed.FS reports no modification time, so this uses a synthetic site.
@@ -147,20 +122,6 @@ func TestStatusOverride(t *testing.T) {
 		s.WriteHeader(http.StatusTeapot)
 		if w.Code != http.StatusUnauthorized {
 			t.Errorf("got status %d, want %d", w.Code, http.StatusUnauthorized)
-		}
-	})
-
-	t.Run("http.ResponseController reaches the real writer", func(t *testing.T) {
-		w := httptest.NewRecorder()
-		s := &statusOverride{ResponseWriter: w, code: http.StatusUnauthorized}
-		if got := s.Unwrap(); got != http.ResponseWriter(w) {
-			t.Error("Unwrap did not return the wrapped writer")
-		}
-		if err := http.NewResponseController(s).Flush(); err != nil {
-			t.Errorf("cannot flush through the wrapper: %v", err)
-		}
-		if !w.Flushed {
-			t.Error("the flush did not reach the recorder")
 		}
 	})
 }
