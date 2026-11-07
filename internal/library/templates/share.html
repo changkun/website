@@ -6,9 +6,10 @@
 {{if .Done}}<p class="note good">{{.Done}}</p>{{end}}
 {{if .Error}}<p class="note bad">{{.Error}}</p>{{end}}
 {{if .Tree}}
-<details class="topics">
+<details class="topics" open>
   <summary>Topics</summary>
-  {{template "tree" (tree "" .Tree)}}
+  {{if gt (len .Tree) 1}}<ul class="tree"><li{{if not .List.T}} class="current"{{end}}><a href="{{.List.Path}}">All topics</a></li></ul>{{end}}
+  {{template "tree" (tree .TreeBase .Tree)}}
 </details>
 {{end}}
 {{end}}

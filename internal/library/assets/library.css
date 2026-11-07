@@ -105,6 +105,9 @@ table.entries th {
   border-bottom: 1px solid var(--border-strong);
   padding: 2px 8px;
 }
+table.entries th a { color: inherit; }
+table.entries th .added { font-weight: 400; margin-left: 8px; }
+ul.tree li.current > a { font-weight: 600; color: var(--navy); }
 table.entries td {
   padding: 0 8px;
   height: 28px;

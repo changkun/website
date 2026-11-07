@@ -43,12 +43,20 @@
 {{define "table"}}{{$base := .Base}}{{with .Data.List}}
 <form class="filter" method="get" action="{{.Path}}">
   <input type="search" name="q" value="{{.Q}}" placeholder="Filter title, author, venue, year" aria-label="Filter" autocomplete="off">
+  {{if .T}}<input type="hidden" name="t" value="{{.T}}">{{end}}
+  {{if ne .Sort "-year"}}<input type="hidden" name="sort" value="{{.Sort}}">{{end}}
   <span class="count">{{if .Q}}{{num .Matched}} of {{end}}{{plural .Total "entry" "entries"}}</span>
   <a class="bib" href="{{.BibPath}}">Export .bib</a>
 </form>
 {{if .Rows}}
 <table class="entries">
-<thead><tr><th class="y">Year</th><th class="t">Title</th><th class="a">Authors</th><th class="v">Venue</th><th class="c"></th></tr></thead>
+<thead><tr>
+  <th class="y"><a href="{{.SortBy "year"}}">Year{{.Arrow "year"}}</a></th>
+  <th class="t"><a href="{{.SortBy "title"}}">Title{{.Arrow "title"}}</a> <a class="added" href="{{.SortBy "added"}}" title="Sort by when it was added to Zotero">added{{.Arrow "added"}}</a></th>
+  <th class="a"><a href="{{.SortBy "authors"}}">Authors{{.Arrow "authors"}}</a></th>
+  <th class="v"><a href="{{.SortBy "venue"}}">Venue{{.Arrow "venue"}}</a></th>
+  <th class="c"></th>
+</tr></thead>
 <tbody>
 {{range .Rows}}
 <tr class="row" data-href="{{$base}}{{.Key}}">
@@ -88,7 +96,7 @@
 
 {{define "tree"}}{{$base := .base}}
 <ul class="tree">
-{{range .nodes}}<li>{{if $base}}<a href="{{$base}}{{.Key}}">{{.Name}}</a>{{else}}{{.Name}}{{end}} <span class="muted">{{.Count}}</span>{{if .Children}}{{template "tree" (tree $base .Children)}}{{end}}</li>
+{{range .nodes}}<li{{if .Current}} class="current"{{end}}>{{if $base}}<a href="{{$base}}{{.Key}}">{{.Name}}</a>{{else}}{{.Name}}{{end}} <span class="muted">{{.Count}}</span>{{if .Children}}{{template "tree" (tree $base .Children)}}{{end}}</li>
 {{end}}
 </ul>
 {{end}}

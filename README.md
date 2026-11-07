@@ -158,8 +158,11 @@ an hour old.
 | `GET /library/p/<id>` | anyone | A public share, read-only, without comments |
 | `GET /library/healthz` | anyone | 200, or 503 when sync is stale |
 
-Every list accepts `?q=` (title, authors, venue, year) and `?page=`, and
-`.bib` after a list's path (`/library/all.bib` for the whole library) returns
+Every list accepts `?q=` (every word must match title, authors, venue, or
+year), `?sort=` (`year`, `title`, `authors`, `venue`, `added`; `-` in front
+for descending; default `-year`) and `?page=`. Share pages also accept `?t=`,
+a topic inside the share. Adding
+`.bib` to a list's path (`/library/all.bib` for the whole library) returns
 the same entries as BibTeX.
 
 ### Login

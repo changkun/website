@@ -386,6 +386,27 @@ func TestShares(t *testing.T) {
 		t.Fatalf("share .bib:\n%s", body)
 	}
 
+	// ?t= narrows the page to a subtopic; a topic outside the share is ignored.
+	if body := get(t, h, "/library/s/"+alice+"?t=GPU", false).Body.String(); !strings.Contains(body, "Pollux") || strings.Contains(body, ">Borg<") {
+		t.Fatalf("share page narrowed to GPU:\n%s", body)
+	}
+	if body := get(t, h, "/library/s/"+alice+"?t=HCI", false).Body.String(); !strings.Contains(body, "Pollux") || strings.Contains(body, "Direct Manipulation") {
+		t.Fatalf("share page with a topic outside it:\n%s", body)
+	}
+	if body := get(t, h, "/library/s/"+alice+".bib?t=GPU", false).Body.String(); !strings.Contains(body, "Pollux") || strings.Contains(body, "Borg") {
+		t.Fatalf("share .bib narrowed to GPU:\n%s", body)
+	}
+
+	// ?sort= orders the rows: Borg (2015) before Pollux (2021) by year ascending.
+	body = get(t, h, "/library/s/"+alice+"?sort=year", false).Body.String()
+	if i, j := strings.Index(body, ">Borg<"), strings.Index(body, ">Pollux"); i < 0 || j < 0 || i > j {
+		t.Fatalf("sort=year: Borg at %d, Pollux at %d", i, j)
+	}
+	body = get(t, h, "/library/s/"+alice, false).Body.String()
+	if i, j := strings.Index(body, ">Borg<"), strings.Index(body, ">Pollux"); i < 0 || j < 0 || i < j {
+		t.Fatalf("default sort: Borg at %d, Pollux at %d", i, j)
+	}
+
 	// Comments and suggestions.
 	rec = post(t, h, "/library/s/"+alice+"/comment", url.Values{"entry": {"AAAA"}, "text": {"Read §3, see https://example.com/x."}}, false)
 	if rec.Code != http.StatusSeeOther || !strings.Contains(rec.Header().Get("Location"), "done=") {

@@ -5,6 +5,7 @@
 package library
 
 import (
+	"cmp"
 	"context"
 	"embed"
 	"errors"
@@ -179,9 +180,11 @@ func (s *Service) loginPage(w http.ResponseWriter, r *http.Request) {
 	s.render(w, r, http.StatusOK, "login", view{Title: "Log in", Data: next})
 }
 
-// list is a filtered, paged list of entries.
+// list is a filtered, sorted, paged list of entries.
 type list struct {
 	Q        string
+	T        string // ?t=, the topic a share page is narrowed to
+	Sort     string // ?sort=: a sortKeys key, "-" in front for descending
 	Page     int
 	Pages    int
 	Total    int // entries before filtering
@@ -196,12 +199,16 @@ type row struct {
 	Comments int
 }
 
-func (l *list) Prev() string { return l.link(l.Page - 1) }
-func (l *list) Next() string { return l.link(l.Page + 1) }
-func (l *list) link(p int) string {
-	q := url.Values{}
-	if l.Q != "" {
-		q.Set("q", l.Q)
+func (l *list) Prev() string      { return l.link(l.Page - 1) }
+func (l *list) Next() string      { return l.link(l.Page + 1) }
+func (l *list) link(p int) string { return l.url(l.Sort, p) }
+
+// url is the list's address with the given sort and page, keeping the filter
+// and topic.
+func (l *list) url(sort string, p int) string {
+	q := l.params()
+	if sort != "" && sort != defaultSort {
+		q.Set("sort", sort)
 	}
 	if p > 1 {
 		q.Set("page", strconv.Itoa(p))
@@ -218,16 +225,91 @@ func (l *list) BibPath() string {
 	if p+"/" == Prefix {
 		p = Prefix + "all"
 	}
-	if l.Q != "" {
-		return p + ".bib?q=" + url.QueryEscape(l.Q)
+	if q := l.params(); len(q) > 0 {
+		return p + ".bib?" + q.Encode()
 	}
 	return p + ".bib"
+}
+
+// params is the list's filter and topic as query parameters.
+func (l *list) params() url.Values {
+	q := url.Values{}
+	if l.Q != "" {
+		q.Set("q", l.Q)
+	}
+	if l.T != "" {
+		q.Set("t", l.T)
+	}
+	return q
+}
+
+// SortBy returns the address that sorts the list by column k: descending for
+// year and added, ascending otherwise, and reversed if k is already the sort.
+func (l *list) SortBy(k string) string {
+	next := k
+	if k == "year" || k == "added" {
+		next = "-" + k
+	}
+	if l.Sort == next {
+		next = strings.TrimPrefix(next, "-")
+		if next == l.Sort {
+			next = "-" + k
+		}
+	}
+	return l.url(next, 1)
+}
+
+// Arrow marks the column the list is sorted by.
+func (l *list) Arrow(k string) string {
+	switch l.Sort {
+	case k:
+		return " ↑"
+	case "-" + k:
+		return " ↓"
+	}
+	return ""
+}
+
+const defaultSort = "-year"
+
+// sortKeys compare two entries in ascending order, for ?sort=. Ties fall back
+// to the default order, newest first, then by title.
+var sortKeys = map[string]func(a, b *Entry) int{
+	"year":  func(a, b *Entry) int { return cmp.Compare(a.Year, b.Year) },
+	"title": func(a, b *Entry) int { return cmp.Compare(strings.ToLower(a.Title), strings.ToLower(b.Title)) },
+	"authors": func(a, b *Entry) int {
+		return cmp.Compare(strings.ToLower(a.ShortAuthors()), strings.ToLower(b.ShortAuthors()))
+	},
+	"venue": func(a, b *Entry) int { return cmp.Compare(strings.ToLower(a.Venue), strings.ToLower(b.Venue)) },
+	"added": func(a, b *Entry) int { return cmp.Compare(a.Added, b.Added) },
+}
+
+// sorted returns es ordered by sort, which is a sortKeys key with an
+// optional "-"; es itself is not changed. es is already in the default order.
+func sorted(es []*Entry, sort string) []*Entry {
+	key, desc := strings.CutPrefix(sort, "-")
+	f := sortKeys[key]
+	if f == nil || sort == defaultSort {
+		return es
+	}
+	out := slices.Clone(es)
+	slices.SortStableFunc(out, func(a, b *Entry) int {
+		if desc {
+			return f(b, a)
+		}
+		return f(a, b)
+	})
+	return out
 }
 
 // newList filters es by ?q= and cuts out ?page=. counts maps item keys to
 // comment counts.
 func newList(r *http.Request, path string, es []*Entry, counts map[string]int) *list {
-	l := &list{Q: strings.TrimSpace(r.URL.Query().Get("q")), Total: len(es), Path: path}
+	l := &list{Q: strings.TrimSpace(r.URL.Query().Get("q")), Total: len(es), Path: path, Sort: defaultSort}
+	if s := r.URL.Query().Get("sort"); sortKeys[strings.TrimPrefix(s, "-")] != nil {
+		l.Sort = s
+	}
+	es = sorted(es, l.Sort)
 	if words := queryWords(l.Q); len(words) > 0 {
 		var kept []*Entry
 		for _, e := range es {
@@ -251,6 +333,9 @@ func newList(r *http.Request, path string, es []*Entry, counts map[string]int) *
 
 // filtered applies ?q= to es, for .bib exports.
 func filtered(r *http.Request, es []*Entry) []*Entry {
+	if s := r.URL.Query().Get("sort"); sortKeys[strings.TrimPrefix(s, "-")] != nil {
+		es = sorted(es, s)
+	}
 	words := queryWords(r.URL.Query().Get("q"))
 	if len(words) == 0 {
 		return es
@@ -299,6 +384,15 @@ type node struct {
 	Name     string
 	Count    int
 	Children []*node
+	Current  bool // the topic the page is narrowed to
+}
+
+// mark sets Current on the node with key, if any.
+func mark(nodes []*node, key string) {
+	for _, n := range nodes {
+		n.Current = n.Key == key
+		mark(n.Children, key)
+	}
 }
 
 // tree returns the topics below each of roots, which are included.
@@ -661,6 +755,7 @@ type sharePage struct {
 	Member      *Member // nil on the public page
 	Token       string
 	Tree        []*node
+	TreeBase    string // a topic's link is TreeBase + its key
 	List        *list
 	Comments    []*Post // on the whole share
 	Suggestions []suggestion
@@ -671,6 +766,17 @@ type sharePage struct {
 type suggestion struct {
 	*Post
 	Added *Entry // the entry that now matches it, if any
+}
+
+// inShare reports whether collection key is one of a share's topics or below
+// one.
+func (ix *index) inShare(sh *Share, key string) bool {
+	for _, t := range sh.Topics {
+		if slices.Contains(ix.subtree(t), key) {
+			return true
+		}
+	}
+	return false
 }
 
 // shareEntries returns the entries in a share's topics.
@@ -701,12 +807,26 @@ func (s *Service) publicShare(w http.ResponseWriter, r *http.Request) {
 func (s *Service) sharePage(w http.ResponseWriter, r *http.Request, sh *Share, m *Member, token string, bib bool, path string) {
 	ix := s.ix.Load()
 	es := ix.shareEntries(sh)
+	// ?t= narrows the page to one topic of the share. A key outside the
+	// share is ignored, so the share's own pages never reveal other topics.
+	t := r.URL.Query().Get("t")
+	shown := es
+	if t != "" && ix.inShare(sh, t) {
+		shown = ix.entriesIn([]string{t})
+	} else {
+		t = ""
+	}
 	if bib {
-		writeBib(w, sh.Title, filtered(r, es))
+		writeBib(w, sh.Title, filtered(r, shown))
 		return
 	}
-	p := &sharePage{Share: sh, Member: m, Token: token, Tree: ix.tree(sh.Topics, path),
+	p := &sharePage{Share: sh, Member: m, Token: token, Tree: ix.tree(sh.Topics, path), TreeBase: path + "?t=",
 		Done: r.URL.Query().Get("done"), Error: r.URL.Query().Get("error")}
+	if t == "" && len(p.Tree) == 1 {
+		mark(p.Tree, p.Tree[0].Key) // the one root topic is the whole share
+	} else {
+		mark(p.Tree, t)
+	}
 	counts := map[string]int{}
 	if m != nil { // the public sees no comments
 		counts = s.commentCounts(sh.ID)
@@ -719,7 +839,8 @@ func (s *Service) sharePage(w http.ResponseWriter, r *http.Request, sh *Share, m
 			}
 		}
 	}
-	p.List = newList(r, path, es, counts)
+	p.List = newList(r, path, shown, counts)
+	p.List.T = t
 	s.render(w, r, http.StatusOK, "share", view{Title: sh.Title, Base: path + "/e/", Data: p})
 }
 
