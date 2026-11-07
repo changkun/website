@@ -110,6 +110,65 @@
     });
   }
 
+  // An overlay scrollbar for the list, at its right edge, since the
+  // window's own sits at the window's edge. Scrolling stays the window's.
+  if (app && app.querySelector('.list')) {
+    var bar = document.createElement('div');
+    bar.className = 'vbar';
+    bar.setAttribute('aria-hidden', 'true');
+    var thumb = document.createElement('i');
+    bar.appendChild(thumb);
+    app.appendChild(bar);
+    var fade = null;
+    var geom = function () {
+      var track = bar.clientHeight, view = window.innerHeight, doc = document.documentElement.scrollHeight;
+      var max = doc - view;
+      var h = Math.max(32, track * view / doc);
+      return { track: track, max: max, h: h, room: track - h };
+    };
+    var place = function () {
+      var g = geom();
+      bar.style.display = g.max > 0 ? '' : 'none';
+      if (g.max <= 0) return;
+      thumb.style.height = g.h + 'px';
+      thumb.style.top = (g.room * window.scrollY / g.max) + 'px';
+    };
+    window.addEventListener('scroll', function () {
+      place();
+      bar.classList.add('on');
+      clearTimeout(fade);
+      fade = setTimeout(function () { bar.classList.remove('on'); }, 900);
+    }, { passive: true });
+    window.addEventListener('resize', place);
+    if (window.ResizeObserver) new ResizeObserver(place).observe(app.querySelector('.list'));
+    place();
+    var drag = null;
+    bar.addEventListener('pointerdown', function (ev) {
+      ev.preventDefault();
+      var g = geom(), r = thumb.getBoundingClientRect();
+      if (ev.target !== thumb) { // a click on the track jumps there
+        var y = ev.clientY - bar.getBoundingClientRect().top - g.h / 2;
+        window.scrollTo(0, Math.max(0, Math.min(1, y / g.room)) * g.max);
+      }
+      drag = { y: ev.clientY, from: window.scrollY };
+      bar.setPointerCapture(ev.pointerId);
+      bar.classList.add('drag');
+    });
+    bar.addEventListener('pointermove', function (ev) {
+      if (!drag) return;
+      var g = geom();
+      window.scrollTo(0, drag.from + (ev.clientY - drag.y) * g.max / g.room);
+    });
+    var stop = function (ev) {
+      if (!drag) return;
+      drag = null;
+      bar.releasePointerCapture(ev.pointerId);
+      bar.classList.remove('drag');
+    };
+    bar.addEventListener('pointerup', stop);
+    bar.addEventListener('pointercancel', stop);
+  }
+
   // The row named by ?e= starts selected.
   var start = new URL(location.href).searchParams.get('e');
   if (start) {
