@@ -2,10 +2,14 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
+// Package ideas is the API behind the compose box on changkun.de. It accepts an
+// idea, polishes and translates it through the Lux model gateway, and commits
+// the result as a bilingual post to the blog repository.
 package ideas
 
 import (
 	"cmp"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -30,6 +34,14 @@ const (
 // because the handler is mounted without stripping the prefix, which keeps the
 // paths in this file the same as the ones a caller types.
 const Prefix = "/ideas/"
+
+// Service is a configured ideas API. A nil *Service is a deployment without
+// credentials, which Handler answers with 503.
+type Service struct {
+	log    *log.Logger
+	llm    *llmClient
+	github *githubClient
+}
 
 // New builds the ideas API from the environment, and returns nil
 // when it cannot.
@@ -99,6 +111,65 @@ func Handler(svc *Service, l *log.Logger) http.Handler {
 	r.HandleFunc("POST /ideas/post", svc.handlePost)
 	r.HandleFunc("POST /ideas/improve", svc.handleImprove)
 	return cors(auth(newLatereVerifier(l), r))
+}
+
+type ideaRequest struct {
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	Augmented string `json:"augmented"`
+}
+
+type ideaResponse struct {
+	OK      bool   `json:"ok"`
+	Message string `json:"message,omitempty"`
+	Content string `json:"content,omitempty"`
+}
+
+// handlePost accepts an idea and publishes it in the background. The pipeline
+// takes minutes, so the caller is answered as soon as the request is valid.
+func (s *Service) handlePost(w http.ResponseWriter, r *http.Request) {
+	req, ok := decodeIdea(w, r)
+	if !ok {
+		return
+	}
+	go s.processIdea(req)
+	writeJSON(w, http.StatusOK, ideaResponse{OK: true, Message: "idea accepted, publishing in background"})
+}
+
+// handleImprove polishes content and returns it without publishing.
+func (s *Service) handleImprove(w http.ResponseWriter, r *http.Request) {
+	req, ok := decodeIdea(w, r)
+	if !ok {
+		return
+	}
+	improved, err := s.llm.improveContent(r.Context(), req.Content)
+	if err != nil {
+		s.log.Printf("content improvement failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, ideaResponse{Message: "content improvement failed"})
+		return
+	}
+	writeJSON(w, http.StatusOK, ideaResponse{OK: true, Content: improved})
+}
+
+// decodeIdea reads the request body, answering 400 itself when it is not an
+// idea with content.
+func decodeIdea(w http.ResponseWriter, r *http.Request) (ideaRequest, bool) {
+	var req ideaRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, ideaResponse{Message: "invalid request body"})
+		return req, false
+	}
+	if req.Content == "" {
+		writeJSON(w, http.StatusBadRequest, ideaResponse{Message: "content is required"})
+		return req, false
+	}
+	return req, true
+}
+
+func writeJSON(w http.ResponseWriter, code int, v ideaResponse) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(v)
 }
 
 // cors admits the compose box on changkun.de. The ideas API is reached from a

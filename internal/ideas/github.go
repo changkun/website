@@ -32,12 +32,12 @@ type githubClient struct {
 }
 
 type createFileRequest struct {
-	Message   string          `json:"message"`
-	Content   string          `json:"content"` // base64-encoded
-	Committer *githubCommiter `json:"committer,omitempty"`
+	Message   string           `json:"message"`
+	Content   string           `json:"content"` // base64-encoded
+	Committer *githubCommitter `json:"committer,omitempty"`
 }
 
-type githubCommiter struct {
+type githubCommitter struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }
@@ -49,7 +49,7 @@ func (g *githubClient) createFile(ctx context.Context, path, content, commitMsg 
 	reqBody := createFileRequest{
 		Message: commitMsg,
 		Content: base64.StdEncoding.EncodeToString([]byte(content)),
-		Committer: &githubCommiter{
+		Committer: &githubCommitter{
 			Name:  g.name,
 			Email: g.email,
 		},
@@ -62,7 +62,7 @@ func (g *githubClient) createFile(ctx context.Context, path, content, commitMsg 
 
 	url := fmt.Sprintf("%s/repos/%s/%s/contents/%s",
 		cmp.Or(g.baseURL, "https://api.github.com"), g.owner, g.repo, path)
-	req, err := http.NewRequestWithContext(ctx, "PUT", url, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("create request: %w", err)
 	}

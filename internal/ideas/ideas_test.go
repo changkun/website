@@ -5,10 +5,12 @@
 package ideas
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -175,5 +177,40 @@ func TestHandlerRejectsUnauthenticated(t *testing.T) {
 	h.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/ideas/ping", nil))
 	if w.Code != http.StatusOK {
 		t.Errorf("GET /ideas/ping = %d, want %d", w.Code, http.StatusOK)
+	}
+}
+
+// TestHandleImprove returns the model's rewrite, and a fixed message rather
+// than the gateway's error when there is none.
+func TestHandleImprove(t *testing.T) {
+	t.Run("rewritten", func(t *testing.T) {
+		svc := &Service{log: discard(), llm: newScriptedGateway(t, "Polished.").client()}
+		w := httptest.NewRecorder()
+		svc.handleImprove(w, httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"content":"rough"}`)))
+		assertResponse(t, w, http.StatusOK, ideaResponse{OK: true, Content: "Polished."})
+	})
+
+	t.Run("gateway down", func(t *testing.T) {
+		svc := &Service{log: discard(), llm: newScriptedGateway(t).client()}
+		w := httptest.NewRecorder()
+		svc.handleImprove(w, httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"content":"rough"}`)))
+		assertResponse(t, w, http.StatusInternalServerError, ideaResponse{Message: "content improvement failed"})
+	})
+}
+
+func assertResponse(t *testing.T, w *httptest.ResponseRecorder, code int, want ideaResponse) {
+	t.Helper()
+	if w.Code != code {
+		t.Errorf("status = %d, want %d", w.Code, code)
+	}
+	if ct := w.Header().Get("Content-Type"); ct != "application/json" {
+		t.Errorf("Content-Type = %q, want application/json", ct)
+	}
+	var got ideaResponse
+	if err := json.NewDecoder(w.Body).Decode(&got); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if got != want {
+		t.Errorf("response = %+v, want %+v", got, want)
 	}
 }
