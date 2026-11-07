@@ -43,7 +43,8 @@ type Service struct {
 
 	ix atomic.Pointer[index]
 
-	syncMu sync.Mutex // one sync at a time
+	syncMu sync.Mutex      // one sync at a time
+	runCtx context.Context // from Run; Sync now runs in it, so shutdown stops it
 
 	statusMu  sync.Mutex
 	lastOK    time.Time // last successful sync
@@ -122,6 +123,7 @@ func (s *Service) Run(ctx context.Context) {
 	if s == nil {
 		return
 	}
+	s.runCtx = ctx
 	go func() {
 		t := time.NewTicker(s.interval)
 		defer t.Stop()

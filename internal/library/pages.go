@@ -482,9 +482,14 @@ func (s *Service) markRead(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) syncNow(w http.ResponseWriter, r *http.Request) {
-	// The sync runs on after the redirect; the status line shows its
-	// progress and outcome. A sync already running finishes first.
-	go func() { _ = s.Sync(context.WithoutCancel(r.Context())) }()
+	// The sync runs on after the redirect, until the server stops; the status
+	// line shows its progress and outcome. A sync already running finishes
+	// first. Tying it to the request would hold shutdown until it ends.
+	ctx := s.runCtx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	go func() { _ = s.Sync(ctx) }()
 	back := r.FormValue("next")
 	if !strings.HasPrefix(back, Prefix) {
 		back = Prefix
