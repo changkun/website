@@ -29,8 +29,14 @@ type Item struct {
 	BibTeX  string          `json:"bibtex"`
 }
 
+// cacheFormat changes when the cache misses something an older server did
+// not keep, so a cache of another format is dropped and rebuilt by a full
+// sync. 2: trashed collections are left out.
+const cacheFormat = 2
+
 // cacheFile is cache.json: the whole library at Version.
 type cacheFile struct {
+	Format      int                    `json:"format"` // cacheFormat
 	Version     int                    `json:"version"`
 	Collections map[string]*Collection `json:"collections"`
 	Items       map[string]*Item       `json:"items"`
@@ -163,6 +169,7 @@ func sortEntries(es []*Entry) {
 // parse. It does not change c.
 func apply(c cacheFile, ch *changes) (cacheFile, []string) {
 	next := cacheFile{
+		Format:      cacheFormat,
 		Version:     ch.version,
 		Collections: make(map[string]*Collection, len(c.Collections)),
 		Items:       make(map[string]*Item, len(c.Items)),
@@ -174,6 +181,10 @@ func apply(c cacheFile, ch *changes) (cacheFile, []string) {
 		next.Items[k] = v
 	}
 	for _, col := range ch.collections {
+		if trashed(col.Data.Deleted) {
+			delete(next.Collections, col.Key)
+			continue
+		}
 		parent := ""
 		_ = json.Unmarshal(col.Data.ParentCollection, &parent) // false stays ""
 		next.Collections[col.Key] = &Collection{Key: col.Key, Name: col.Data.Name, Parent: parent}
@@ -204,10 +215,21 @@ func apply(c cacheFile, ch *changes) (cacheFile, []string) {
 	for _, k := range ch.deleted.Items {
 		delete(next.Items, k)
 	}
+	// A collection under a trashed or deleted one goes with it.
+	for changed := true; changed; {
+		changed = false
+		for k, col := range next.Collections {
+			if col.Parent != "" && next.Collections[col.Parent] == nil {
+				delete(next.Collections, k)
+				changed = true
+			}
+		}
+	}
 	return next, bad
 }
 
-// trashed reports whether an item's deleted field marks it as in the trash.
+// trashed reports whether the deleted field of an item or collection marks it
+// as in the trash.
 // Zotero sends 1 or true.
 func trashed(raw json.RawMessage) bool {
 	s := strings.TrimSpace(string(raw))

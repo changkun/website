@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -51,6 +52,19 @@ func (f *fakeZotero) addCollection(key, name, parent string) {
 	}
 	f.collections[key] = fakeObj{f.version, fmt.Sprintf(`{"key":%q,"version":%d,"data":{"key":%q,"name":%q,"parentCollection":%s}}`,
 		key, f.version, key, name, p)}
+}
+
+// trashCollection moves a collection to the trash, as Zotero 7 does: only
+// that collection is marked.
+func (f *fakeZotero) trashCollection(key string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.version++
+	o := f.collections[key]
+	o.version = f.version
+	o.json = strings.Replace(o.json, `"data":{`, `"data":{"deleted":true,`, 1)
+	o.json = regexp.MustCompile(`"version":\d+`).ReplaceAllString(o.json, fmt.Sprintf(`"version":%d`, f.version))
+	f.collections[key] = o
 }
 
 func (f *fakeZotero) addItem(key, title, year string, collections []string, extra string) {
@@ -199,6 +213,15 @@ func TestSync(t *testing.T) {
 		t.Fatalf("incremental sync made %d requests, want 3", n)
 	}
 
+	// A trashed collection leaves the tree, and so do its subcollections.
+	z.trashCollection("SYS")
+	if err := s.Sync(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if c := s.ix.Load().cache.Collections; c["SYS"] != nil || c["GPU"] != nil || c["HCI"] == nil {
+		t.Fatalf("after trashing SYS: collections %v", keys(c))
+	}
+
 	// The cache survives a restart.
 	s2, err := New(log.New(io.Discard, "", 0))
 	if err != nil {
@@ -206,6 +229,19 @@ func TestSync(t *testing.T) {
 	}
 	if got := s2.ix.Load().cache.Version; got != z.version {
 		t.Fatalf("cache version after restart = %d, want %d", got, z.version)
+	}
+	// A cache of an older format is dropped, so the next sync is a full one.
+	raw, _ := os.ReadFile(filepath.Join(s.dir, "cache.json"))
+	raw = []byte(strings.Replace(string(raw), `"format":2`, `"format":1`, 1))
+	if err := os.WriteFile(filepath.Join(s.dir, "cache.json"), raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s3, err := New(log.New(io.Discard, "", 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := s3.ix.Load().cache.Version; got != 0 {
+		t.Fatalf("cache version of an old-format cache = %d, want 0", got)
 	}
 }
 
