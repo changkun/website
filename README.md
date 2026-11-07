@@ -115,11 +115,12 @@ is in [the design doc](https://claude.ai/artifact/4jUmk2S2wv4XXSe6fsWab2).
 With the 1Password CLI signed in:
 
 ```
-$ make library
+$ make run
 ```
 
-This syncs your library into `./data` and serves it at
-<http://localhost:8080/library/>. `LIBRARY_DEV_OWNER=1` makes requests from
+This serves the site at <http://localhost:8080>, syncs your library into `./data`, and serves it at
+<http://localhost:8080/library/>. Without `op`, the site runs and `/library/`
+answers 503. `LIBRARY_DEV_OWNER=1` makes requests from
 this machine the owner, so no login is needed; it has no effect behind a
 proxy. Share links work locally too: open one in a private window.
 
