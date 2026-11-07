@@ -11,6 +11,13 @@ test:
 build: test
 	CGO_ENABLED=0 GOOS=linux go build -o $(NAME)
 	docker buildx build -t $(NAME):$(VERSION) -t $(NAME):latest --load .
+# run serves the site at http://localhost:8080. With the 1Password CLI signed
+# in, it also syncs the Zotero library into ./data and serves /library/.
+run:
+	ZOTERO_USER_ID=$$(op read op://Personal/Zotero/user-id 2>/dev/null) \
+	ZOTERO_API_KEY=$$(op read op://Personal/Zotero/api-key 2>/dev/null) \
+	LIBRARY_DIR=./data LIBRARY_DEV_OWNER=1 WEBSITE_ADDR=localhost:8080 \
+	go run .
 up:
 	docker compose up -d
 down:

@@ -1,0 +1,41 @@
+{{define "content"}}<div class="app{{if not (or .Pane (and (eq .Show "share") .Data.Topic))}} no-pane{{end}}">
+<aside class="side">{{with .Data}}{{template "side" (side "/library/t/" "/library/" "My Library" (not .Topic) .Tree)}}{{end}}</aside>{{template "side-scroll"}}
+<div class="grip" data-grip="side" title="Drag to resize; double-click to reset"></div>
+<section class="list">
+{{with .Data}}
+<div class="head">
+  <h1>{{if .Path}}{{range $i, $c := .Path}}{{if not $i}}{{if eq (len $.Data.Path) 1}}{{$c.Name}}{{else}}<a class="up" href="/library/t/{{$c.Key}}">{{$c.Name}}</a>{{end}}{{else}}<span class="sub"> › {{if eq (add $i 1) (len $.Data.Path)}}{{$c.Name}}{{else}}<a href="/library/t/{{$c.Key}}">{{$c.Name}}</a>{{end}}</span>{{end}}{{end}}{{else}}My Library{{end}}</h1>
+  {{if .Unsorted}}<p class="meta">{{.Unsorted}} entries are in no topic</p>{{end}}
+  {{if .Topic}}<p class="actions-line"><a href="{{.List.Panel "share"}}">Share this topic</a></p>{{end}}
+</div>
+{{end}}
+{{template "table" .}}
+</section>
+<div class="grip" data-grip="pane" title="Drag to resize; double-click to reset"></div>
+<aside class="pane" id="pane">
+{{with .Pane}}{{template "pane" .}}{{else}}{{with .Data}}
+  {{if .Topic}}<a class="close" href="{{.List.Here}}" aria-label="Close" title="Close">×</a>{{end}}
+  {{if .Topic}}
+  <section class="share-form">
+    <h2>Share this topic</h2>
+    <form method="post" action="/library/shares">
+      <input type="hidden" name="topic" value="{{.Topic.Key}}">
+      <label>Title <input name="title" value="{{.Topic.Name}}"></label>
+      <label>Names, one per line; each gets their own link
+        <textarea name="names" rows="3" placeholder="Alice&#10;Bob"></textarea></label>
+      <label class="check"><input type="checkbox" name="public"> Also readable by anyone, without comments</label>
+      <button class="primary">Create share</button>
+    </form>
+    {{if .Shares}}
+    <form method="post" action="/library/shares">
+      <input type="hidden" name="topic" value="{{.Topic.Key}}">
+      <label>Or add this topic to
+        <select name="share">{{range .Shares}}<option value="{{.ID}}">{{.Title}}</option>{{end}}</select></label>
+      <button>Add</button>
+    </form>
+    {{end}}
+  </section>
+  {{end}}
+{{end}}{{end}}
+</aside>
+</div>{{end}}

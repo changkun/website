@@ -1,0 +1,30 @@
+{{define "content"}}{{with .Data}}
+{{if .Hidden}}
+<div class="head"><h1>Hidden</h1><p class="muted">Comments and suggestions you hid, newest first. Members don't see them. <a href="/library/inbox">Back to inbox</a></p></div>
+{{else}}
+<div class="head"><h1>Inbox</h1><p class="muted">Every comment and suggestion from every share, newest first. Unread ones are bold.{{if .HiddenCount}} <a href="/library/inbox?hidden=1">Hidden ({{.HiddenCount}})</a>{{end}}</p></div>
+{{end}}
+{{if .Items}}
+{{if not .Hidden}}
+<form method="post" action="/library/inbox/read" id="read"></form>
+<p><button form="read" name="all" value="1">Mark all read</button> <button form="read">Mark selected read</button></p>
+{{end}}
+<table class="inbox">
+<tbody>
+{{range .Items}}
+<tr class="{{if and (not .Read) (not $.Data.Hidden)}}unread{{end}}">
+  <td>{{if not $.Data.Hidden}}<input type="checkbox" form="read" name="id" value="{{.ID}}" aria-label="Select"{{if .Read}} disabled{{end}}>{{end}}</td>
+  <td class="when">{{date .Time}}</td>
+  <td class="who">{{.By}}</td>
+  <td class="what">
+    {{if eq .Type "suggest"}}suggested <span class="ref">{{linkify .Ref}}</span>{{if .Note}}: {{linkify .Note}}{{end}}
+    {{else}}{{linkify .Text}}{{end}}
+    <div class="muted">in <a href="/library/shares#{{.Share}}">{{.ShareTitle}}</a>{{if .EntryTitle}}, on <a href="/library/e/{{.Entry}}">{{.EntryTitle}}</a>{{else if .Removed}}, on an entry removed from the library ({{.Entry}}){{end}}
+      · {{if $.Data.Hidden}}<form method="post" action="/library/shares/{{.Share}}/unhide" class="inline"><input type="hidden" name="post" value="{{.ID}}"><input type="hidden" name="next" value="/library/inbox?hidden=1"><button class="link">Unhide</button></form>{{else}}<form method="post" action="/library/shares/{{.Share}}/hide" class="inline"><input type="hidden" name="post" value="{{.ID}}"><button class="link">Hide</button></form>{{end}}</div>
+  </td>
+</tr>
+{{end}}
+</tbody>
+</table>
+{{else}}<p class="muted">{{if .Hidden}}Nothing hidden.{{else}}Nothing yet.{{end}}</p>{{end}}
+{{end}}{{end}}
