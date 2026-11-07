@@ -30,6 +30,10 @@ serves and `/ideas/` answers 503.
 
 ## Ideas API
 
+In production the API is at `https://api.changkun.de/ideas/`, which traefik
+routes to this binary. `changkun.de/ideas/` redirects to the blog's idea pages
+instead.
+
 | Route | Auth | Body | Reply |
 |---|---|---|---|
 | `GET /ideas/ping` | none | | `pong` |
