@@ -225,6 +225,8 @@ type list struct {
 	From, To int
 	Rows     []row
 	Path     string // this page's path, for the pager and .bib
+
+	HasComments bool // some row on this page has comments, so the column shows
 }
 
 type row struct {
@@ -360,6 +362,7 @@ func newList(r *http.Request, path string, es []*Entry, counts map[string]int) *
 	l.To = min(l.From+rowsPerPage, len(es))
 	for _, e := range es[l.From:l.To] {
 		l.Rows = append(l.Rows, row{Entry: e, Comments: counts[e.Key]})
+		l.HasComments = l.HasComments || counts[e.Key] > 0
 	}
 	return l
 }

@@ -139,9 +139,9 @@ table.entries td {
   text-overflow: ellipsis;
 }
 table.entries .y { width: 64px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
-table.entries .a { width: 15%; color: var(--text-secondary); }
-table.entries .v { width: 20%; color: var(--text-secondary); }
-table.entries .c { width: 110px; text-align: right; color: var(--text-secondary); }
+table.entries .a { width: 20%; color: var(--text-secondary); }
+table.entries .v { width: 14%; color: var(--text-secondary); }
+table.entries .c { width: 96px; text-align: right; color: var(--text-secondary); }
 table.entries tr.row:nth-child(4n+3) td { background: var(--zebra); }
 table.entries tr.row.cur td { background: var(--bg-raised); }
 table.entries tr.row.cur td:first-child { box-shadow: inset 2px 0 0 var(--link); }

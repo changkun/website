@@ -71,7 +71,7 @@
   <th class="t"><a href="{{.SortBy "title"}}">Title{{.Arrow "title"}}</a> <a class="added" href="{{.SortBy "added"}}" title="Sort by when it was added to Zotero">added{{.Arrow "added"}}</a></th>
   <th class="a"><a href="{{.SortBy "authors"}}">Authors{{.Arrow "authors"}}</a></th>
   <th class="v"><a href="{{.SortBy "venue"}}">Venue{{.Arrow "venue"}}</a></th>
-  <th class="c"></th>
+  {{if .HasComments}}<th class="c"></th>{{end}}
 </tr></thead>
 <tbody>
 {{range .Rows}}
@@ -81,7 +81,7 @@
   <td class="t"><a href="{{$base}}{{.Key}}">{{.Title}}</a></td>
   <td class="a">{{.ShortAuthors}}</td>
   <td class="v">{{.Venue}}</td>
-  <td class="c">{{if .Comments}}{{plural .Comments "comment" "comments"}}{{end}}</td>
+  {{if $.Data.List.HasComments}}<td class="c">{{if .Comments}}{{plural .Comments "comment" "comments"}}{{end}}</td>{{end}}
 </tr>
 {{end}}
 </tbody>
