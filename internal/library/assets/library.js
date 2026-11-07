@@ -19,6 +19,11 @@
   var pane = document.getElementById('pane');
   var wide = window.matchMedia('(min-width: 901px)');
 
+  var tree = document.querySelector('aside.side');
+  if (tree) window.addEventListener('pagehide', function () {
+    try { sessionStorage.setItem('library.side-scroll', tree.scrollTop); } catch (e) {}
+  });
+
   // On a phone the topic tree starts closed, so the list is on screen.
   var side = document.querySelector('.side-box');
   if (side && !wide.matches) side.open = false;

@@ -8,6 +8,11 @@
 <title>{{.Title}} · Library</title>
 {{if and .Total .Synced.IsZero}}<meta http-equiv="refresh" content="5">{{end}}
 <link rel="stylesheet" href="/library/assets/library.css">
+<script>
+// Before the first paint, so a new page does not jump: the column widths
+// kept in this browser.
+try { ['side', 'pane'].forEach(function (k) { var v = localStorage.getItem('library.' + k); if (v) document.documentElement.style.setProperty('--' + k + '-w', v); }); } catch (e) {}
+</script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -50,6 +55,7 @@
 </p>
 {{end}}
 </div>
+<script>document.documentElement.style.setProperty('--hdr', document.querySelector('.top').offsetHeight + 'px');</script>
 <main>
 {{template "content" .}}
 </main>
@@ -117,3 +123,7 @@
 {{range .nodes}}<li>{{if .Children}}<details{{if .Open}} open{{end}}><summary><a class="node{{if .Current}} current{{end}}" href="{{$base}}{{.Key}}">{{.Name}} <span class="n">{{.Count}}</span></a></summary>{{template "tree" (tree $base .Children)}}</details>{{else}}<a class="node leaf{{if .Current}} current{{end}}" href="{{$base}}{{.Key}}">{{.Name}} <span class="n">{{.Count}}</span></a>{{end}}</li>
 {{end}}</ul>
 {{end}}
+{{define "side-scroll"}}<script>
+// The topic tree keeps its scroll position from page to page.
+try { var s = sessionStorage.getItem('library.side-scroll'); if (s) document.currentScript.previousElementSibling.scrollTop = +s; } catch (e) {}
+</script>{{end}}

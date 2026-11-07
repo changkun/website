@@ -1,5 +1,5 @@
 {{define "content"}}<div class="app{{if not (or .Pane (and (eq .Show "share") .Data.Topic))}} no-pane{{end}}">
-<aside class="side">{{with .Data}}{{template "side" (side "/library/t/" "/library/" "My Library" (not .Topic) .Tree)}}{{end}}</aside>
+<aside class="side">{{with .Data}}{{template "side" (side "/library/t/" "/library/" "My Library" (not .Topic) .Tree)}}{{end}}</aside>{{template "side-scroll"}}
 <div class="grip" data-grip="side" title="Drag to resize; double-click to reset"></div>
 <section class="list">
 {{with .Data}}
