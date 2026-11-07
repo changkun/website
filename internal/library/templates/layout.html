@@ -28,6 +28,7 @@
   <symbol id="i-slides" viewBox="0 0 16 16"><rect x="2" y="2.5" width="12" height="8.5" rx="1"/><path d="M8 11v3M5.5 14h5"/></symbol>
   <symbol id="i-media" viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="9" rx="1"/><path d="M7 6.3v3.4L10 8z"/></symbol>
 </svg>
+<div class="top">
 <header class="site">
   <div class="site-name"><a href="/">Changkun Ou</a><span class="sep">|</span>{{if .Home}}<a href="{{.Home}}">Library</a>{{else}}<span>Library</span>{{end}}</div>
   {{if .Owner}}
@@ -48,6 +49,7 @@
   {{else}}Sync failed: {{.SyncErr}}. Last good sync {{ago .Synced}}; showing that copy.{{end}}
 </p>
 {{end}}
+</div>
 <main>
 {{template "content" .}}
 </main>

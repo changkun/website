@@ -85,23 +85,10 @@ label.check { display: inline-flex; gap: 4px; align-items: center; }
 
 main { flex: 1; padding: 0 clamp(16px, 3vw, 40px) 48px; }
 main:has(> .app) { padding: 0; }
-/* On a wide screen the three panes fill the window and each scrolls. */
-@media (min-width: 901px) {
-  body:has(main > .app) { height: 100dvh; }
-  main:has(> .app) { min-height: 0; overflow: hidden; }
-  /* The window stays still; a browser that bounces scrolling columns, such
-     as Safari, bounces each one on its own. */
-  html:has(.app), html:has(.app) body { overscroll-behavior: none; }
-  .app > * { overscroll-behavior: contain; }
-}
+
 .page { max-width: 1000px; }
+.top { position: fixed; top: 0; left: 0; right: 0; z-index: 20; background: var(--bg); }
 header.site {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  background: var(--bg);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -119,7 +106,7 @@ header nav { display: flex; gap: 20px; align-items: center; color: var(--text-se
 header nav a { color: var(--text-secondary); }
 header nav a:hover { color: var(--text); }
 header nav .synced { color: var(--text-secondary); font-size: 13px; }
-.status { margin: 8px clamp(16px, 2vw, 24px) 0; padding: 6px 10px; border-radius: 6px; background: var(--bg-raised); color: var(--text-secondary); }
+.status { margin: 8px clamp(16px, 2vw, 24px); padding: 6px 10px; border-radius: 6px; background: var(--bg-raised); color: var(--text-secondary); }
 .head .meta { margin: 0; color: var(--text-secondary); }
 .head .meta a { color: var(--text-secondary); }
 nav.topics { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: baseline; margin: 16px 0 4px; }
@@ -247,16 +234,24 @@ details.settings summary { cursor: pointer; color: var(--text-secondary); font-s
 }
 
 /* Three panes. Each scrolls on its own. */
-.app { display: grid; grid-template-columns: var(--side-w, 240px) 5px minmax(0, 1fr) 5px var(--pane-w, 380px); height: 100%; }
+/* Three panes, as in bobook: the list is the page and scrolls with the
+   window, so macOS elastic scrolling bounces only the list. The topics and
+   the selected entry are fixed to the window and scroll on their own. */
+.app { --side: var(--side-w, 240px); --pane: var(--pane-w, 380px); }
+.app > .side, .app > .pane, .app > .grip { position: fixed; top: var(--hdr, 53px); bottom: 0; overflow-y: auto; }
+.app > .side { left: 0; width: var(--side); }
+.app > .grip[data-grip=side] { left: var(--side); width: 5px; }
+.app > .grip[data-grip=pane] { right: var(--pane); width: 5px; }
+.app > .pane { right: 0; width: var(--pane); }
+.app > .list { margin: 0 calc(var(--pane) + 5px) 0 calc(var(--side) + 5px); min-width: 0; }
 .grip { cursor: col-resize; background: var(--border); background-clip: content-box; padding: 0 2px; touch-action: none; }
 .grip:hover, .grip.drag { background: var(--text-secondary); padding: 0 1px; }
 .app.resizing { user-select: none; cursor: col-resize; }
-.app.no-pane { grid-template-columns: var(--side-w, 240px) 5px minmax(0, 1fr); }
+.app.no-pane > .list { margin-right: 0; }
 .app.no-pane > .pane, .app.no-pane > .grip[data-grip=pane] { display: none; }
 .pane .close { float: right; margin: 10px 0 0 12px; font-size: 20px; line-height: 20px; color: var(--text-secondary); }
 .head .actions-line { display: flex; gap: 16px; margin: 4px 0 0; }
 .head .actions-line a { color: var(--link); }
-.app > * { overflow: auto; min-height: 0; }
 .side { background: var(--bg-raised); padding: 12px 8px 24px; font-size: 14px; }
 .side .side-box > summary { display: none; }
 .side details { margin: 0; }
@@ -318,9 +313,9 @@ table.entries tr.row.sel td a { text-decoration: none; }
 }
 
 @media (max-width: 900px) {
-  .app { display: block; height: auto; }
+  .app > .side, .app > .pane { position: static; width: auto; overflow: visible; }
+  .app > .list { margin: 0; }
   .grip { display: none; }
-  .app > * { overflow: visible; }
   .side { border: 0; border-bottom: 1px solid var(--border); padding: 8px; }
   .side .side-box > summary { display: block; color: var(--text-secondary); padding: 0 8px 4px; }
   .pane { border: 0; border-top: 1px solid var(--border); }

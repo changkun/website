@@ -4,8 +4,9 @@
 (function () {
   'use strict';
 
-  // The header is fixed; --hdr keeps the page below it.
-  var header = document.querySelector('header.site');
+  // The header and the sync status are fixed; --hdr keeps the page below
+  // them.
+  var header = document.querySelector('.top');
   if (header) {
     var fit = function () { document.documentElement.style.setProperty('--hdr', header.offsetHeight + 'px'); };
     fit();
@@ -38,9 +39,8 @@
     if (document.activeElement && row.contains(document.activeElement)) document.activeElement.blur();
     row.querySelectorAll('td').forEach(function (td) { td.scrollLeft = 0; });
     var r = row.getBoundingClientRect();
-    var box = row.closest('.list') || document.documentElement;
-    var b = box.getBoundingClientRect();
-    if (r.top < b.top + 30 || r.bottom > b.bottom) row.scrollIntoView({ block: 'nearest' });
+    var top = header ? header.offsetHeight : 0;
+    if (r.top < top + 30 || r.bottom > window.innerHeight) row.scrollIntoView({ block: 'nearest' });
     if (load) show(row);
   }
 
