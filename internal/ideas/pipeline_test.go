@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-package main
+package ideas
 
 import (
 	"encoding/base64"
@@ -121,11 +121,11 @@ func (f *fakeGitHub) got() []commit {
 	return append([]commit(nil), f.commits...)
 }
 
-func newPipeline(t *testing.T, g *scriptedGateway) (*service, *fakeGitHub) {
+func newPipeline(t *testing.T, g *scriptedGateway) (*Service, *fakeGitHub) {
 	t.Helper()
 
 	gh := newFakeGitHub(t)
-	return &service{
+	return &Service{
 		log: log.New(io.Discard, "", 0),
 		llm: g.client(),
 		github: &githubClient{

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-package main
+package ideas
 
 import (
 	"cmp"
@@ -26,12 +26,12 @@ const (
 	defaultTitleModel = "anthropic/claude-haiku-5.5"
 )
 
-// ideasPrefix is the subtree the ideas API owns. The routes below repeat it
+// Prefix is the subtree the ideas API owns. The routes below repeat it
 // because the handler is mounted without stripping the prefix, which keeps the
 // paths in this file the same as the ones a caller types.
-const ideasPrefix = "/ideas/"
+const Prefix = "/ideas/"
 
-// newIdeasService builds the ideas API from the environment, and returns nil
+// New builds the ideas API from the environment, and returns nil
 // when it cannot.
 //
 // Serving changkun.de is the primary job of this binary and needs no
@@ -43,7 +43,7 @@ const ideasPrefix = "/ideas/"
 // is passed explicitly rather than left to luxsdk, which would otherwise read
 // LUX_BASE_URL from the environment and let an unrelated variable retarget
 // this service.
-func newIdeasService(l *log.Logger) *service {
+func New(l *log.Logger) *Service {
 	llmBaseURL := cmp.Or(os.Getenv("LLM_BASE_URL"), luxsdk.DefaultBaseURL)
 	llmAPIKey := os.Getenv("LLM_API_KEY")
 	gitToken := os.Getenv("GIT_TOKEN")
@@ -59,7 +59,7 @@ func newIdeasService(l *log.Logger) *service {
 		return nil
 	}
 
-	return &service{
+	return &Service{
 		log: l,
 		llm: &llmClient{
 			lux:        luxsdk.New(llmBaseURL, luxsdk.WithAPIKey(llmAPIKey)),
@@ -77,17 +77,17 @@ func newIdeasService(l *log.Logger) *service {
 	}
 }
 
-// ideasHandler serves the ideas API under ideasPrefix.
+// Handler serves the ideas API under Prefix.
 //
 // A nil service answers 503 on the whole subtree instead of leaving the paths
 // to the file server, so a deployment that lost its credentials says so at the
 // endpoint rather than returning the site's 404 page. Both forms keep the CORS
 // wrapper, because the caller is the compose box on changkun.de and a browser
 // reads a blocked response as a network error, not as the status it carries.
-func ideasHandler(svc *service, l *log.Logger) http.Handler {
+func Handler(svc *Service, l *log.Logger) http.Handler {
 	r := http.NewServeMux()
 	if svc == nil {
-		r.HandleFunc(ideasPrefix, func(w http.ResponseWriter, r *http.Request) {
+		r.HandleFunc(Prefix, func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "ideas API is not configured", http.StatusServiceUnavailable)
 		})
 		return cors(r)

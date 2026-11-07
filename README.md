@@ -53,9 +53,9 @@ exactly, with no prefix stripped and no alias looked up, so `LLM_MODEL` and
 model routes, never a person's login token, so the key is the service's own
 credential. Scope it to the two models and give it a budget.
 
-Every instruction sent to a model lives in `prompts/` as a Go text template,
-compiled into the binary with `go:embed`. A deployed server carries its own
-prompts and cannot drift from the ones it was built with.
+Every instruction sent to a model lives in `internal/ideas/prompts/` as a Go
+text template, compiled into the binary with `go:embed`. A deployed server
+carries its own prompts and cannot drift from the ones it was built with.
 
 Every route except `/ideas/ping` requires an `Authorization: Bearer <token>`
 header carrying an access token from [latere auth](https://auth.latere.ai),

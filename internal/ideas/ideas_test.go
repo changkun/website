@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-package main
+package ideas
 
 import (
 	"io"
@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-// ideasEnv is the minimum configuration newIdeasService accepts.
+// ideasEnv is the minimum configuration New accepts.
 func ideasEnv(t *testing.T) {
 	t.Helper()
 	t.Setenv("LLM_BASE_URL", "https://lux.example")
@@ -22,10 +22,10 @@ func ideasEnv(t *testing.T) {
 
 func discard() *log.Logger { return log.New(io.Discard, "", 0) }
 
-// TestNewIdeasServiceNeedsCredentials keeps the site independent of the API.
+// TestNewNeedsCredentials keeps the site independent of the API.
 // The binary serves changkun.de first and answers /ideas/* second, so a host
 // without credentials must start rather than exit.
-func TestNewIdeasServiceNeedsCredentials(t *testing.T) {
+func TestNewNeedsCredentials(t *testing.T) {
 	tests := []struct {
 		name  string
 		unset string
@@ -37,24 +37,24 @@ func TestNewIdeasServiceNeedsCredentials(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ideasEnv(t)
 			t.Setenv(tt.unset, "")
-			if svc := newIdeasService(discard()); svc != nil {
-				t.Fatalf("newIdeasService() = %v, want nil without %s", svc, tt.unset)
+			if svc := New(discard()); svc != nil {
+				t.Fatalf("New() = %v, want nil without %s", svc, tt.unset)
 			}
 		})
 	}
 }
 
-// TestNewIdeasServiceDefaultsGateway keeps LLM_BASE_URL optional: luxsdk
+// TestNewDefaultsGateway keeps LLM_BASE_URL optional: luxsdk
 // names the platform's live Lux deployment, so a key alone mounts the API.
-func TestNewIdeasServiceDefaultsGateway(t *testing.T) {
+func TestNewDefaultsGateway(t *testing.T) {
 	ideasEnv(t)
 	t.Setenv("LLM_BASE_URL", "")
-	if svc := newIdeasService(discard()); svc == nil {
-		t.Fatal("newIdeasService() = nil, want a service on the default gateway")
+	if svc := New(discard()); svc == nil {
+		t.Fatal("New() = nil, want a service on the default gateway")
 	}
 }
 
-func TestNewIdeasServiceReadsRepo(t *testing.T) {
+func TestNewReadsRepo(t *testing.T) {
 	tests := []struct {
 		name        string
 		repo        string
@@ -73,9 +73,9 @@ func TestNewIdeasServiceReadsRepo(t *testing.T) {
 			ideasEnv(t)
 			t.Setenv("GIT_REPO", tt.repo)
 
-			svc := newIdeasService(discard())
+			svc := New(discard())
 			if (svc != nil) != tt.wantService {
-				t.Fatalf("newIdeasService() = %v, want service: %v", svc, tt.wantService)
+				t.Fatalf("New() = %v, want service: %v", svc, tt.wantService)
 			}
 			if svc == nil {
 				return
@@ -88,21 +88,21 @@ func TestNewIdeasServiceReadsRepo(t *testing.T) {
 	}
 }
 
-// TestIdeasServiceModelsAreCatalogNames pins the defaults to the names the
+// TestNewModelsAreCatalogNames pins the defaults to the names the
 // default gateway's catalog lists. Lux resolves a name exactly, and the two
 // gateways this service has used disagree on the form: lux.latere.ai refused
 // a provider prefix, and api.latere.ai/v1/models answers a bare name with
 // model_not_found. Each mismatch shipped and failed on the first post that
 // reached the gateway, so a default changes with the default gateway and a
 // deployment that needs another name sets it in the environment.
-func TestIdeasServiceModelsAreCatalogNames(t *testing.T) {
+func TestNewModelsAreCatalogNames(t *testing.T) {
 	ideasEnv(t)
 	t.Setenv("LLM_MODEL", "")
 	t.Setenv("LLM_TITLE_MODEL", "")
 
-	svc := newIdeasService(discard())
+	svc := New(discard())
 	if svc == nil {
-		t.Fatal("newIdeasService() = nil, want a service")
+		t.Fatal("New() = nil, want a service")
 	}
 	for _, m := range []struct{ name, got, want string }{
 		{"LLM_MODEL", svc.llm.model, "anthropic/claude-opus-5.5"},
@@ -114,12 +114,12 @@ func TestIdeasServiceModelsAreCatalogNames(t *testing.T) {
 	}
 }
 
-// TestIdeasHandlerUnconfigured pins what an unconfigured deployment answers.
+// TestHandlerUnconfigured pins what an unconfigured deployment answers.
 // Leaving the subtree unmounted would hand /ideas/post to the file server and
 // return the site's 404 page, which reads as a wrong URL rather than a
 // missing credential.
-func TestIdeasHandlerUnconfigured(t *testing.T) {
-	h := ideasHandler(nil, discard())
+func TestHandlerUnconfigured(t *testing.T) {
+	h := Handler(nil, discard())
 
 	for _, path := range []string{"/ideas/ping", "/ideas/post", "/ideas/improve"} {
 		w := httptest.NewRecorder()
@@ -130,20 +130,20 @@ func TestIdeasHandlerUnconfigured(t *testing.T) {
 	}
 }
 
-// TestIdeasHandlerAllowsComposeBox covers the browser path: the compose box is
+// TestHandlerAllowsComposeBox covers the browser path: the compose box is
 // served from changkun.de and calls the API cross-origin, so a missing CORS
 // header reaches the page as a network error and hides the real status.
-func TestIdeasHandlerAllowsComposeBox(t *testing.T) {
+func TestHandlerAllowsComposeBox(t *testing.T) {
 	tests := []struct {
 		name string
-		svc  *service
+		svc  *Service
 	}{
-		{name: "configured", svc: &service{log: discard()}},
+		{name: "configured", svc: &Service{log: discard()}},
 		{name: "unconfigured", svc: nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := ideasHandler(tt.svc, discard())
+			h := Handler(tt.svc, discard())
 
 			r := httptest.NewRequest(http.MethodOptions, "/ideas/post", nil)
 			r.Header.Set("Origin", "https://changkun.de")
@@ -160,10 +160,10 @@ func TestIdeasHandlerAllowsComposeBox(t *testing.T) {
 	}
 }
 
-// TestIdeasHandlerRejectsUnauthenticated checks the configured mount still
+// TestHandlerRejectsUnauthenticated checks the configured mount still
 // closes: only /ideas/ping is public.
-func TestIdeasHandlerRejectsUnauthenticated(t *testing.T) {
-	h := ideasHandler(&service{log: discard()}, discard())
+func TestHandlerRejectsUnauthenticated(t *testing.T) {
+	h := Handler(&Service{log: discard()}, discard())
 
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, httptest.NewRequest(http.MethodPost, "/ideas/post", nil))

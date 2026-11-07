@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-package main
+package ideas
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 	"unicode"
 )
 
-type service struct {
+type Service struct {
 	log    *log.Logger
 	llm    *llmClient
 	github *githubClient
@@ -37,7 +37,7 @@ type ideaResponse struct {
 	Filename string `json:"filename,omitempty"`
 }
 
-func (s *service) handlePost(w http.ResponseWriter, r *http.Request) {
+func (s *Service) handlePost(w http.ResponseWriter, r *http.Request) {
 	var req ideaRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		s.jsonError(w, "invalid request body", http.StatusBadRequest)
@@ -58,7 +58,7 @@ func (s *service) handlePost(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (s *service) handleImprove(w http.ResponseWriter, r *http.Request) {
+func (s *Service) handleImprove(w http.ResponseWriter, r *http.Request) {
 	var req ideaRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		s.jsonError(w, "invalid request body", http.StatusBadRequest)
@@ -80,7 +80,7 @@ func (s *service) handleImprove(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ideaResponse{OK: true, Content: improved})
 }
 
-func (s *service) processIdea(req ideaRequest) {
+func (s *Service) processIdea(req ideaRequest) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
@@ -399,7 +399,7 @@ func stripHTMLTags(s string) string {
 	return htmlTagRe.ReplaceAllString(s, " ")
 }
 
-func (s *service) jsonError(w http.ResponseWriter, msg string, code int) {
+func (s *Service) jsonError(w http.ResponseWriter, msg string, code int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(ideaResponse{OK: false, Message: msg})

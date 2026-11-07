@@ -17,6 +17,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"changkun.de/x/main/internal/ideas"
 )
 
 func init() {
@@ -80,7 +82,7 @@ func notifyShutdown(parent context.Context) (context.Context, context.CancelFunc
 func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 	r := http.NewServeMux()
 	r.Handle("/", FileServer(fsys))
-	r.Handle(ideasPrefix, ideasHandler(newIdeasService(l), l))
+	r.Handle(ideas.Prefix, ideas.Handler(ideas.New(l), l))
 	s := &http.Server{
 		Handler:           logging(l)(r),
 		ErrorLog:          l,
