@@ -230,6 +230,10 @@ var venueFields = []string{
 
 var yearRE = regexp.MustCompile(`\b(1[5-9]|20)\d\d\b`)
 
+// richTextRE matches the markup Zotero allows in titles: <i>, <b>, <sub>,
+// <sup>, and <span> for small caps or nocase. Pages show titles as plain text.
+var richTextRE = regexp.MustCompile(`</?(?:i|b|sub|sup|span)(?:\s[^>]*)?>`)
+
 // parseEntry reads an item's data into an Entry.
 func parseEntry(it *Item) (*Entry, error) {
 	var d map[string]json.RawMessage
@@ -245,7 +249,7 @@ func parseEntry(it *Item) (*Entry, error) {
 	e := &Entry{
 		Key:      it.Key,
 		Type:     str("itemType"),
-		Title:    str("title"),
+		Title:    richTextRE.ReplaceAllString(str("title"), ""),
 		DOI:      strings.TrimPrefix(strings.TrimPrefix(str("DOI"), "https://doi.org/"), "doi:"),
 		URL:      str("url"),
 		Abstract: str("abstractNote"),

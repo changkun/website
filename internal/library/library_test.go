@@ -501,3 +501,14 @@ func TestBibtexDuplicateKeys(t *testing.T) {
 		}
 	}
 }
+
+func TestTitleMarkup(t *testing.T) {
+	it := &Item{Key: "K", Data: json.RawMessage(`{"title":"<span style=\"font-variant:small-caps;\">ReplicatorBench:</span> <i>x</i> < y"}`)}
+	e, err := parseEntry(it)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := "ReplicatorBench: x < y"; e.Title != want {
+		t.Fatalf("title = %q, want %q", e.Title, want)
+	}
+}

@@ -1,5 +1,6 @@
 /* changkun.de/library: the latere ink palette of render.css, set dense for
- * long lists. One list layout: a table with one 20px line per entry. */
+ * long lists. One list layout: a table with one 28px line per entry, using
+ * the full window width. */
 :root {
   --bg: #ffffff;
   --bg-raised: #f4f4f4;
@@ -30,26 +31,25 @@
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0 auto;
-  max-width: 1200px;
-  padding: 0 16px 48px;
+  margin: 0;
+  padding: 0 clamp(16px, 3vw, 40px) 48px;
   background: var(--bg);
   color: var(--text);
-  font: 13px/20px 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font: 15px/24px 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 a { color: var(--text); text-decoration: none; }
 a:hover { color: var(--navy); text-decoration: underline; }
 .muted { color: var(--text-secondary); }
-h1 { font: 400 28px/34px 'Instrument Serif', Georgia, serif; margin: 12px 0 2px; }
-h2 { font-size: 13px; font-weight: 600; margin: 24px 0 6px; }
+h1 { font: 400 36px/44px 'Instrument Serif', Georgia, serif; margin: 12px 0 2px; }
+h2 { font-size: 16px; font-weight: 600; margin: 24px 0 6px; }
 p { margin: 6px 0; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button {
   background: var(--bg-raised);
   border: 1px solid var(--border-strong);
   border-radius: 4px;
-  padding: 0 8px;
-  line-height: 22px;
+  padding: 0 10px;
+  line-height: 28px;
   cursor: pointer;
 }
 button:hover { border-color: var(--text-secondary); }
@@ -59,7 +59,7 @@ input, select, textarea {
   background: var(--bg);
   border: 1px solid var(--border-strong);
   border-radius: 4px;
-  padding: 1px 6px;
+  padding: 3px 8px;
 }
 textarea { width: 100%; display: block; }
 form.inline { display: inline; }
@@ -71,13 +71,13 @@ header.site {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 10px 0 6px;
+  padding: 14px 0 10px;
   border-bottom: 1px solid var(--border);
 }
 .site-name { font-weight: 600; }
-header nav { display: flex; gap: 14px; align-items: center; color: var(--text-secondary); }
+header nav { display: flex; gap: 20px; align-items: center; color: var(--text-secondary); }
 header nav a { color: var(--text-secondary); }
-.status { margin: 4px 0 0; font-size: 12px; color: var(--text-secondary); }
+.status { margin: 6px 0 0; font-size: 14px; color: var(--text-secondary); }
 .status.bad, .note.bad, .tag.bad { color: var(--bad); }
 .note.good { color: var(--good); }
 .crumbs { margin: 0; color: var(--text-secondary); }
@@ -85,13 +85,13 @@ header nav a { color: var(--text-secondary); }
 
 details { margin: 8px 0; }
 summary { cursor: pointer; color: var(--text-secondary); }
-ul.tree { list-style: none; margin: 2px 0; padding-left: 0; columns: 3 260px; column-gap: 24px; }
-ul.tree ul { columns: auto; padding-left: 14px; list-style: none; }
+ul.tree { list-style: none; margin: 2px 0; padding-left: 0; columns: 4 280px; column-gap: 32px; }
+ul.tree ul { columns: auto; padding-left: 18px; list-style: none; }
 ul.tree li { break-inside: avoid; }
-.share-form form { max-width: 420px; margin: 6px 0 12px; }
+.share-form form { max-width: 520px; margin: 6px 0 12px; }
 
-.filter { display: flex; gap: 12px; align-items: center; margin: 12px 0 6px; flex-wrap: wrap; }
-.filter input { width: 300px; max-width: 100%; }
+.filter { display: flex; gap: 16px; align-items: center; margin: 16px 0 8px; flex-wrap: wrap; }
+.filter input { width: 420px; max-width: 100%; }
 .filter .count { color: var(--text-secondary); }
 .filter .bib { margin-left: auto; }
 
@@ -100,57 +100,57 @@ table.entries { table-layout: fixed; }
 table.entries th {
   text-align: left;
   font-weight: 600;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-strong);
-  padding: 0 6px;
+  padding: 2px 8px;
 }
 table.entries td {
-  padding: 0 6px;
-  height: 20px;
+  padding: 0 8px;
+  height: 28px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-table.entries .y { width: 50px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
-table.entries .a { width: 150px; color: var(--text-secondary); }
-table.entries .v { width: 160px; color: var(--text-secondary); }
-table.entries .c { width: 32px; text-align: right; color: var(--text-secondary); }
+table.entries .y { width: 64px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+table.entries .a { width: 15%; color: var(--text-secondary); }
+table.entries .v { width: 20%; color: var(--text-secondary); }
+table.entries .c { width: 40px; text-align: right; color: var(--text-secondary); }
 table.entries tr.row:nth-child(4n+3) td { background: var(--zebra); }
 table.entries tr.row.cur td { background: var(--bg-raised); }
 table.entries tr.row.cur td:first-child { box-shadow: inset 2px 0 0 var(--navy); }
-table.entries tr.more td { white-space: normal; height: auto; padding-bottom: 6px; background: var(--bg-raised); }
-.actions { display: flex; gap: 14px; margin-top: 2px; }
+table.entries tr.more td { white-space: normal; height: auto; padding-bottom: 10px; background: var(--bg-raised); }
+.actions { display: flex; gap: 18px; margin-top: 4px; }
 .pager { display: flex; gap: 14px; }
-.keys { font-size: 11px; margin-top: 12px; }
+.keys { font-size: 13px; margin-top: 16px; }
 
-.entry h1 { max-width: 860px; }
-.entry .authors { color: var(--text-secondary); max-width: 860px; }
+.entry h1 { max-width: 960px; }
+.entry .authors { color: var(--text-secondary); max-width: 960px; }
 table.fields { width: auto; margin: 8px 0; }
 table.fields th { text-align: left; font-weight: 500; color: var(--text-secondary); padding: 0 16px 0 0; vertical-align: top; white-space: nowrap; }
 table.fields td { padding: 0; overflow-wrap: anywhere; }
-.abstract { max-width: 760px; line-height: 1.6; }
+.abstract { max-width: 820px; line-height: 1.6; }
 pre.bibtex {
-  font: 12px/18px var(--mono);
+  font: 13px/20px var(--mono);
   background: var(--bg-raised);
   padding: 8px 10px;
   border-radius: 4px;
   overflow-x: auto;
-  max-width: 860px;
+  max-width: 960px;
 }
 
-#comments { max-width: 760px; }
-.post { padding: 6px 0; border-bottom: 1px solid var(--border); }
+#comments { max-width: 820px; }
+.post { padding: 10px 0; border-bottom: 1px solid var(--border); }
 .post a, table.fields td a, .inbox .what a { text-decoration: underline; text-decoration-color: var(--border-strong); }
-.post .meta { color: var(--text-secondary); font-size: 12px; }
-.post .ref, .inbox .ref { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+.post .meta { color: var(--text-secondary); font-size: 13px; }
+.post .ref, .inbox .ref { font-family: var(--mono); font-size: 13px; overflow-wrap: anywhere; }
 .post-form { margin: 8px 0 16px; }
 
-table.inbox td { padding: 4px 6px; vertical-align: top; border-bottom: 1px solid var(--border); }
+table.inbox td { padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--border); }
 table.inbox td:first-child { width: 24px; }
 table.inbox .what { width: 100%; }
-table.inbox .when { white-space: nowrap; color: var(--text-secondary); width: 120px; }
-table.inbox .who { white-space: nowrap; width: 100px; }
+table.inbox .when { white-space: nowrap; color: var(--text-secondary); width: 140px; }
+table.inbox .who { white-space: nowrap; width: 120px; }
 table.inbox tr.unread .what { font-weight: 600; }
 table.inbox tr.unread .what .muted { font-weight: 400; }
 
@@ -158,12 +158,12 @@ section.share { border-top: 1px solid var(--border); padding: 10px 0; }
 section.share.created { background: var(--bg-raised); padding: 10px; }
 .share-edit .title { font-weight: 600; width: 320px; max-width: 100%; }
 .topics-line { margin-top: 6px; display: flex; gap: 10px; flex-wrap: wrap; color: var(--text-secondary); }
-.tag label { display: inline; font-size: 11px; color: var(--text-secondary); }
+.tag label { display: inline; font-size: 13px; color: var(--text-secondary); }
 table.members { width: auto; margin: 6px 0; }
-table.members td { padding: 1px 8px 1px 0; }
+table.members td { padding: 3px 10px 3px 0; }
 table.members .name { min-width: 100px; }
 table.members tr.revoked { color: var(--text-secondary); text-decoration: line-through; }
-.link-field { width: 520px; max-width: 60vw; font: 12px var(--mono); }
+.link-field { width: 560px; max-width: 60vw; font: 13px var(--mono); }
 .add-members { display: flex; gap: 8px; max-width: 520px; }
 
 @media (max-width: 640px) {
