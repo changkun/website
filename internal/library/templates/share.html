@@ -1,43 +1,36 @@
 {{define "content"}}{{with .Data}}
 <div class="head">
   <h1>{{.Share.Title}}</h1>
-  <p class="muted">{{if .Member}}Shared with you, {{.Member.Name}}, by Changkun Ou. This link is yours: please do not pass it on.{{else}}Shared by Changkun Ou.{{end}}</p>
+  <p class="meta">Shared by Changkun Ou{{if .Member}} with {{.Member.Name}}{{end}}{{if .Member}} · this link is yours, please do not pass it on{{end}}</p>
 </div>
 {{if .Done}}<p class="note good">{{.Done}}</p>{{end}}
 {{if .Error}}<p class="note bad">{{.Error}}</p>{{end}}
-{{if .Tree}}
-<details class="topics" open>
-  <summary>Topics</summary>
-  {{if gt (len .Tree) 1}}<ul class="tree"><li{{if not .List.T}} class="current"{{end}}><a href="{{.List.Path}}">All topics</a></li></ul>{{end}}
-  {{template "tree" (tree .TreeBase .Tree)}}
-</details>
-{{end}}
+{{if .Topics}}{{template "topics" (topics "" .TreeBase .List.Path .List.T .Topics)}}{{end}}
 {{end}}
 {{template "table" .}}
 {{with .Data}}{{if .Member}}
 <section id="comments">
-  <h2>Suggested papers</h2>
-  {{range .Suggestions}}
-  <div class="post">
-    <div class="meta">{{.By}}, {{date .Time}}{{if .Added}} · <b>added</b>: <a href="/library/s/{{$.Data.Token}}/e/{{.Added.Key}}">{{.Added.Title}}</a>{{end}}</div>
-    <div class="ref">{{linkify .Ref}}</div>
-    {{if .Note}}<div>{{linkify .Note}}</div>{{end}}
-  </div>
-  {{else}}<p class="muted">None yet.</p>{{end}}
-  <form method="post" action="/library/s/{{.Token}}/suggest" class="post-form">
-    <label>Suggest a paper: DOI, arXiv ID, URL, or BibTeX
-      <textarea name="ref" rows="2" required maxlength="2000"></textarea></label>
-    <label>Why (optional) <textarea name="note" rows="2" maxlength="2000"></textarea></label>
-    <button>Suggest</button>
+  <h2>Discussion</h2>
+  {{range .Comments}}
+  <div class="post"><span class="by">{{.By}} · {{date .Time}}</span> {{linkify .Text}}</div>
+  {{else}}<p class="muted">Nothing yet. Comments on one paper go on its page.</p>{{end}}
+  <form method="post" action="/library/s/{{.Token}}/comment" class="line-form">
+    <textarea name="text" rows="1" required maxlength="2000" placeholder="Comment on the whole share, as {{.Member.Name}}" aria-label="Comment"></textarea>
+    <button class="primary">Post</button>
   </form>
 
-  <h2>Comments on this share</h2>
-  {{range .Comments}}
-  <div class="post"><div class="meta">{{.By}}, {{date .Time}}</div><div>{{linkify .Text}}</div></div>
-  {{else}}<p class="muted">None yet. Comments on a paper are on its page.</p>{{end}}
-  <form method="post" action="/library/s/{{.Token}}/comment" class="post-form">
-    <label>Comment as {{.Member.Name}} <textarea name="text" rows="3" required maxlength="2000"></textarea></label>
-    <button>Post</button>
+  <h2>Suggested</h2>
+  {{range .Suggestions}}
+  <div class="post suggestion">
+    <span class="by">{{.By}} · {{date .Time}}</span>
+    <span class="ref">{{linkify .Ref}}</span>{{if .Note}} <span class="note-text">“{{linkify .Note}}”</span>{{end}}
+    {{if .Added}}<a class="state added" href="/library/s/{{$.Data.Token}}/e/{{.Added.Key}}">added</a>{{else}}<span class="state">pending</span>{{end}}
+  </div>
+  {{else}}<p class="muted">Nothing yet.</p>{{end}}
+  <form method="post" action="/library/s/{{.Token}}/suggest" class="line-form">
+    <textarea name="ref" rows="1" required maxlength="2000" placeholder="DOI, arXiv ID, URL, or BibTeX" aria-label="Paper"></textarea>
+    <input name="note" maxlength="2000" placeholder="Why (optional)" aria-label="Why">
+    <button class="primary">Suggest</button>
   </form>
 </section>
 {{end}}{{end}}

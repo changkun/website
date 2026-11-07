@@ -1,15 +1,9 @@
 {{define "content"}}{{with .Data}}
 <div class="head">
   <h1>{{if .Topic}}{{.Topic.Name}}{{else}}Library{{end}}</h1>
-  {{if .Path}}<p class="crumbs"><a href="/library/">Library</a>{{range .Path}} / <a href="/library/t/{{.Key}}">{{.Name}}</a>{{end}}</p>{{end}}
+  <p class="meta">{{if .Path}}<a href="/library/">Library</a>{{range .Path}} / <a href="/library/t/{{.Key}}">{{.Name}}</a>{{end}}{{end}}{{if .Unsorted}}{{if .Path}} · {{end}}{{.Unsorted}} entries are in no topic{{end}}</p>
 </div>
-{{if .Tree}}
-<details class="topics" open>
-  <summary>{{if .Topic}}Subtopics{{else}}Topics{{end}}</summary>
-  {{template "tree" (tree "/library/t/" .Tree)}}
-  {{if .Unsorted}}<p class="muted">{{.Unsorted}} entries are in no topic.</p>{{end}}
-</details>
-{{end}}
+{{if .Tree}}{{template "topics" (topics (or (and .Topic "Subtopics") "Topics") "/library/t/" "" "" .Tree)}}{{end}}
 {{if .Topic}}
 <details class="share-form">
   <summary>Share this topic</summary>
@@ -19,7 +13,7 @@
     <label>Names, one per line; each gets their own link
       <textarea name="names" rows="3" placeholder="Alice&#10;Bob"></textarea></label>
     <label class="check"><input type="checkbox" name="public"> Also readable by anyone, without comments</label>
-    <button>Create share</button>
+    <button class="primary">Create share</button>
   </form>
   {{if .Shares}}
   <form method="post" action="/library/shares">

@@ -1,6 +1,5 @@
-/* changkun.de/library: the latere ink palette of render.css, set dense for
- * long lists. One list layout: a table with one 28px line per entry, using
- * the full window width. */
+/* changkun.de/library. System sans-serif, ink text, blue links, one list
+ * layout: a table with one 30px line per entry, using the full window width. */
 :root {
   --bg: #ffffff;
   --bg-raised: #f4f4f4;
@@ -8,9 +7,12 @@
   --text: #0d0d0d;
   --text-secondary: #525252;
   --navy: #38538f;
+  --link: #2a5bd7;
+  --link-tint: rgba(42, 91, 215, 0.08);
+  --link-tint-strong: rgba(42, 91, 215, 0.14);
   --border: rgba(0, 0, 0, 0.08);
   --border-strong: rgba(0, 0, 0, 0.14);
-  --good: #2f6b3a;
+  --good: #1f7a3a;
   --bad: #a33a2a;
   --mono: ui-monospace, 'SF Mono', Menlo, monospace;
 }
@@ -22,6 +24,9 @@
     --text: #ececec;
     --text-secondary: #b4b4b4;
     --navy: #9bb0e4;
+    --link: #8cb0ff;
+    --link-tint: rgba(140, 176, 255, 0.10);
+    --link-tint-strong: rgba(140, 176, 255, 0.18);
     --border: rgba(255, 255, 255, 0.08);
     --border-strong: rgba(255, 255, 255, 0.14);
     --good: #8fc79a;
@@ -35,13 +40,14 @@ body {
   padding: 0 clamp(16px, 3vw, 40px) 48px;
   background: var(--bg);
   color: var(--text);
-  font: 15px/24px 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font: 15px/24px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 }
-a { color: var(--text); text-decoration: none; }
-a:hover { color: var(--navy); text-decoration: underline; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
 .muted { color: var(--text-secondary); }
-h1 { font: 400 36px/44px 'Instrument Serif', Georgia, serif; margin: 12px 0 2px; }
-h2 { font-size: 16px; font-weight: 600; margin: 24px 0 6px; }
+h1 { font-size: 26px; line-height: 34px; font-weight: 650; letter-spacing: -0.01em; margin: 28px 0 4px; }
+h2 { font-size: 17px; font-weight: 650; margin: 36px 0 10px; }
+h2 button { font-size: 14px; font-weight: 400; margin-left: 8px; vertical-align: 1px; }
 p { margin: 6px 0; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button {
@@ -53,6 +59,8 @@ button {
   cursor: pointer;
 }
 button:hover { border-color: var(--text-secondary); }
+button.primary { background: var(--link-tint-strong); border-color: var(--link); color: var(--link); font-weight: 600; }
+button.primary:hover { background: var(--link-tint); }
 button.link { background: none; border: 0; padding: 0; color: var(--text-secondary); line-height: inherit; }
 button.link:hover { color: var(--navy); text-decoration: underline; }
 input, select, textarea {
@@ -74,10 +82,21 @@ header.site {
   padding: 14px 0 10px;
   border-bottom: 1px solid var(--border);
 }
-.site-name { font-weight: 600; }
+.site-name { font-weight: 650; color: var(--text); }
 header nav { display: flex; gap: 20px; align-items: center; color: var(--text-secondary); }
 header nav a { color: var(--text-secondary); }
-.status { margin: 6px 0 0; font-size: 14px; color: var(--text-secondary); }
+header nav a:hover { color: var(--text); }
+header nav .synced { color: var(--text-secondary); font-size: 13px; }
+.status { margin: 10px 0 0; padding: 6px 10px; border-radius: 6px; background: var(--bg-raised); color: var(--text-secondary); }
+.head .meta { margin: 0; color: var(--text-secondary); }
+.head .meta a { color: var(--text-secondary); }
+nav.topics { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: baseline; margin: 16px 0 4px; }
+nav.topics .label { color: var(--text-secondary); margin-right: 4px; }
+nav.topics a { padding: 1px 10px; border-radius: 999px; background: var(--link-tint); }
+nav.topics a:hover { text-decoration: none; background: var(--link-tint-strong); }
+nav.topics a.current { background: var(--link); color: var(--bg); }
+nav.topics .n { color: var(--text-secondary); font-size: 13px; }
+nav.topics a.current .n { color: inherit; opacity: 0.8; }
 .status.bad, .note.bad, .tag.bad { color: var(--bad); }
 .note.good { color: var(--good); }
 .crumbs { margin: 0; color: var(--text-secondary); }
@@ -106,11 +125,12 @@ table.entries th {
   padding: 2px 8px;
 }
 table.entries th a { color: inherit; }
+table.entries td.t a { font-weight: 500; }
 table.entries th .added { font-weight: 400; margin-left: 8px; }
 ul.tree li.current > a { font-weight: 600; color: var(--navy); }
 table.entries td {
   padding: 0 8px;
-  height: 28px;
+  height: 30px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -118,11 +138,12 @@ table.entries td {
 table.entries .y { width: 64px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
 table.entries .a { width: 15%; color: var(--text-secondary); }
 table.entries .v { width: 20%; color: var(--text-secondary); }
-table.entries .c { width: 40px; text-align: right; color: var(--text-secondary); }
+table.entries .c { width: 110px; text-align: right; color: var(--text-secondary); }
 table.entries tr.row:nth-child(4n+3) td { background: var(--zebra); }
 table.entries tr.row.cur td { background: var(--bg-raised); }
-table.entries tr.row.cur td:first-child { box-shadow: inset 2px 0 0 var(--navy); }
-table.entries tr.more td { white-space: normal; height: auto; padding-bottom: 10px; background: var(--bg-raised); }
+table.entries tr.row.cur td:first-child { box-shadow: inset 2px 0 0 var(--link); }
+table.entries tr.row:hover td { background: var(--link-tint); }
+table.entries tr.more td { white-space: normal; height: auto; padding-bottom: 10px; background: var(--link-tint); }
 .actions { display: flex; gap: 18px; margin-top: 4px; }
 .pager { display: flex; gap: 14px; }
 .keys { font-size: 13px; margin-top: 16px; }
@@ -143,7 +164,14 @@ pre.bibtex {
 }
 
 #comments { max-width: 820px; }
-.post { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.post { padding: 6px 0; }
+.post .by { font-weight: 600; margin-right: 6px; }
+.post.suggestion { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.post .state { margin-left: auto; color: var(--text-secondary); }
+.post .state.added { color: var(--good); font-weight: 600; }
+.line-form { display: flex; gap: 8px; align-items: stretch; margin: 10px 0 0; max-width: 820px; }
+.line-form textarea { flex: 2; resize: vertical; min-height: 34px; }
+.line-form input { flex: 1; }
 .post a, table.fields td a, .inbox .what a { text-decoration: underline; text-decoration-color: var(--border-strong); }
 .post .meta { color: var(--text-secondary); font-size: 13px; }
 .post .ref, .inbox .ref { font-family: var(--mono); font-size: 13px; overflow-wrap: anywhere; }

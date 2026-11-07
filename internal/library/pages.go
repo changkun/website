@@ -35,11 +35,15 @@ const rowsPerPage = 200
 const maxText = 2000
 
 var funcs = template.FuncMap{
-	"ago":     ago,
-	"date":    func(t time.Time) string { return t.UTC().Format("2006-01-02 15:04") },
-	"add":     func(a, b int) int { return a + b },
-	"join":    strings.Join,
-	"tree":    func(base string, nodes []*node) map[string]any { return map[string]any{"base": base, "nodes": nodes} },
+	"ago":  ago,
+	"date": func(t time.Time) string { return t.UTC().Format("2006-01-02 15:04") },
+	"add":  func(a, b int) int { return a + b },
+	"join": strings.Join,
+	// topics is the arguments of the "topics" template: a line of topic links
+	// base+key, after an optional label and an optional "All" link.
+	"topics": func(label, base, all, cur string, nodes []*node) map[string]any {
+		return map[string]any{"label": label, "base": base, "all": all, "cur": cur, "nodes": nodes}
+	},
 	"linkify": linkify,
 	"plural": func(n int, one, many string) string {
 		if n == 1 {
@@ -385,6 +389,16 @@ type node struct {
 	Count    int
 	Children []*node
 	Current  bool // the topic the page is narrowed to
+}
+
+// flat lists nodes and every node below them, parents first.
+func flat(nodes []*node) []*node {
+	var out []*node
+	for _, n := range nodes {
+		out = append(out, n)
+		out = append(out, flat(n.Children)...)
+	}
+	return out
 }
 
 // mark sets Current on the node with key, if any.
@@ -755,7 +769,8 @@ type sharePage struct {
 	Member      *Member // nil on the public page
 	Token       string
 	Tree        []*node
-	TreeBase    string // a topic's link is TreeBase + its key
+	TreeBase    string  // a topic's link is TreeBase + its key
+	Topics      []*node // the share's topics below its root, in one line
 	List        *list
 	Comments    []*Post // on the whole share
 	Suggestions []suggestion
@@ -822,10 +837,10 @@ func (s *Service) sharePage(w http.ResponseWriter, r *http.Request, sh *Share, m
 	}
 	p := &sharePage{Share: sh, Member: m, Token: token, Tree: ix.tree(sh.Topics, path), TreeBase: path + "?t=",
 		Done: r.URL.Query().Get("done"), Error: r.URL.Query().Get("error")}
-	if t == "" && len(p.Tree) == 1 {
-		mark(p.Tree, p.Tree[0].Key) // the one root topic is the whole share
-	} else {
-		mark(p.Tree, t)
+	mark(p.Tree, t)
+	p.Topics = flat(p.Tree)
+	if len(p.Tree) == 1 { // the one root topic is the whole share, which "All" shows
+		p.Topics = p.Topics[1:]
 	}
 	counts := map[string]int{}
 	if m != nil { // the public sees no comments

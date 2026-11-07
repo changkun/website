@@ -104,7 +104,8 @@ func New(l *log.Logger) (*Service, error) {
 // first sync fetches the whole library.
 func (s *Service) loadCache() cacheFile {
 	var c cacheFile
-	raw, err := os.ReadFile(filepath.Join(s.dir, "cache.json"))
+	name := filepath.Join(s.dir, "cache.json")
+	raw, err := os.ReadFile(name)
 	if errors.Is(err, fs.ErrNotExist) {
 		return c
 	}
@@ -114,6 +115,11 @@ func (s *Service) loadCache() cacheFile {
 	if err != nil {
 		s.log.Printf("library: cache.json is unreadable, a full sync rebuilds it: %v", err)
 		return cacheFile{}
+	}
+	// The cache was written by the last successful sync, so the status line
+	// can say when that was, even after a restart.
+	if fi, err := os.Stat(name); err == nil {
+		s.lastOK = fi.ModTime()
 	}
 	return c
 }

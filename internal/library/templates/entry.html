@@ -23,21 +23,20 @@
   {{range .Threads}}{{$sid := .Share.ID}}
   <h2>Comments in “{{.Share.Title}}”</h2>
   {{range .Posts}}
-  <div class="post"><div class="meta">{{.By}}, {{date .Time}}
+  <div class="post"><span class="by">{{.By}} · {{date .Time}}</span> {{linkify .Text}}
     <form method="post" action="/library/shares/{{$sid}}/hide" class="inline"><input type="hidden" name="post" value="{{.ID}}"><input type="hidden" name="next" value="/library/e/{{$.Data.Key}}"><button class="link">Hide</button></form></div>
-    <div>{{linkify .Text}}</div></div>
   {{end}}
   {{else}}<p class="muted">No comments in any share.</p>{{end}}
 {{else if .Token}}
   <h2>Comments</h2>
   {{if .Done}}<p class="note good">{{.Done}}</p>{{end}}
   {{range .Threads}}{{range .Posts}}
-  <div class="post"><div class="meta">{{.By}}, {{date .Time}}</div><div>{{linkify .Text}}</div></div>
+  <div class="post"><span class="by">{{.By}} · {{date .Time}}</span> {{linkify .Text}}</div>
   {{else}}<p class="muted">None yet.</p>{{end}}{{end}}
-  <form method="post" action="/library/s/{{.Token}}/comment" class="post-form">
+  <form method="post" action="/library/s/{{.Token}}/comment" class="line-form">
     <input type="hidden" name="entry" value="{{.Key}}">
-    <label>Comment <textarea name="text" rows="3" required maxlength="2000"></textarea></label>
-    <button>Post</button>
+    <textarea name="text" rows="1" required maxlength="2000" placeholder="Comment on this paper" aria-label="Comment"></textarea>
+    <button class="primary">Post</button>
   </form>
   <p><a href="/library/s/{{.Token}}">‹ Back to the share</a></p>
 {{end}}

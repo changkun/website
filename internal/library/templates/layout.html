@@ -7,9 +7,6 @@
 <meta name="referrer" content="no-referrer">
 <title>{{.Title}} · Library</title>
 {{if and .Total .Synced.IsZero}}<meta http-equiv="refresh" content="5">{{end}}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/library/assets/library.css">
 </head>
 <body>
@@ -17,6 +14,7 @@
   <a class="site-name" href="/">changkun.de</a>
   {{if .Owner}}
   <nav>
+    {{if not (or .Total .SyncErr)}}<span class="synced">Synced {{ago .Synced}}</span>{{end}}
     <a href="/library/">Library</a>
     <a href="/library/inbox">Inbox{{if .Unread}} <b>({{.Unread}})</b>{{end}}</a>
     <a href="/library/shares">Shares</a>
@@ -27,11 +25,10 @@
   </nav>
   {{end}}
 </header>
-{{if .Owner}}
+{{if and .Owner (or .Total .SyncErr)}}
 <p class="status{{if .SyncErr}} bad{{end}}">
   {{if .Total}}Syncing: {{num .Fetched}} of {{num .Total}} items.{{if .Synced.IsZero}} This page reloads until the first sync is done.{{end}}
-  {{else if .SyncErr}}Sync failed: {{.SyncErr}}. Last good sync {{ago .Synced}}; showing that copy.
-  {{else}}Synced {{ago .Synced}}.{{end}}
+  {{else}}Sync failed: {{.SyncErr}}. Last good sync {{ago .Synced}}; showing that copy.{{end}}
 </p>
 {{end}}
 <main>
@@ -64,7 +61,7 @@
   <td class="t"><a href="{{$base}}{{.Key}}">{{.Title}}</a></td>
   <td class="a">{{.ShortAuthors}}</td>
   <td class="v">{{.Venue}}</td>
-  <td class="c">{{if .Comments}}{{.Comments}}{{end}}</td>
+  <td class="c">{{if .Comments}}{{plural .Comments "comment" "comments"}}{{end}}</td>
 </tr>
 <tr class="more" hidden>
   <td></td>
@@ -94,9 +91,9 @@
 <p class="keys muted">/ filter · j k move · Enter expand · o open · c copy BibTeX</p>
 {{end}}{{end}}
 
-{{define "tree"}}{{$base := .base}}
-<ul class="tree">
-{{range .nodes}}<li{{if .Current}} class="current"{{end}}>{{if $base}}<a href="{{$base}}{{.Key}}">{{.Name}}</a>{{else}}{{.Name}}{{end}} <span class="muted">{{.Count}}</span>{{if .Children}}{{template "tree" (tree $base .Children)}}{{end}}</li>
-{{end}}
-</ul>
+{{define "topics"}}{{$base := .base}}
+<nav class="topics">{{with .label}}<span class="label">{{.}}</span>{{end}}
+{{with .all}}<a href="{{.}}"{{if not $.cur}} class="current"{{end}}>All</a>{{end}}
+{{range .nodes}}<a href="{{$base}}{{.Key}}"{{if .Current}} class="current"{{end}}>{{.Name}} <span class="n">{{.Count}}</span></a>
+{{end}}</nav>
 {{end}}
