@@ -21,6 +21,7 @@ const (
 	promptTranslateContent = "translate_content.tmpl"
 	promptIdeaInput        = "idea_input.tmpl"
 	promptReference        = "reference.tmpl"
+	promptTranslatePost    = "translate_post.tmpl"
 )
 
 //go:embed prompts/*.tmpl
@@ -41,6 +42,13 @@ type augmentData struct {
 
 // languageData names a target language in English, such as "Chinese".
 type languageData struct {
+	Language string
+}
+
+// postData is the data for translate_post.tmpl: the post's language and
+// the one it is translated into, by their English names.
+type postData struct {
+	From     string
 	Language string
 }
 

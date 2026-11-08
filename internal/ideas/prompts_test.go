@@ -20,6 +20,7 @@ var sampleData = map[string]any{
 	promptTranslateContent: languageData{Language: "Chinese"},
 	promptIdeaInput:        ideaInputData{Title: "T", Content: "C"},
 	promptReference:        referenceData{URL: "https://example.com", Text: "body"},
+	promptTranslatePost:    postData{From: "English", Language: "Chinese"},
 }
 
 // TestRenderPromptAll renders every template, catching a field renamed in Go
