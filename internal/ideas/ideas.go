@@ -62,11 +62,12 @@ func New(l *log.Logger) *Service {
 			log:        l,
 		},
 		github: &githubClient{
-			token: gitToken,
-			owner: owner,
-			repo:  repo,
-			name:  cmp.Or(os.Getenv("GIT_COMMITTER_NAME"), "Changkun Ou"),
-			email: cmp.Or(os.Getenv("GIT_COMMITTER_EMAIL"), "hi+ideas@changkun.de"),
+			token:   gitToken,
+			owner:   owner,
+			repo:    repo,
+			name:    cmp.Or(os.Getenv("GIT_COMMITTER_NAME"), "Changkun Ou"),
+			email:   cmp.Or(os.Getenv("GIT_COMMITTER_EMAIL"), "hi+ideas@changkun.de"),
+			baseURL: os.Getenv("GIT_API_URL"),
 		},
 	}
 }
@@ -92,6 +93,13 @@ func (s *Service) Download(ctx context.Context, sha string) ([]byte, error) {
 // blog repository. It fails with ErrExists if root is taken.
 func (s *Service) Create(ctx context.Context, root string, files []File, msg string) error {
 	return s.github.create(ctx, root, files, sanitizeCommitMsg(msg))
+}
+
+// Update commits files over the page whose markdown is file, and deletes
+// the paths of remove, in one commit. It fails with ErrChanged if file is
+// no longer the blob base.
+func (s *Service) Update(ctx context.Context, file, base string, files []File, remove []string, msg string) error {
+	return s.github.update(ctx, file, base, files, remove, sanitizeCommitMsg(msg))
 }
 
 // PublishIdea writes up and publishes an idea in the background, with files

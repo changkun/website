@@ -36,6 +36,7 @@ blog's editor previews but does not publish; without the Zotero credentials,
 | `internal/blog/` | The blog, rendered from a checkout of changkun/blog, and its editor |
 | `internal/library/` | The library: Zotero sync, owner pages, shares, comments |
 | `internal/owner/` | The owner's login and session, for the library and the editor |
+| `internal/githubtest/` | GitHub's API served from a bare repository on disk, for tests |
 
 ## Folders
 
@@ -209,6 +210,7 @@ Copy `.env.template` to `.env`. Publishing from the blog's editor needs
 | `LLM_TITLE_MODEL` | `anthropic/claude-haiku-5.5` | Titles, slugs, polishing, translation |
 | `GIT_TOKEN` | | GitHub token that can write to `GIT_REPO` |
 | `GIT_REPO` | `changkun/blog` | Target repository, as `owner/repo` |
+| `GIT_API_URL` | `https://api.github.com` | GitHub API root; point it at a stand-in, such as `internal/githubtest`, to commit elsewhere |
 | `GIT_COMMITTER_NAME` | `Changkun Ou` | Name on the commits |
 | `GIT_COMMITTER_EMAIL` | `hi+ideas@changkun.de` | Email on the commits |
 | `AUTH_ALLOWED_PRINCIPALS` | | Comma-separated emails or principal ids allowed to log in. Empty rejects every token |

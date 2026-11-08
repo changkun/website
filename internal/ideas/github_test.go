@@ -12,10 +12,14 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
 	"unicode/utf8"
+
+	"changkun.de/x/website/internal/githubtest"
 )
 
 // TestSanitizeCommitMsg checks that control characters and surrounding space
@@ -234,5 +238,80 @@ func TestCreate(t *testing.T) {
 	}
 	if n := len(gh.got()); n != 2 {
 		t.Fatalf("committed %d files, want 2", n)
+	}
+}
+
+// TestUpdate edits pages of a bare repository on disk: the markdown is
+// rewritten, a file added and one deleted, in one commit; an edit of a page
+// that changed since it was read is refused; and a page of one file that
+// gains a file moves into a folder of its name.
+func TestUpdate(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("needs git")
+	}
+	dir := filepath.Join(t.TempDir(), "blog.git")
+	err := githubtest.InitRepo(dir, map[string][]byte{
+		"content/posts/x/index.md": []byte("# X\n"),
+		"content/posts/x/a.png":    []byte("A"),
+		"content/posts/y.md":       []byte("# Y\n"),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	srv := httptest.NewServer(githubtest.Handler(dir))
+	t.Cleanup(srv.Close)
+	g := &githubClient{token: "t", owner: "changkun", repo: "blog", name: "test",
+		email: "test@changkun.de", baseURL: srv.URL}
+	git := func(args ...string) string {
+		t.Helper()
+		out, err := githubtest.Git(dir, args...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return strings.TrimSpace(string(out))
+	}
+	ctx := context.Background()
+
+	base := git("rev-parse", "main:content/posts/x/index.md")
+	sha, err := g.upload(ctx, []byte("B"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	files := []File{{Path: "content/posts/x/index.md", Text: "# X, edited\n"}, {Path: "content/posts/x/b.png", SHA: sha}}
+	remove := []string{"content/posts/x/a.png", "content/posts/x/gone.png"}
+	if err := g.update(ctx, "content/posts/x/index.md", base, files, remove, "posts: X, edited"); err != nil {
+		t.Fatal(err)
+	}
+	if got := git("show", "main:content/posts/x/index.md"); got != "# X, edited" {
+		t.Errorf("index.md = %q", got)
+	}
+	if got := git("ls-tree", "--name-only", "main", "content/posts/x/"); got != "content/posts/x/b.png\ncontent/posts/x/index.md" {
+		t.Errorf("the folder has %q", got)
+	}
+	if got := git("log", "--format=%s", "main"); got != "posts: X, edited\nseed" {
+		t.Errorf("log = %q", got)
+	}
+
+	// The same edit again finds the page changed, and commits nothing.
+	if err := g.update(ctx, "content/posts/x/index.md", base, files, nil, "posts: again"); !errors.Is(err, ErrChanged) {
+		t.Fatalf("an edit of a changed page = %v, want ErrChanged", err)
+	}
+
+	base = git("rev-parse", "main:content/posts/y.md")
+	files = []File{{Path: "content/posts/y/index.md", Text: "# Y\n"}, {Path: "content/posts/y/c.png", SHA: sha}}
+	if err := g.update(ctx, "content/posts/y.md", base, files, []string{"content/posts/y.md"}, "posts: Y"); err != nil {
+		t.Fatal(err)
+	}
+	if got := git("ls-tree", "-r", "--name-only", "main", "content/posts/"); got != "content/posts/x/b.png\ncontent/posts/x/index.md\ncontent/posts/y/c.png\ncontent/posts/y/index.md" {
+		t.Errorf("the posts are %q", got)
+	}
+
+	// Nothing outside the page is written.
+	bad := []File{{Path: "content/posts/z.md", Text: "# Z\n"}}
+	if err := g.update(ctx, "content/posts/y/index.md", git("rev-parse", "main:content/posts/y/index.md"), bad, nil, "posts: Z"); err == nil {
+		t.Fatal("update wrote outside the page")
+	}
+	if got := git("rev-list", "--count", "main"); got != "3" {
+		t.Errorf("%s commits, want 3", got)
 	}
 }
