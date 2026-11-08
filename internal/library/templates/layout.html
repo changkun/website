@@ -7,7 +7,7 @@
 <meta name="referrer" content="no-referrer">
 <title>{{.Title}} · Library</title>
 {{if and .Total .Synced.IsZero}}<meta http-equiv="refresh" content="5">{{end}}
-<link rel="stylesheet" href="/library/assets/library.css">
+<link rel="stylesheet" href="/library/assets/library.css?v={{assetVersion}}">
 <script>
 // Before the first paint, so a new page does not jump: the column widths
 // kept in this browser.
@@ -59,7 +59,7 @@ try { ['side', 'pane'].forEach(function (k) { var v = localStorage.getItem('libr
 <main>
 {{template "content" .}}
 </main>
-<script src="/library/assets/library.js" defer></script>
+<script src="/library/assets/library.js?v={{assetVersion}}" defer></script>
 </body>
 </html>
 {{define "table"}}{{$base := .Base}}{{with .Data.List}}

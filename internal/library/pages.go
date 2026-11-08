@@ -7,6 +7,7 @@ package library
 import (
 	"cmp"
 	"context"
+	"crypto/sha256"
 	"embed"
 	"errors"
 	"fmt"
@@ -28,6 +29,20 @@ var templatesFS embed.FS
 //go:embed assets
 var assetsFS embed.FS
 
+// assetVersion changes the stylesheet's and the script's URLs whenever
+// either changes, so a cached copy is never used with newer pages.
+var assetVersion = func() string {
+	h := sha256.New()
+	for _, name := range []string{"assets/library.css", "assets/library.js"} {
+		b, err := assetsFS.ReadFile(name)
+		if err != nil {
+			panic(err)
+		}
+		h.Write(b)
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))[:8]
+}()
+
 // rowsPerPage is how many entries a list page shows.
 const rowsPerPage = 200
 
@@ -35,10 +50,11 @@ const rowsPerPage = 200
 const maxText = 2000
 
 var funcs = template.FuncMap{
-	"ago":  ago,
-	"date": func(t time.Time) string { return t.UTC().Format("2006-01-02 15:04") },
-	"add":  func(a, b int) int { return a + b },
-	"join": strings.Join,
+	"ago":          ago,
+	"date":         func(t time.Time) string { return t.UTC().Format("2006-01-02 15:04") },
+	"add":          func(a, b int) int { return a + b },
+	"assetVersion": func() string { return assetVersion },
+	"join":         strings.Join,
 	// side is the arguments of the "side" template: the topic tree, each
 	// topic linking to base+key, under a first link that shows everything.
 	"side": func(base, allHref, allName string, allCurrent bool, nodes []*node) map[string]any {
