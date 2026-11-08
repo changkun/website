@@ -4,12 +4,12 @@
 // properties (main site, blog, ...). This is a *public* client: no secret. The
 // browser runs the whole authorization-code + PKCE flow directly against
 // auth.latere.ai; there is no backend of ours in the loop. The access token is
-// kept in localStorage and attached as a Bearer to changkun.de API calls.
+// kept in localStorage; the library's login page posts it to the site once.
 //
 // Each page that starts a login is its own redirect_uri (origin + pathname) and
 // must be registered on the `changkun-blog` OAuth client's redirect_uris, e.g.
-//   https://changkun.de/blog/ideas/
-//   https://changkun.de/login-test.html
+//   https://changkun.de/
+//   https://changkun.de/library/login
 //
 // The client must also list allowed_origins: ["https://changkun.de"] so the
 // browser is permitted to POST to /token (CORS).
