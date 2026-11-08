@@ -83,6 +83,16 @@ the page, and a file beside a page is linked by its full address, so it
 also shows in lists and feeds. Without `GIT_TOKEN` and `LLM_API_KEY` the
 editor previews but does not publish.
 
+The owner also sees an Edit link on each post and idea, served to no one
+else, which opens it in the editor at `/blog/edit/<address>`, with its
+title, front matter, text and files. Saving commits the file over itself,
+with the files added and without those taken off, in one commit named
+`posts: <title>`, or `ideas: <title>`. The date and the address stay,
+`lastmod` is set, and the rest of the front matter stays as written; a post
+of one file that gains files moves into a folder of its name. If the file
+changed in the repository since the editor opened it, saving is refused
+rather than undo that change.
+
 ## Sites
 
 A site that `WWW_SITES` lists is served from a folder of its own, under the

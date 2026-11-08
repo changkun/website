@@ -174,9 +174,11 @@ type view struct {
 	Feed        string // the RSS feed of the list, if it is one
 	Menu        string // the menu item the page belongs to
 	MainClass   string
-	Rail        bool // a contents rail on the side
-	Math        bool // MathJax typesets the page
-	CanPublish  bool // the editor can publish, not only preview
+	Rail        bool   // a contents rail on the side
+	Math        bool   // MathJax typesets the page
+	CanPublish  bool   // the editor can publish, not only preview
+	Edit        string // where the owner edits the page
+	Entry       *entry // the post or idea the editor opens, or nil for a new one
 
 	Page   *Page   // for a page of its own
 	Pages  []*Page // for a list
@@ -275,7 +277,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p := r.URL.Path
-	if rest, ok := strings.CutPrefix(p, Prefix); ok && (rest == "new" || strings.HasPrefix(rest, "new/")) {
+	if rest, ok := strings.CutPrefix(p, Prefix); ok && (rest == "new" || strings.HasPrefix(rest, "new/") || strings.HasPrefix(rest, "edit/")) {
 		h.editorMux.ServeHTTP(w, r)
 		return
 	}
@@ -311,6 +313,9 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	at := "/" + rest
 	if f, ok := s.files[at]; ok {
 		h.serveFile(w, r, f)
+		return
+	}
+	if h.serveEditable(w, r, s, at) {
 		return
 	}
 	if res := s.response(at); res != nil {
@@ -532,7 +537,10 @@ func (s *site) ideasPage(n int) []byte {
 	return s.exec("ideas", v)
 }
 
-func (s *site) single(p *Page) []byte {
+func (s *site) single(p *Page) []byte { return s.exec("single", singleView(p)) }
+
+// singleView is what the page of p is rendered from.
+func singleView(p *Page) *view {
 	menu := ""
 	switch {
 	case p.IsPost():
@@ -550,7 +558,7 @@ func (s *site) single(p *Page) []byte {
 	if v.Description == "" {
 		v.Description = siteDescription
 	}
-	return s.exec("single", v)
+	return v
 }
 
 // headCommit returns the hash of the commit checked out in gitDir, or an

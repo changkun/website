@@ -1,5 +1,6 @@
 // The editor at /blog/new: write a post or an idea in markdown, attach
-// files, see it as the blog will show it, and publish it.
+// files, see it as the blog will show it, and publish it. At /blog/edit/…
+// it opens a post or an idea that is there already, and saves it in place.
 (function() {
   var DRAFT_KEY = 'blog-editor';
   var OLD_DRAFT_KEY = 'compose-draft'; // the ideas page's compose box, before this page
@@ -26,6 +27,12 @@
   var toolBtns = ed.querySelectorAll('[data-tool]');
   var canPublish = ed.hasAttribute('data-can-publish');
 
+  // An edit: the page gives the entry as it is in the blog, and its draft
+  // is kept apart from a new one's.
+  var entryEl = document.getElementById('editor-entry');
+  var entry = entryEl ? JSON.parse(entryEl.textContent) : null;
+  if (entry) DRAFT_KEY += ':' + entry.path;
+
   var mac = /Mac|iPhone|iPad/.test(navigator.platform);
   var mod = mac ? '⌘' : 'Ctrl+';
 
@@ -42,24 +49,28 @@
   function load() {
     var d = null;
     try { d = JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch (e) {}
-    if (!d) {
+    if (entry) {
+      // A draft of an edit counts only while the page is as it was then.
+      if (!d || d.base !== entry.base) d = entry;
+    } else if (!d) {
       try {
         var old = JSON.parse(localStorage.getItem(OLD_DRAFT_KEY));
         if (old) d = { kind: 'idea', title: old.title, body: old.content };
       } catch (e) {}
     }
     if (!d) return;
-    kind = d.kind === 'post' ? 'post' : 'idea';
+    kind = entry ? entry.kind : d.kind === 'post' ? 'post' : 'idea';
     titleInput.value = d.title || '';
     titleZhInput.value = d.title_zh || '';
     nameInput.value = d.name || '';
     tagsInput.value = (d.tags || []).join(', ');
     bodyInput.value = d.body || '';
-    files = (d.files || []).filter(function(f) { return f && f.name && f.sha; });
+    // The page's own files have no SHA: they are in the blog already.
+    files = (d.files || []).filter(function(f) { return f && f.name && (f.sha || entry); });
   }
 
   function current() {
-    return {
+    var d = {
       kind: kind,
       title: titleInput.value.trim(),
       title_zh: titleZhInput.value.trim(),
@@ -68,6 +79,11 @@
       body: bodyInput.value,
       files: files.map(function(f) { return { name: f.name, sha: f.sha, size: f.size }; })
     };
+    if (entry) {
+      d.path = entry.path;
+      d.base = entry.base;
+    }
+    return d;
   }
 
   function save() {
@@ -77,7 +93,7 @@
   function clear() {
     try {
       localStorage.removeItem(DRAFT_KEY);
-      localStorage.removeItem(OLD_DRAFT_KEY);
+      if (!entry) localStorage.removeItem(OLD_DRAFT_KEY);
     } catch (e) {}
   }
 
@@ -102,7 +118,7 @@
   titleInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.metaKey && !e.ctrlKey && !e.isComposing) {
       e.preventDefault();
-      (kind === 'post' ? titleZhInput : bodyInput).focus();
+      (kind === 'post' || entry ? titleZhInput : bodyInput).focus();
     }
   });
   [titleZhInput, nameInput, tagsInput].forEach(function(el) { el.addEventListener('input', changed); });
@@ -318,7 +334,9 @@
       rm.type = 'button';
       rm.className = 'editor-file-remove';
       rm.textContent = '×';
-      rm.title = say('Remove; the text keeps any reference to it', '移除；正文中的引用需自行删除');
+      rm.title = f.sha
+        ? say('Remove; the text keeps any reference to it', '移除；正文中的引用需自行删除')
+        : say('Delete from the page on saving; the text keeps any reference to it', '保存时从页面删除；正文中的引用需自行删除');
       rm.addEventListener('click', function() {
         files.splice(i, 1);
         showFiles();
@@ -447,14 +465,14 @@
       status.textContent = say('There is nothing to publish.', '内容不能为空。');
       return;
     }
-    if (d.kind === 'post' && !d.title) {
-      status.textContent = say('A post needs a title.', '文章需要标题。');
+    if (!d.title && (entry || d.kind === 'post')) {
+      status.textContent = entry ? say('The page needs a title.', '需要标题。') : say('A post needs a title.', '文章需要标题。');
       titleInput.focus();
       return;
     }
     sendBtn.disabled = true;
-    status.textContent = say('Publishing…', '发布中…');
-    fetch('/blog/new', {
+    status.textContent = entry ? say('Saving…', '保存中…') : say('Publishing…', '发布中…');
+    fetch(entry ? '/blog/edit' + entry.path : '/blog/new', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(d)
@@ -465,12 +483,17 @@
       }
       if (!r.ok) {
         return r.text().then(function(msg) {
-          status.textContent = msg.trim() || say('Publishing failed', '发布失败') + ' (' + r.status + ')';
+          status.textContent = msg.trim() || (entry ? say('Saving failed', '保存失败') : say('Publishing failed', '发布失败')) + ' (' + r.status + ')';
           sendBtn.disabled = false;
         });
       }
       return r.json().then(function(res) {
         clear();
+        if (entry) {
+          status.textContent = isZh() ? '已保存，服务器拉取后即可看到。' : res.message;
+          waitForPull(res.url, res.base, 0);
+          return;
+        }
         status.textContent = isZh() ? (d.kind === 'post' ? '已发布，服务器拉取后即可看到。' : '想法已提交，几分钟后出现在想法页。') : res.message;
         if (d.kind === 'post') waitFor(res.url, 0);
         else setTimeout(function() { location.href = res.url; }, 4000);
@@ -489,6 +512,20 @@
     }).catch(function() {
       if (tries < 60) setTimeout(function() { waitFor(url, tries + 1); }, 3000);
     });
+  }
+
+  // An edit shows once the server has pulled it: its file is then the one
+  // saved. Go to the page then.
+  function waitForPull(url, base, tries) {
+    var again = function() {
+      if (tries < 60) setTimeout(function() { waitForPull(url, base, tries + 1); }, 3000);
+    };
+    fetch('/blog/edit' + entry.path + '?base', { cache: 'no-store' }).then(function(r) {
+      return r.ok ? r.json() : null;
+    }).then(function(res) {
+      if (res && res.base === base) location.href = url;
+      else again();
+    }).catch(again);
   }
 
   sendBtn.addEventListener('click', publish);
@@ -520,11 +557,13 @@
   function updateLabels() {
     var zh = isZh();
     var post = kind === 'post';
-    heading.textContent = post ? say('New post', '新文章') : say('New idea', '新想法');
+    if (entry) heading.textContent = (post ? say('Editing a post', '编辑文章') : say('Editing an idea', '编辑想法')) + ' · ' + entry.date;
+    else heading.textContent = post ? say('New post', '新文章') : say('New idea', '新想法');
     document.title = heading.textContent + ' - ' + document.title.replace(/^.* - /, '');
-    titleInput.placeholder = post ? say('Title', '标题') : say('Title (optional)', '标题（可选）');
+    titleInput.placeholder = post || entry ? say('Title', '标题') : say('Title (optional)', '标题（可选）');
     titleZhInput.placeholder = say('Chinese title (optional)', '中文标题（可选）');
     nameInput.placeholder = postName(titleInput.value) || say('from-the-title', '由标题生成');
+    if (entry) nameInput.title = say('The address stays as it is', '地址保持不变');
     tagsInput.placeholder = say('Tags, comma-separated', '标签，以逗号分隔');
     bodyInput.placeholder = post
       ? say('Write the post. Markdown, math in $…$, and {{% en %}} or {{% zh %}} blocks work.', '写文章。支持 Markdown、$…$ 数学公式，以及 {{% en %}}、{{% zh %}} 语言块。')
@@ -560,6 +599,11 @@
   }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-lang'] });
 
   load();
+  if (entry) {
+    nameInput.value = entry.name;
+    nameInput.readOnly = true;
+    document.getElementById('editor-prefix').textContent = entry.prefix;
+  }
   setKind(kind);
   showFiles();
   if (!canPublish) {
@@ -567,6 +611,8 @@
     status.textContent = say('Preview only: publishing is not configured here.', '仅预览：这里不能发布。');
   }
   setMode('write');
-  var end = bodyInput.value.length;
+  // A new text goes on at its end; an edit starts at the top.
+  var end = entry ? 0 : bodyInput.value.length;
   bodyInput.setSelectionRange(end, end);
+  if (entry) writePane.scrollTop = 0;
 })();

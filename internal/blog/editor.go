@@ -24,7 +24,9 @@ import (
 
 // An Editor serves Prefix+"new": a page for writing a new post or idea,
 // seeing it as the blog will show it, and publishing it to the blog's
-// repository, from which the server's checkout pulls it.
+// repository, from which the server's checkout pulls it. It serves
+// Prefix+"edit/" too, which opens a post or an idea there already and
+// commits the edit over its file.
 type Editor struct {
 	// Owner reports whether a request comes from the site's owner, the
 	// only one the editor serves.
@@ -45,6 +47,10 @@ type Publisher interface {
 	// Create commits files as a new page at root, a file or a folder. It
 	// fails with ideas.ErrExists if root is taken.
 	Create(ctx context.Context, root string, files []ideas.File, msg string) error
+	// Update commits files over the page whose markdown is file, and
+	// deletes the paths of remove, in one commit. It fails with
+	// ideas.ErrChanged if file is no longer the blob base.
+	Update(ctx context.Context, file, base string, files []ideas.File, remove []string, msg string) error
 	// PublishIdea writes up an idea with models and publishes it, in the
 	// background.
 	PublishIdea(title, content string, files []ideas.Attachment)
@@ -65,6 +71,11 @@ type draft struct {
 	Tags    []string `json:"tags"`
 	Body    string   `json:"body"`
 	Files   []upload `json:"files"`
+
+	// For an edit: the page's address below the blog, and the SHA of its
+	// file as the editor opened it.
+	Path string `json:"path,omitempty"`
+	Base string `json:"base,omitempty"`
 }
 
 // upload is a file uploaded for a draft.
@@ -83,6 +94,8 @@ func (h *handler) editorRoutes() http.Handler {
 	m.HandleFunc("POST "+Prefix+"new/preview", h.preview)
 	m.HandleFunc("POST "+Prefix+"new/files", h.upload)
 	m.HandleFunc("GET "+Prefix+"new/files/{sha}/{name}", h.download)
+	m.HandleFunc("GET "+Prefix+"edit/{path...}", h.editPage)
+	m.HandleFunc("POST "+Prefix+"edit/{path...}", h.save)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ed := h.editor
 		if ed == nil || ed.Owner == nil {
@@ -141,7 +154,12 @@ func (h *handler) preview(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	p := &Page{Section: d.Kind + "s", Title: d.Title, Path: "/new/", Date: now, Lastmod: now, links: map[string]string{}}
 	for _, f := range d.Files {
-		p.links[f.Name] = "/new/files/" + url.PathEscape(f.SHA) + "/" + url.PathEscape(f.Name)
+		if f.SHA != "" {
+			p.links[f.Name] = "/new/files/" + url.PathEscape(f.SHA) + "/" + url.PathEscape(f.Name)
+		}
+	}
+	if d.Path != "" {
+		h.editedPreview(d.Path, d, p)
 	}
 	if err := render(p, []byte(d.Body)); err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)

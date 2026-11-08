@@ -1,5 +1,5 @@
 {{define "main"}}
-<div id="editor" class="compose-window editor" data-mode="write" data-kind="idea"{{if .CanPublish}} data-can-publish{{end}}>
+<div id="editor" class="compose-window editor" data-mode="write" data-kind="{{with .Entry}}{{.Kind}}{{else}}idea{{end}}"{{if .Entry}} data-edit{{end}}{{if .CanPublish}} data-can-publish{{end}}>
   <div class="compose-header">
     <div class="compose-modes editor-kinds" role="group" aria-label="Kind">
       <button class="compose-mode" type="button" data-kind="idea" aria-pressed="true"><span class="lang-en">Idea</span><span class="lang-zh">想法</span></button>
@@ -16,7 +16,7 @@
       <textarea id="editor-title" class="compose-title" rows="1" autocomplete="off"></textarea>
       <div class="editor-fields">
         <input id="editor-title-zh" type="text" autocomplete="off" aria-label="Chinese title">
-        <label class="editor-name"><span>/blog/posts/</span><input id="editor-name" type="text" autocomplete="off" spellcheck="false" aria-label="Address"></label>
+        <label class="editor-name"><span id="editor-prefix">/blog/posts/</span><input id="editor-name" type="text" autocomplete="off" spellcheck="false" aria-label="Address"></label>
         <input id="editor-tags" type="text" autocomplete="off" aria-label="Tags">
       </div>
       <textarea id="editor-body" class="compose-content"></textarea>
@@ -47,8 +47,11 @@
       <span id="editor-status" class="compose-status" role="status"></span>
       <span id="editor-count" class="compose-count"></span>
     </div>
-    <button id="editor-send" class="compose-send" type="button"><span class="lang-en">Publish</span><span class="lang-zh">发布</span></button>
+    <button id="editor-send" class="compose-send" type="button">{{if .Entry}}<span class="lang-en">Save</span><span class="lang-zh">保存</span>{{else}}<span class="lang-en">Publish</span><span class="lang-zh">发布</span>{{end}}</button>
   </div>
 </div>
+{{- with .Entry}}
+<script type="application/json" id="editor-entry">{{.}}</script>
+{{- end}}
 <script src="{{asset "editor.js"}}"></script>
 {{end}}

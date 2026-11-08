@@ -520,6 +520,11 @@ svg { width: 16px; height: 16px; flex: none; }
     color: var(--text-muted);
 }
 
+/* Only the owner is served it: as quiet as the rest of the line. */
+.article-edit { color: inherit; }
+
+.article-edit:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+
 /* ---- Prose: the body of a post, an idea and a page ---- */
 
 .prose {
@@ -1221,6 +1226,13 @@ svg { width: 16px; height: 16px; flex: none; }
 
 .editor[data-kind="idea"] .editor-fields { display: none; }
 
+/* An edit keeps its kind and its address, and an idea shows its fields. */
+.editor[data-edit] .editor-kinds { display: none; }
+
+.editor[data-edit] .editor-fields { display: flex; }
+
+.editor[data-edit] .compose-heading { padding-left: 12px; }
+
 .editor-fields input {
     min-width: 0;
     padding: 4px 0;
@@ -1241,6 +1253,8 @@ svg { width: 16px; height: 16px; flex: none; }
 .editor-name { display: flex; flex: 1 1 260px; align-items: baseline; font: 13px var(--mono); color: var(--text-muted); }
 
 .editor-fields .editor-name input { flex: 1; font: 13px var(--mono); }
+
+.editor-fields .editor-name input[readonly] { border-bottom-color: transparent; color: var(--text-muted); }
 
 #editor-tags { flex: 1 1 200px; }
 

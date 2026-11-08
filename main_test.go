@@ -7,6 +7,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"log"
 	"net"
@@ -21,6 +22,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"changkun.de/x/website/internal/githubtest"
 )
 
 func TestReadIP(t *testing.T) {
@@ -326,5 +329,134 @@ func TestServeSites(t *testing.T) {
 		if got := strconv.Itoa(resp.StatusCode) + " " + string(body); got != want {
 			t.Errorf("golang.design%s: got %q, want %q", path, got, want)
 		}
+	}
+}
+
+// TestBinaryEditsPost runs the binary on a blog checked out of a bare
+// repository, with GitHub's API served from that repository, and edits a
+// post as the owner, here anyone on this machine: the post is rewritten, a
+// file added and one deleted in one commit to the repository, and an edit
+// of the post as it was before is refused.
+func TestBinaryEditsPost(t *testing.T) {
+	if testing.Short() {
+		t.Skip("the end to end test builds the binary")
+	}
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("the end to end test needs git")
+	}
+
+	tmp := t.TempDir()
+	bare := filepath.Join(tmp, "blog.git")
+	files := map[string][]byte{}
+	err := filepath.WalkDir("internal/blog/testdata/site", func(name string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		b, err := os.ReadFile(name)
+		files[filepath.ToSlash(strings.TrimPrefix(name, "internal/blog/testdata/site/"))] = b
+		return err
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := githubtest.InitRepo(bare, files); err != nil {
+		t.Fatal(err)
+	}
+	checkout := filepath.Join(tmp, "www", "blog")
+	clone := exec.Command("git", "clone", "-q", bare, checkout)
+	clone.Env = append(os.Environ(), "GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL="+os.DevNull)
+	if out, err := clone.CombinedOutput(); err != nil {
+		t.Fatalf("git clone: %v\n%s", err, out)
+	}
+	repo := func(args ...string) string {
+		t.Helper()
+		out, err := githubtest.Git(bare, args...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return strings.TrimSpace(string(out))
+	}
+	api := httptest.NewServer(githubtest.Handler(bare))
+	t.Cleanup(api.Close)
+
+	addr, out, _ := startSite(t,
+		"WWW_DIR="+filepath.Join(tmp, "www"),
+		"LIBRARY_DIR="+filepath.Join(tmp, "data"),
+		"LIBRARY_DEV_OWNER=1",
+		"GIT_TOKEN=t",
+		"GIT_API_URL="+api.URL,
+		"LLM_BASE_URL=https://lux.example",
+		"LLM_API_KEY=k",
+	)
+	post := func(path, ctype string, body []byte) (int, []byte) {
+		t.Helper()
+		resp, err := http.Post("http://"+addr+path, ctype, bytes.NewReader(body))
+		if err != nil {
+			t.Fatalf("cannot reach %s: %v", path, err)
+		}
+		defer resp.Body.Close()
+		b, _ := io.ReadAll(resp.Body)
+		return resp.StatusCode, b
+	}
+
+	code, body := get(t, addr, "/blog/posts/a-bundle/")
+	if code != http.StatusOK || !bytes.Contains(body, []byte(`<a class="article-edit" href="/blog/edit/posts/a-bundle/"`)) {
+		t.Fatalf("GET the post = %d, without the edit link\n%s", code, out.String())
+	}
+	code, body = get(t, addr, "/blog/edit/posts/a-bundle/")
+	_, after, _ := bytes.Cut(body, []byte(`<script type="application/json" id="editor-entry">`))
+	js, _, _ := bytes.Cut(after, []byte("</script>"))
+	var entry struct {
+		Base  string `json:"base"`
+		Files []struct {
+			Name string `json:"name"`
+		} `json:"files"`
+	}
+	if code != http.StatusOK || json.Unmarshal(js, &entry) != nil || len(entry.Files) != 2 {
+		t.Fatalf("GET the editor = %d:\n%.500s", code, body)
+	}
+	if want := repo("rev-parse", "main:content/posts/2021-02-02-bundle/index.md"); entry.Base != want {
+		t.Fatalf("the editor opened %s, the repository has %s", entry.Base, want)
+	}
+
+	code, body = post("/blog/new/files?name=two.png", "application/octet-stream", []byte("PNG2"))
+	var up struct{ Name, SHA string }
+	if code != http.StatusOK || json.Unmarshal(body, &up) != nil {
+		t.Fatalf("upload = %d %s", code, body)
+	}
+	edit, _ := json.Marshal(map[string]any{
+		"kind": "post", "title": "A Bundle, Edited", "tags": []string{"go"}, "body": "![two](two.png)\n\nEdited.\n",
+		"files": []map[string]string{{"name": "figures.js"}, {"name": up.Name, "sha": up.SHA}}, "base": entry.Base,
+	})
+	if code, body := post("/blog/edit/posts/a-bundle/", "application/json", edit); code != http.StatusOK {
+		t.Fatalf("save = %d %s\n%s", code, body, out.String())
+	}
+
+	md := repo("show", "main:content/posts/2021-02-02-bundle/index.md")
+	for _, want := range []string{"\ndate: 2021-02-02T08:00:00+01:00\nlastmod: ", "\ntitle: A Bundle, Edited\nslug: /posts/a-bundle\n",
+		"\n---\n\n![two](two.png)\n\nEdited."} {
+		if !strings.Contains(md, want) {
+			t.Errorf("the committed post lacks %q:\n%s", want, md)
+		}
+	}
+	if got := repo("ls-tree", "--name-only", "main", "content/posts/2021-02-02-bundle/"); got !=
+		"content/posts/2021-02-02-bundle/figures.js\ncontent/posts/2021-02-02-bundle/index.md\ncontent/posts/2021-02-02-bundle/two.png" {
+		t.Errorf("the post's folder has\n%s", got)
+	}
+	if got := repo("show", "main:content/posts/2021-02-02-bundle/two.png"); got != "PNG2" {
+		t.Errorf("two.png = %q", got)
+	}
+	if got := repo("log", "--format=%s", "main"); got != "posts: A Bundle, Edited\nseed" {
+		t.Errorf("the log is\n%s", got)
+	}
+
+	// The checkout has not pulled, so an edit of the post as it was would
+	// undo the one just saved; it is refused.
+	if code, body := post("/blog/edit/posts/a-bundle/", "application/json", edit); code != http.StatusConflict ||
+		!bytes.Contains(body, []byte("changed in the blog's repository")) {
+		t.Errorf("a second save = %d %s", code, body)
+	}
+	if got := repo("rev-list", "--count", "main"); got != "2" {
+		t.Errorf("%s commits, want 2", got)
 	}
 }

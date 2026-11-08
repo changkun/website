@@ -31,3 +31,4 @@ StatsBlogs:  { en: "posts total.", zh: "篇文章" }
 StatsTags:   { en: "tags total.",  zh: "个标签" }
 Post:        { en: "Post",     zh: "文章" }
 Contents:    { en: "Contents", zh: "目录" }
+Edit:        { en: "Edit",     zh: "编辑" }

@@ -10,6 +10,9 @@
         <span>{{.ReadingTime}} min</span>
         {{- end}}
         <span>PV/UV <span id="urlstat-page-pv"></span>/<span id="urlstat-page-uv"></span></span>
+        {{- with $.Edit}}
+        <a class="article-edit" href="{{.}}" rel="nofollow">{{t "Edit"}}</a>
+        {{- end}}
       </div>
       {{- end}}
     </header>
