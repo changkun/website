@@ -5,7 +5,7 @@
 <section class="list">
 <div class="head">
   <h1>{{if .Sub}}<a class="up" href="{{.List.Path}}">{{.Share.Title}}</a>{{range .Sub}}<span class="sub"> › {{.Name}}</span>{{end}}{{else}}{{.Share.Title}}{{end}}</h1>
-  <p class="meta">Shared by Changkun Ou{{if not .Share.ID}} with everyone{{end}}{{if .Member}} with {{.Member.Name}} · this link is yours, please do not pass it on{{end}}</p>
+  <p class="meta">{{if not (or .Share.ID .Share.Topics)}}Nothing is shared yet.{{else}}Shared by Changkun Ou{{if not .Share.ID}} with everyone{{end}}{{end}}{{if .Member}} with {{.Member.Name}} · this link is yours, please do not pass it on{{end}}</p>
   {{if .Member}}<p class="actions-line"><a href="{{.List.Panel "discussion"}}">Discussion{{with len .Comments}} ({{.}}){{end}} and suggestions{{with len .Suggestions}} ({{.}}){{end}}</a></p>{{end}}
 </div>
 {{if .Done}}<p class="note good">{{.Done}}</p>{{end}}

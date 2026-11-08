@@ -318,10 +318,14 @@ func TestOwnerPages(t *testing.T) {
 	s, _ := newTestService(t)
 	h := s.routes()
 
-	// Without login, owner pages redirect to the login page.
-	if rec := get(t, h, "/library/", false); rec.Code != http.StatusSeeOther ||
+	// Without login, owner pages redirect to the login page, and the home
+	// page is an empty library that shows nothing private.
+	if rec := get(t, h, "/library/t/SYS", false); rec.Code != http.StatusSeeOther ||
 		!strings.HasPrefix(rec.Header().Get("Location"), "/library/login") {
-		t.Fatalf("anonymous GET /library/ = %d %s", rec.Code, rec.Header().Get("Location"))
+		t.Fatalf("anonymous GET /library/t/SYS = %d %s", rec.Code, rec.Header().Get("Location"))
+	}
+	if rec := get(t, h, "/library/", false); rec.Code != http.StatusOK || strings.Contains(rec.Body.String(), "Pollux") {
+		t.Fatalf("anonymous GET /library/ = %d, want an empty library", rec.Code)
 	}
 	if rec := post(t, h, "/library/sync", nil, false); rec.Code != http.StatusForbidden {
 		t.Fatalf("anonymous POST /library/sync = %d, want 403", rec.Code)
@@ -353,7 +357,7 @@ func TestOwnerPages(t *testing.T) {
 	}
 
 	// Through a proxy, loopback is not the owner.
-	req := httptest.NewRequest("GET", "/library/", nil)
+	req := httptest.NewRequest("GET", "/library/t/SYS", nil)
 	req.RemoteAddr = "127.0.0.1:1"
 	req.Header.Set("X-Forwarded-For", "203.0.113.9")
 	rec := httptest.NewRecorder()
@@ -532,8 +536,8 @@ func TestShares(t *testing.T) {
 	if get(t, h, "/library/p/"+sh.ID, false).Code != http.StatusNotFound {
 		t.Fatal("public page still served")
 	}
-	if rec := get(t, h, "/library/", false); rec.Code != http.StatusSeeOther {
-		t.Fatalf("anonymous GET /library/ with nothing public = %d, want a redirect to login", rec.Code)
+	if rec := get(t, h, "/library/", false); rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), "Nothing is shared yet.") || !strings.Contains(rec.Body.String(), "No entries") {
+		t.Fatalf("anonymous GET /library/ with nothing public = %d, want an empty library", rec.Code)
 	}
 
 	// The owner's list with ?e= shows the entry's comments in the pane.

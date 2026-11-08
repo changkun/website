@@ -944,7 +944,7 @@ func (ix *index) shareEntries(sh *Share) []*Entry {
 
 // publicView is what everyone but the owner sees at Prefix: the topics of
 // every public share together, as one share, read-only and without
-// comments. It is nil when no share is public.
+// comments. It has no topics when no share is public.
 func (s *Service) publicView(ix *index) *Share {
 	var pub []*Share
 	for _, sh := range s.store.allShares() {
@@ -952,11 +952,11 @@ func (s *Service) publicView(ix *index) *Share {
 			pub = append(pub, sh)
 		}
 	}
-	if len(pub) == 0 {
-		return nil
-	}
 	v := &Share{Title: "Shared topics", Public: true}
-	if len(pub) == 1 {
+	switch len(pub) {
+	case 0:
+		v.Title = "Library"
+	case 1:
 		v.Title = pub[0].Title
 	}
 	var all []string
@@ -984,14 +984,9 @@ func (s *Service) publicView(ix *index) *Share {
 }
 
 // publicHome is Prefix, or its .bib, for everyone but the owner: the public
-// view, or the login page when nothing is public.
+// view, empty when nothing is public.
 func (s *Service) publicHome(w http.ResponseWriter, r *http.Request) {
-	pub := s.publicView(s.ix.Load())
-	if pub == nil {
-		toLogin(w, r)
-		return
-	}
-	s.sharePage(w, r, pub, nil, "", strings.HasSuffix(r.URL.Path, ".bib"), Prefix)
+	s.sharePage(w, r, s.publicView(s.ix.Load()), nil, "", strings.HasSuffix(r.URL.Path, ".bib"), Prefix)
 }
 
 // publicHomeEntry is an entry's page for everyone but the owner: shown if
@@ -1000,7 +995,7 @@ func (s *Service) publicHome(w http.ResponseWriter, r *http.Request) {
 func (s *Service) publicHomeEntry(w http.ResponseWriter, r *http.Request) {
 	ix := s.ix.Load()
 	pub := s.publicView(ix)
-	if pub == nil || !ix.inTopics(r.PathValue("key"), pub.Topics) {
+	if !ix.inTopics(r.PathValue("key"), pub.Topics) {
 		toLogin(w, r)
 		return
 	}
