@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base32"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -62,7 +61,7 @@ type Post struct {
 //	state/shares.yaml   every share
 //	state/<id>.jsonl    one per share, append-only
 //	state/read.txt      ids of posts the owner marked read
-//	state/session.key   signs the owner's session cookie
+//	state/session.key   signs the owner's session cookie; package owner keeps it
 type store struct {
 	dir string
 
@@ -70,10 +69,9 @@ type store struct {
 	shares []*Share
 	posts  map[string][]*Post // by share id, oldest first, hide records included
 	read   map[string]bool
-	key    []byte
 }
 
-// openStore loads dir, creating it and the session key if missing.
+// openStore loads dir, creating it if missing.
 func openStore(dir string) (*store, error) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, err
@@ -106,23 +104,6 @@ func openStore(dir string) (*store, error) {
 		s.read[id] = true
 	}
 
-	keyPath := filepath.Join(dir, "session.key")
-	raw, err = os.ReadFile(keyPath)
-	switch {
-	case err == nil:
-		s.key, err = hex.DecodeString(strings.TrimSpace(string(raw)))
-		if err != nil || len(s.key) < 32 {
-			return nil, fmt.Errorf("session.key is not 32 hex-encoded bytes")
-		}
-	case errors.Is(err, fs.ErrNotExist):
-		s.key = make([]byte, 32)
-		rand.Read(s.key)
-		if err := writeFile(keyPath, []byte(hex.EncodeToString(s.key)+"\n")); err != nil {
-			return nil, err
-		}
-	default:
-		return nil, err
-	}
 	return s, nil
 }
 
@@ -457,9 +438,4 @@ func (s *store) markRead(ids []string) error {
 		s.read[id] = true
 	}
 	return nil
-}
-
-// sessionKey returns the key that signs owner cookies.
-func (s *store) sessionKey() []byte {
-	return s.key
 }

@@ -21,6 +21,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"changkun.de/x/website/internal/owner"
 )
 
 //go:embed templates/*.html
@@ -159,7 +161,7 @@ func (s *Service) notFound(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) fail(w http.ResponseWriter, r *http.Request, status int, msg string) {
-	s.render(w, r, status, "message", view{Title: http.StatusText(status), Owner: s.owner.is(r), Data: msg})
+	s.render(w, r, status, "message", view{Title: http.StatusText(status), Owner: s.owner.Is(r), Data: msg})
 }
 
 func (s *Service) routes() http.Handler {
@@ -168,13 +170,13 @@ func (s *Service) routes() http.Handler {
 	m.Handle("GET /library/assets/", http.StripPrefix("/library/assets/", http.FileServerFS(assets)))
 	m.HandleFunc("GET /library/healthz", s.healthz)
 	m.HandleFunc("GET /library/login", s.loginPage)
-	m.HandleFunc("POST /library/login", s.owner.login)
-	m.HandleFunc("POST /library/logout", s.owner.logout)
+	m.HandleFunc("POST /library/login", s.owner.Login)
+	m.HandleFunc("POST /library/logout", s.logout)
 
 	// ownOr serves the owner with h and everyone else with other.
 	ownOr := func(h, other http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			if s.owner.is(r) {
+			if s.owner.Is(r) {
 				h(w, r)
 				return
 			}
@@ -231,16 +233,29 @@ func (s *Service) healthz(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "ok, synced", ago(ok))
 }
 
+// loginPage logs the owner in, for the library and for the blog's editor,
+// and goes on to ?next=, a page of either.
 func (s *Service) loginPage(w http.ResponseWriter, r *http.Request) {
 	next := r.URL.Query().Get("next")
-	if !strings.HasPrefix(next, Prefix) || strings.HasPrefix(next, "//") {
+	if !loginNext.MatchString(next) {
 		next = Prefix
 	}
-	if s.owner.is(r) {
+	if s.owner.Is(r) {
 		http.Redirect(w, r, next, http.StatusSeeOther)
 		return
 	}
 	s.render(w, r, http.StatusOK, "login", view{Title: "Log in", Data: next})
+}
+
+// loginNext matches the pages the login page may go on to. The login
+// template checks the same.
+var loginNext = regexp.MustCompile(`^/(library|blog)/`)
+
+// logout ends the owner's session and shows the login page, which does not
+// log straight back in.
+func (s *Service) logout(w http.ResponseWriter, r *http.Request) {
+	s.owner.Logout(w, r)
+	http.Redirect(w, r, Prefix+"login?out=1", http.StatusSeeOther)
 }
 
 // list is a filtered, sorted, paged list of entries.
@@ -758,7 +773,7 @@ type shareView struct {
 // origin is the scheme and host the request came to, for absolute links.
 func origin(r *http.Request) string {
 	scheme := "http"
-	if secure(r) {
+	if owner.Secure(r) {
 		scheme = "https"
 	}
 	return scheme + "://" + r.Host

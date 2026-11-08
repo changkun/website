@@ -9,6 +9,7 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"log"
@@ -16,12 +17,14 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
 
 	"changkun.de/x/website/internal/ideas"
 	"changkun.de/x/website/internal/library"
+	"changkun.de/x/website/internal/owner"
 )
 
 func main() {
@@ -73,7 +76,9 @@ func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 		ln.Close()
 		return err
 	}
-	lib, err := library.New(l)
+	// One login, the library's, serves the library and the blog's editor.
+	own := owner.New(filepath.Join(cmp.Or(os.Getenv("LIBRARY_DIR"), "/data"), "state", "session.key"), l)
+	lib, err := library.New(l, own)
 	if err != nil {
 		ln.Close()
 		return err

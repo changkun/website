@@ -20,6 +20,8 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	"changkun.de/x/website/internal/owner"
 )
 
 // fakeZotero is an in-process Zotero Web API for one user library.
@@ -159,7 +161,8 @@ func newTestService(t *testing.T) (*Service, *fakeZotero) {
 	t.Setenv("LIBRARY_DIR", dir)
 	t.Setenv("LIBRARY_DEV_OWNER", "")
 	t.Setenv("AUTH_ALLOWED_PRINCIPALS", "")
-	s, err := New(log.New(io.Discard, "", 0))
+	l := log.New(io.Discard, "", 0)
+	s, err := New(l, owner.New(filepath.Join(dir, "state", "session.key"), l))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,7 +175,7 @@ func newTestService(t *testing.T) (*Service, *fakeZotero) {
 func TestNewUnconfigured(t *testing.T) {
 	t.Setenv("ZOTERO_USER_ID", "")
 	t.Setenv("ZOTERO_API_KEY", "")
-	s, err := New(log.New(io.Discard, "", 0))
+	s, err := New(log.New(io.Discard, "", 0), nil)
 	if s != nil || err != nil {
 		t.Fatalf("New() = %v, %v; want nil, nil", s, err)
 	}
@@ -223,7 +226,7 @@ func TestSync(t *testing.T) {
 	}
 
 	// The cache survives a restart.
-	s2, err := New(log.New(io.Discard, "", 0))
+	s2, err := New(log.New(io.Discard, "", 0), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -236,7 +239,7 @@ func TestSync(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(s.dir, "cache.json"), raw, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	s3, err := New(log.New(io.Discard, "", 0))
+	s3, err := New(log.New(io.Discard, "", 0), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -331,7 +334,20 @@ func TestOwnerPages(t *testing.T) {
 		t.Fatalf("anonymous POST /library/sync = %d, want 403", rec.Code)
 	}
 
-	s.owner.dev = true
+	s.owner.Dev = true
+	// The login page goes on to the library or the blog's editor, nowhere else.
+	for next, want := range map[string]string{
+		"/blog/new":            "/blog/new",
+		"/library/t/SYS":       "/library/t/SYS",
+		"https://example.com/": "/library/",
+		"//example.com/":       "/library/",
+		"/elsewhere":           "/library/",
+	} {
+		rec := get(t, h, "/library/login?next="+url.QueryEscape(next), true)
+		if rec.Code != http.StatusSeeOther || rec.Header().Get("Location") != want {
+			t.Errorf("login with next=%s = %d to %q, want %q", next, rec.Code, rec.Header().Get("Location"), want)
+		}
+	}
 	for path, want := range map[string]string{
 		"/library/":                   "Pollux",
 		"/library/?q=borg":            "Borg",
@@ -367,34 +383,10 @@ func TestOwnerPages(t *testing.T) {
 	}
 }
 
-func TestSessionCookie(t *testing.T) {
-	s, _ := newTestService(t)
-	exp := "99999999999"
-	good := &http.Cookie{Name: cookieName, Value: exp + "." + s.owner.sign(exp)}
-	bad := &http.Cookie{Name: cookieName, Value: exp + "." + strings.Repeat("0", 64)}
-	expired := &http.Cookie{Name: cookieName, Value: "1." + s.owner.sign("1")}
-	for _, tc := range []struct {
-		c    *http.Cookie
-		want bool
-	}{{good, true}, {bad, false}, {expired, false}} {
-		r := httptest.NewRequest("GET", "/library/", nil)
-		r.AddCookie(tc.c)
-		if got := s.owner.is(r); got != tc.want {
-			t.Errorf("owner.is(%s) = %v, want %v", tc.c.Value, got, tc.want)
-		}
-	}
-	// Without an allowlist, login is refused.
-	rec := httptest.NewRecorder()
-	s.owner.login(rec, httptest.NewRequest("POST", "/library/login", nil))
-	if rec.Code != http.StatusForbidden {
-		t.Fatalf("login without allowlist = %d, want 403", rec.Code)
-	}
-}
-
 func TestShares(t *testing.T) {
 	s, _ := newTestService(t)
 	h := s.routes()
-	s.owner.dev = true
+	s.owner.Dev = true
 
 	rec := post(t, h, "/library/shares", url.Values{"topic": {"SYS"}, "title": {"Reading group"},
 		"names": {"Alice\nBob\n"}, "public": {"on"}}, true)

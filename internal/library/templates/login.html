@@ -18,7 +18,7 @@
   // latere returns to this page without ?next=, so the page to go on to is
   // kept across the round trip.
   var next = {{.Data}};
-  if (params.has('code') && saved && /^\/library\//.test(saved.next) && saved.next.indexOf('//') !== 0) next = saved.next;
+  if (params.has('code') && saved && /^\/(library|blog)\//.test(saved.next)) next = saved.next;
   function offer(msg) {
     status.textContent = msg;
     button.hidden = false;
@@ -35,7 +35,7 @@
   }).then(function (tok) {
     if (!tok) {
       var recent = saved && Date.now() - saved.at < 60000;
-      if (params.has('out') || params.has('error') || recent) { offer('Log in with the latere account that owns this library.'); return; }
+      if (params.has('out') || params.has('error') || recent) { offer('Log in with the latere account that owns this site.'); return; }
       start();
       return;
     }
@@ -45,7 +45,7 @@
         location.replace(next);
         return;
       }
-      offer(r.status === 403 ? 'This latere account is not the owner of this library.' : 'Login failed (' + r.status + ').');
+      offer(r.status === 403 ? 'This latere account does not own this site.' : 'Login failed (' + r.status + ').');
     });
   }).catch(function (e) { offer('Login failed: ' + e.message); });
 })();

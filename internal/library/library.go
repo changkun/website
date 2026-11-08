@@ -26,6 +26,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"changkun.de/x/website/internal/owner"
 )
 
 // Prefix is the path the library is mounted at. The mux does not strip it.
@@ -39,7 +41,7 @@ type Service struct {
 	dir      string // holds cache.json and state/
 	interval time.Duration
 	store    *store
-	owner    *owner
+	owner    *owner.Owner
 
 	ix atomic.Pointer[index]
 
@@ -62,10 +64,9 @@ type Service struct {
 //	LIBRARY_DIR                     holds cache.json and state/; default /data
 //	SYNC_INTERVAL                   default 15m
 //	ZOTERO_API_URL                  default https://api.zotero.org
-//	LIBRARY_DEV_OWNER=1             requests from this machine are the owner,
-//	                                for running it locally without login
-//	AUTH_*                          owner login, as for the ideas API
-func New(l *log.Logger) (*Service, error) {
+//
+// o decides which requests are the owner's.
+func New(l *log.Logger, o *owner.Owner) (*Service, error) {
 	userID, key := os.Getenv("ZOTERO_USER_ID"), os.Getenv("ZOTERO_API_KEY")
 	if userID == "" || key == "" {
 		l.Println("library is unconfigured, ZOTERO_USER_ID and ZOTERO_API_KEY are required")
@@ -84,17 +85,13 @@ func New(l *log.Logger) (*Service, error) {
 	if err != nil {
 		return nil, fmt.Errorf("library state: %w", err)
 	}
-	dev := os.Getenv("LIBRARY_DEV_OWNER") == "1"
-	if dev {
-		l.Println("library: LIBRARY_DEV_OWNER is set, requests from this machine are the owner")
-	}
 	s := &Service{
 		log:      l,
 		zotero:   &zoteroClient{baseURL: os.Getenv("ZOTERO_API_URL"), userID: userID, key: key},
 		dir:      dir,
 		interval: interval,
 		store:    st,
-		owner:    &owner{key: st.sessionKey(), verifier: newVerifier(l), dev: dev, log: l},
+		owner:    o,
 	}
 	s.ix.Store(newIndex(s.loadCache()))
 	return s, nil
