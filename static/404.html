@@ -1,92 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>404 Not Found - Changkun Ou</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="shortcut icon" type="image/x-icon" href="/logo.png">
         <meta name="color-scheme" content="light dark">
+        <meta name="robots" content="noindex">
+        <title>Page not found · Changkun Ou</title>
+        <link rel="icon" href="/logo.png">
+        <script>
+            // Before the styles, so a dark page never paints light first.
+            // The key is the home page's, the blog's, and the research
+            // page's: 'light' or 'dark' when chosen.
+            (function() {
+                var t = null;
+                try { t = localStorage.getItem('theme'); } catch (e) {}
+                if (t !== 'light' && t !== 'dark') {
+                    t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-theme', t);
+            })();
+        </script>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        <link rel="stylesheet" href="/render.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+        <style>
+            /* The home page's look, inline: traefik serves this page for
+             * the services behind changkun.de too, so it fetches nothing
+             * of the site's but the portrait. */
+            :root {
+                --bg: #ffffff;
+                --bg-raised: #f4f4f4;
+                --text: #0d0d0d;
+                --text-secondary: #525252;
+                --text-muted: #666666;
+                --navy: #38538f;
+                --border-strong: rgba(0, 0, 0, 0.14);
+                --photo-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.10);
+                --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+            }
+
+            [data-theme="dark"] {
+                --bg: #161616;
+                --bg-raised: #262626;
+                --text: #ececec;
+                --text-secondary: #b4b4b4;
+                --text-muted: #9a9a9a;
+                --navy: #9bb0e4;
+                --border-strong: rgba(255, 255, 255, 0.14);
+                --photo-shadow: 0 1px 2px rgba(0, 0, 0, 0.40), 0 6px 20px rgba(0, 0, 0, 0.45);
+                color-scheme: dark;
+            }
+
+            * { box-sizing: border-box; }
+
+            ::selection { background: #555; color: #fff; }
+
+            html { height: 100%; }
+
+            body {
+                margin: 0;
+                min-height: 100%;
+                display: flex;
+                flex-direction: column;
+                background: var(--bg);
+                color: var(--text);
+                font: 16px/1.6 var(--sans);
+                -webkit-font-smoothing: antialiased;
+                transition: background 0.3s, color 0.3s;
+            }
+
+            a { text-decoration: none; }
+
+            a:focus-visible,
+            button:focus-visible {
+                outline: 2px solid var(--text);
+                outline-offset: 2px;
+                border-radius: 4px;
+            }
+
+            .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+            /* Where the home page has it. */
+            .theme-toggle {
+                position: fixed;
+                top: 16px;
+                right: 16px;
+                width: 36px;
+                height: 36px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+                border: 1px solid var(--border-strong);
+                border-radius: 8px;
+                background: none;
+                color: var(--text-secondary);
+                cursor: pointer;
+                transition: color 0.2s, background-color 0.2s;
+            }
+
+            .theme-toggle:hover { color: var(--text); background: var(--bg-raised); }
+
+            .theme-toggle svg { width: 18px; height: 18px; }
+
+            [data-theme="light"] .icon-sun,
+            [data-theme="dark"] .icon-moon { display: none; }
+
+            main {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 72px 24px;
+            }
+
+            .hero {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 32px;
+                align-items: flex-start;
+                width: 100%;
+                max-width: 760px;
+            }
+
+            .portrait {
+                flex: none;
+                width: 130px;
+                height: 130px;
+                margin-top: 7px;
+                border-radius: 12px;
+                box-shadow: var(--photo-shadow);
+                object-fit: cover;
+            }
+
+            .text { flex: 1; min-width: 280px; }
+
+            h1 {
+                margin: 0;
+                font-weight: 600;
+                font-size: clamp(30px, 5vw, 38px);
+                line-height: 1.15;
+                letter-spacing: -0.02em;
+            }
+
+            .status { color: var(--navy); font-weight: 400; }
+
+            p {
+                margin: 12px 0 0;
+                line-height: 1.65;
+                color: var(--text-secondary);
+            }
+
+            .path {
+                font: 0.9em var(--mono);
+                color: var(--text);
+                overflow-wrap: anywhere;
+            }
+
+            nav {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px 24px;
+                margin-top: 24px;
+                font-size: 14px;
+                font-weight: 500;
+            }
+
+            /* As the home page's links: the ink at rest, the navy under
+             * the pointer, icon and all. */
+            nav a {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: var(--text);
+                transition: color 0.2s;
+            }
+
+            nav svg {
+                width: 16px;
+                height: 16px;
+                color: var(--text-secondary);
+                transition: color 0.2s;
+            }
+
+            nav a:hover,
+            nav a:hover svg { color: var(--navy); }
+
+            footer {
+                padding: 28px 24px 32px;
+                text-align: center;
+                font-size: 13px;
+                color: var(--text-muted);
+            }
+
+            footer a { color: var(--text-muted); transition: color 0.2s; }
+
+            footer a:hover { color: var(--text-secondary); }
+
+            @media (max-width: 600px) {
+                main { padding: 64px 16px; align-items: flex-start; }
+                .hero { gap: 24px; }
+                .portrait { width: 72px; height: 72px; margin-top: 0; }
+            }
+        </style>
     </head>
     <body>
-        <button class="theme-toggle" aria-label="Toggle theme">
-            <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-            <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
+        <svg class="sprite" aria-hidden="true" focusable="false">
+            <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+            <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></g></symbol>
+            <symbol id="i-home" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></g></symbol>
+            <symbol id="i-blog" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 21h8"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></g></symbol>
+            <symbol id="i-research" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"/><path d="M6.453 15h11.094"/><path d="M8.5 2h7"/></g></symbol>
+            <symbol id="i-library" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></g></symbol>
+        </svg>
+
+        <button class="theme-toggle" type="button" aria-label="Toggle theme">
+            <svg class="icon-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+            <svg class="icon-sun" aria-hidden="true"><use href="#i-sun"/></svg>
         </button>
 
         <main>
-            <div class="profile">
-                <img src="/logo.png" alt="Changkun Ou">
-            </div>
-            <div class="info">
-                <h1>404 Not Found</h1>
-                <p class="role">What are you looking for?</p>
-                <nav>
-                    <a href="https://changkun.de/s/blog"><i class="fas fa-pen"></i> Blog</a>
-                    <a href="https://changkun.de/s/email"><i class="fas fa-envelope"></i> Email</a>
-                    <a href="https://changkun.de/s/resume"><i class="fas fa-file-alt"></i> Resume</a>
-                    <a href="https://changkun.de/s/cv"><i class="fas fa-file-lines"></i> C.V.</a>
-                    <a href="https://changkun.de/s/research"><i class="fas fa-flask"></i> Research</a>
-                    <a href="https://changkun.de/s/github"><i class="fab fa-github"></i> GitHub</a>
-                </nav>
+            <div class="hero">
+                <img class="portrait" src="/logo.png" alt="Changkun Ou" width="130" height="130">
+                <div class="text">
+                    <h1>Page not found<span class="status">, 404</span></h1>
+                    <p>Nothing is at <span class="path">this address</span>. It may have moved, or the link may be wrong.</p>
+                    <nav aria-label="Pages">
+                        <a href="/"><svg aria-hidden="true"><use href="#i-home"/></svg>Home</a>
+                        <a href="/blog/"><svg aria-hidden="true"><use href="#i-blog"/></svg>Blog</a>
+                        <a href="/research/"><svg aria-hidden="true"><use href="#i-research"/></svg>Research</a>
+                        <a href="/library/"><svg aria-hidden="true"><use href="#i-library"/></svg>Library</a>
+                    </nav>
+                </div>
             </div>
         </main>
 
         <footer>
-            <div class="footer-links">
-                <a href="https://changkun.de/modern-cpp">Modern C++</a>
-                <a href="https://changkun.de/s/golang-design">golang.design</a>
-            </div>
-            <span>&copy; 2016–<script>document.write(new Date().getFullYear())</script> Changkun Ou | <a href="https://changkun.de/">Login</a></span>
+            Copyright &copy; 2016&ndash;<script>document.write(new Date().getFullYear())</script> <a href="/">Changkun Ou</a>. All rights reserved.
         </footer>
 
         <script>
             (function() {
-                const toggle = document.querySelector('.theme-toggle');
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-
-                function getTheme() {
-                    const stored = localStorage.getItem('theme');
-                    // The blog once stored 'auto'; only a choice counts.
-                    if (stored === 'light' || stored === 'dark') return stored;
-                    return prefersDark.matches ? 'dark' : 'light';
-                }
-
-                function setTheme(theme) {
-                    document.documentElement.setAttribute('data-theme', theme);
-                    localStorage.setItem('theme', theme);
-                }
-
-                setTheme(getTheme());
-
-                toggle.addEventListener('click', () => {
-                    const current = document.documentElement.getAttribute('data-theme');
-                    setTheme(current === 'dark' ? 'light' : 'dark');
+                // The address asked for, as the visitor typed or followed it.
+                var path = document.querySelector('.path');
+                try { path.textContent = decodeURI(location.pathname); } catch (e) { path.textContent = location.pathname; }
+                var toggle = document.querySelector('.theme-toggle');
+                toggle.addEventListener('click', function() {
+                    var t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', t);
+                    try { localStorage.setItem('theme', t); } catch (e) {}
                 });
-
-                prefersDark.addEventListener('change', (e) => {
-                    if (!['light', 'dark'].includes(localStorage.getItem('theme'))) {
-                        setTheme(e.matches ? 'dark' : 'light');
-                    }
+                matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                    var t = null;
+                    try { t = localStorage.getItem('theme'); } catch (err) {}
+                    if (t !== 'light' && t !== 'dark') document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
                 });
             })();
         </script>
-        <script async src="//changkun.de/urlstat/client.js"></script>
     </body>
 </html>
