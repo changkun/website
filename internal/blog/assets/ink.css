@@ -1349,13 +1349,77 @@ svg { width: 16px; height: 16px; flex: none; }
 
 #editor-title-zh { flex: 1 1 100%; font-size: 17px; font-weight: 500; }
 
-.editor-name { display: flex; flex: 1 1 260px; align-items: baseline; font: 13px var(--mono); color: var(--text-muted); }
+/* The address and the tags sit on one line, each 30px tall with its rule
+ * at the bottom, so the two rules meet in a line. */
+.editor-fields { align-items: flex-end; }
 
-.editor-fields .editor-name input { flex: 1; font: 13px var(--mono); }
+.editor-fields input { border-radius: 0; }
 
-.editor-fields .editor-name input[readonly] { border-bottom-color: transparent; color: var(--text-muted); }
+.editor-name {
+    display: flex;
+    flex: 1 1 260px;
+    align-items: baseline;
+    min-height: 30px;
+    border-bottom: 1px solid var(--border);
+    font: 13px/21px var(--mono);
+    color: var(--text-muted);
+}
 
-#editor-tags { flex: 1 1 200px; }
+.editor-name:focus-within { border-bottom-color: var(--text-muted); }
+
+.editor-fields .editor-name input { flex: 1; padding: 4px 0; border-bottom: 0; font: 13px/21px var(--mono); }
+
+.editor-name:has(input[readonly]) { border-bottom-color: transparent; }
+
+.editor-fields .editor-name input[readonly] { color: var(--text-muted); }
+
+.editor-tags {
+    display: flex;
+    flex: 1 1 260px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    min-width: 0;
+    min-height: 30px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: text;
+}
+
+.editor-tags:focus-within { border-bottom-color: var(--text-muted); }
+
+.editor-fields .editor-tags input { flex: 1 0 90px; padding: 0; border: 0; line-height: 21px; }
+
+.editor-tag {
+    display: inline-flex;
+    align-items: center;
+    height: 21px;
+    padding: 0 2px 0 7px;
+    border: 1px solid var(--border-strong);
+    border-radius: 5px;
+    background: var(--bg-raised);
+    font: 13px/19px var(--sans);
+    color: var(--text);
+    white-space: nowrap;
+}
+
+/* A tag no page has yet: dashed, until it is the blog's. */
+.editor-tag.is-new { border-style: dashed; background: transparent; color: var(--text-secondary); }
+
+.editor-tag button {
+    width: 18px;
+    height: 18px;
+    margin-left: 1px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    font: 14px/18px var(--sans);
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.editor-tag button:hover { background: var(--border); color: var(--text); }
 
 .editor-files { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0 36px 24px; list-style: none; }
 

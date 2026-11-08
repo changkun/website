@@ -10,7 +10,8 @@
   var titleInput = document.getElementById('editor-title');
   var titleZhInput = document.getElementById('editor-title-zh');
   var nameInput = document.getElementById('editor-name');
-  var tagsInput = document.getElementById('editor-tags');
+  var tagBox = document.getElementById('editor-tags');
+  var tagInput = document.getElementById('editor-tag');
   var bodyInput = document.getElementById('editor-body');
   var fileList = document.getElementById('editor-files');
   var picker = document.getElementById('editor-pick');
@@ -63,7 +64,8 @@
     titleInput.value = d.title || '';
     titleZhInput.value = d.title_zh || '';
     nameInput.value = d.name || '';
-    tagsInput.value = (d.tags || []).join(', ');
+    tags = [];
+    addTags((d.tags || []).join(','));
     bodyInput.value = d.body || '';
     // The page's own files have no SHA: they are in the blog already.
     files = (d.files || []).filter(function(f) { return f && f.name && (f.sha || entry); });
@@ -75,7 +77,7 @@
       title: titleInput.value.trim(),
       title_zh: titleZhInput.value.trim(),
       name: nameInput.value.trim(),
-      tags: tagsInput.value.split(/[,，]/).map(function(t) { return t.trim(); }).filter(Boolean),
+      tags: tags.concat(splitTags(tagInput.value)),
       body: bodyInput.value,
       files: files.map(function(f) { return { name: f.name, sha: f.sha, size: f.size }; })
     };
@@ -121,7 +123,7 @@
       (kind === 'post' || entry ? titleZhInput : bodyInput).focus();
     }
   });
-  [titleZhInput, nameInput, tagsInput].forEach(function(el) { el.addEventListener('input', changed); });
+  [titleZhInput, nameInput].forEach(function(el) { el.addEventListener('input', changed); });
   bodyInput.addEventListener('input', function() {
     highlight();
     fit(bodyInput);
@@ -144,6 +146,92 @@
       (text.replace(CJK, ' ').match(/[A-Za-z0-9À-ɏ'’-]+/g) || []).length;
     countEl.textContent = isZh() ? n + ' 字' : n + (n === 1 ? ' word' : ' words');
   }
+
+  // Tags, each shown as it will be once a comma, Enter or a pick from the
+  // list sets it down. One the blog has already is solid; a new one, which
+  // no page has yet, is dashed, so a misspelt tag shows before it is saved.
+  var tags = [];
+  var known = {};
+  Array.prototype.forEach.call(document.querySelectorAll('#editor-tag-list option'), function(o) {
+    known[o.value.toLowerCase()] = o.value;
+  });
+
+  function splitTags(s) {
+    return s.split(/[,，]/).map(function(t) { return t.trim().replace(/^#/, ''); }).filter(Boolean);
+  }
+
+  function addTags(s) {
+    splitTags(s).forEach(function(t) {
+      t = known[t.toLowerCase()] || t;
+      if (!tags.some(function(x) { return x.toLowerCase() === t.toLowerCase(); })) tags.push(t);
+    });
+    showTags();
+  }
+
+  function showTags() {
+    Array.prototype.slice.call(tagBox.querySelectorAll('.editor-tag')).forEach(function(c) { c.remove(); });
+    tags.forEach(function(t, i) {
+      var chip = document.createElement('span');
+      var isNew = !known[t.toLowerCase()];
+      chip.className = 'editor-tag' + (isNew ? ' is-new' : '');
+      chip.title = isNew ? say('A new tag: no page has it yet', '新标签：还没有页面用它') : say('A tag in use', '已有的标签');
+      chip.appendChild(document.createTextNode('#' + t));
+      var rm = document.createElement('button');
+      rm.type = 'button';
+      rm.textContent = '×';
+      rm.setAttribute('aria-label', say('Remove ', '移除 ') + t);
+      rm.addEventListener('click', function(e) {
+        e.stopPropagation();
+        tags.splice(i, 1);
+        showTags();
+        changed();
+        tagInput.focus();
+      });
+      chip.appendChild(rm);
+      tagBox.insertBefore(chip, tagInput);
+    });
+    tagInput.placeholder = tags.length ? say('Add a tag', '添加标签') : say('Tags', '标签');
+  }
+
+  function commitTag() {
+    if (!tagInput.value.trim()) return;
+    addTags(tagInput.value);
+    tagInput.value = '';
+    changed();
+  }
+
+  tagInput.addEventListener('keydown', function(e) {
+    if (e.isComposing) return;
+    if (e.key === 'Enter' && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault();
+      commitTag();
+    } else if (e.key === 'Backspace' && !tagInput.value && tags.length) {
+      e.preventDefault();
+      tagInput.value = tags.pop();
+      showTags();
+      changed();
+    }
+  });
+  tagInput.addEventListener('input', function(e) {
+    var v = tagInput.value;
+    if (/[,，]/.test(v)) {
+      // What comes before the last comma is set down; the rest stays to type on.
+      var cut = Math.max(v.lastIndexOf(','), v.lastIndexOf('，'));
+      addTags(v.slice(0, cut));
+      tagInput.value = v.slice(cut + 1).replace(/^\s+/, '');
+    } else if (e.inputType === 'insertReplacementText' || (e.inputType === undefined && known[v.toLowerCase()])) {
+      commitTag();
+      return;
+    }
+    changed();
+  });
+  tagInput.addEventListener('blur', commitTag);
+  tagBox.addEventListener('mousedown', function(e) {
+    if (e.target === tagBox) {
+      e.preventDefault();
+      tagInput.focus();
+    }
+  });
 
   // Idea or post.
   function setKind(k) {
@@ -751,7 +839,7 @@
     titleZhInput.placeholder = say('Chinese title (optional)', '中文标题（可选）');
     nameInput.placeholder = postName(titleInput.value) || say('from-the-title', '由标题生成');
     if (entry) nameInput.title = say('The address stays as it is', '地址保持不变');
-    tagsInput.placeholder = say('Tags, comma-separated', '标签，以逗号分隔');
+    tagInput.placeholder = tags.length ? say('Add a tag', '添加标签') : say('Tags', '标签');
     bodyInput.placeholder = post
       ? say('Write the post. Markdown, math in $…$, and {{% en %}} or {{% zh %}} blocks work.', '写文章。支持 Markdown、$…$ 数学公式，以及 {{% en %}}、{{% zh %}} 语言块。')
       : say('Write your idea. Markdown works; a model polishes and translates it.', '写下你的想法，支持 Markdown；模型会润色并翻译。');

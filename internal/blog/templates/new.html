@@ -17,7 +17,10 @@
       <div class="editor-fields">
         <input id="editor-title-zh" type="text" autocomplete="off" aria-label="Chinese title">
         <label class="editor-name"><span id="editor-prefix">/blog/posts/</span><input id="editor-name" type="text" autocomplete="off" spellcheck="false" aria-label="Address"></label>
-        <input id="editor-tags" type="text" autocomplete="off" aria-label="Tags">
+        <div id="editor-tags" class="editor-tags">
+          <input id="editor-tag" type="text" autocomplete="off" list="editor-tag-list" aria-label="Tags">
+        </div>
+        <datalist id="editor-tag-list">{{range .Tags}}<option value="{{.Name}}">{{end}}</datalist>
       </div>
       <div class="compose-text">
         <div id="editor-hl" class="compose-content compose-hl" aria-hidden="true"></div>

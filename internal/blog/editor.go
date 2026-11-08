@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"path"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -118,7 +119,7 @@ func (h *handler) editorRoutes() http.Handler {
 
 func (h *handler) editorPage(w http.ResponseWriter, r *http.Request) {
 	v := &view{Title: "New", URL: origin + Prefix + "new", MainClass: "page-editor", Math: true,
-		CanPublish: h.editor.Publisher != nil}
+		CanPublish: h.editor.Publisher != nil, Tags: h.knownTags()}
 	w.Header().Set("Content-Type", htmlType)
 	w.Write(execute("new", v))
 }
@@ -399,4 +400,16 @@ func writeJSON(w http.ResponseWriter, code int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(v)
+}
+
+// knownTags returns the blog's tags, the most used first, for the editor
+// to offer and to tell a new tag from one in use.
+func (h *handler) knownTags() []*tag {
+	s, err := h.current()
+	if err != nil {
+		return nil
+	}
+	tags := slices.Clone(s.tags)
+	slices.SortStableFunc(tags, func(a, b *tag) int { return len(b.Pages) - len(a.Pages) })
+	return tags
 }
