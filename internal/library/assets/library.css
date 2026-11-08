@@ -1,42 +1,43 @@
-/* changkun.de/library. System sans-serif, ink text, blue links. List pages
- * have three panes like Zotero's: the topic tree, the entries, and the
- * selected entry with its comments. Phones get one column. */
+/* changkun.de/library, in the home page's look: Inter, its ink grays, and
+ * its navy for links; light or dark by the same choice. List pages have
+ * three panes like Zotero's: the topic tree, the entries, and the selected
+ * entry with its comments. Phones get one column. */
 :root {
+  color-scheme: light;
   --bg: #ffffff;
   --bg-raised: #f4f4f4;
   --zebra: #fafafa;
   --text: #0d0d0d;
   --text-secondary: #525252;
   --navy: #38538f;
-  --link: #2a5bd7;
+  --link: var(--navy);
   --sel: #e1e5ec;
-  --link-tint: rgba(42, 91, 215, 0.08);
-  --link-tint-strong: rgba(42, 91, 215, 0.14);
+  --link-tint: rgba(56, 83, 143, 0.08);
+  --link-tint-strong: rgba(56, 83, 143, 0.14);
   --border: rgba(0, 0, 0, 0.08);
   --border-strong: rgba(0, 0, 0, 0.14);
   --good: #1f7a3a;
   --bad: #a33a2a;
   --mono: ui-monospace, 'SF Mono', Menlo, monospace;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
+[data-theme="dark"] {
+    color-scheme: dark;
     --bg: #161616;
     --bg-raised: #262626;
     --zebra: #1c1c1c;
     --text: #ececec;
     --text-secondary: #b4b4b4;
     --navy: #9bb0e4;
-    --link: #8cb0ff;
     --sel: #2e333b;
-    --link-tint: rgba(140, 176, 255, 0.10);
-    --link-tint-strong: rgba(140, 176, 255, 0.18);
+    --link-tint: rgba(155, 176, 228, 0.10);
+    --link-tint-strong: rgba(155, 176, 228, 0.18);
     --border: rgba(255, 255, 255, 0.08);
     --border-strong: rgba(255, 255, 255, 0.14);
     --good: #8fc79a;
     --bad: #e59a8c;
-  }
 }
 * { box-sizing: border-box; }
+::selection { background: #555; color: #fff; }
 /* The document scrolls, so the browser's elastic scroll works; the header is
    fixed, so it stays still. --hdr is the header's height, kept by library.js. */
 html { -webkit-text-size-adjust: 100%; scroll-padding-top: var(--hdr, 53px); }
@@ -48,14 +49,14 @@ body {
   flex-direction: column;
   background: var(--bg);
   color: var(--text);
-  font: 15px/24px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font: 15px/24px 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 a { color: var(--text); text-decoration: none; }
 .pane a, .comments a, table.fields a, a.bib, a.open { color: var(--link); }
 a:hover { text-decoration: underline; }
 .muted { color: var(--text-secondary); }
-h1 { font-size: 26px; line-height: 34px; font-weight: 650; letter-spacing: -0.01em; margin: 28px 0 4px; }
-h2 { font-size: 17px; font-weight: 650; margin: 36px 0 10px; }
+h1 { font-size: 26px; line-height: 34px; font-weight: 600; letter-spacing: -0.02em; margin: 28px 0 4px; }
+h2 { font-size: 17px; font-weight: 600; margin: 36px 0 10px; }
 h2 button { font-size: 14px; font-weight: 400; margin-left: 8px; vertical-align: 1px; }
 p { margin: 6px 0; }
 button, input, select, textarea { font: inherit; color: inherit; }
@@ -93,18 +94,39 @@ header.site {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 10px clamp(16px, 2vw, 24px);
+  /* 16px at the top and right puts the theme button where the home page has it. */
+  padding: 16px 16px 16px clamp(16px, 2vw, 24px);
   border-bottom: 1px solid var(--border);
 }
-.site-name { font-weight: 650; display: flex; align-items: baseline; gap: 10px; }
+.site-name { font-weight: 600; display: flex; align-items: baseline; gap: 8px; margin-right: auto; }
+/* The home page's theme button. */
+.theme-toggle {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.theme-toggle:hover { color: var(--text); background: var(--bg-raised); border-color: var(--border-strong); }
+.theme-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+[data-theme="light"] .icon-sun, [data-theme="dark"] .icon-moon { display: none; }
 .site-name a, .site-name span { color: var(--text); }
 .site-name .sep { color: var(--text-secondary); font-weight: 400; }
 h1 a.up { color: inherit; }
 h1 .sub { font-weight: 400; color: var(--text-secondary); font-size: 0.72em; }
 h1 .sub a { color: inherit; }
 header nav { display: flex; gap: 20px; align-items: center; color: var(--text-secondary); }
-header nav a { color: var(--text-secondary); }
-header nav a:hover { color: var(--text); }
+/* The header's links and its one button read alike, as the home page's
+ * plain text links. */
+header nav a, header nav button { color: var(--text-secondary); }
+header nav button { background: none; border: 0; padding: 0; line-height: inherit; }
+header nav a:hover, header nav button:hover { color: var(--text); text-decoration: underline; }
 header nav .synced { color: var(--text-secondary); font-size: 13px; }
 .status { margin: 8px clamp(16px, 2vw, 24px); padding: 6px 10px; border-radius: 6px; background: var(--bg-raised); color: var(--text-secondary); }
 .head .meta { margin: 0; color: var(--text-secondary); }
@@ -141,7 +163,7 @@ table.entries th {
   padding: 2px 8px;
 }
 table.entries th a { color: inherit; }
-table.entries td.t a { font-weight: 450; }
+table.entries td.t a { font-weight: 400; }
 table.entries th .added { font-weight: 400; margin-left: 8px; }
 ul.tree li.current > a { font-weight: 600; color: var(--navy); }
 table.entries td {
@@ -312,11 +334,16 @@ svg.ti { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-wid
 .ti-data { color: #2f8a46; }
 .ti-slides, .ti-media { color: #b0408a; }
 .ti-doc { color: var(--text-secondary); }
-@media (prefers-color-scheme: dark) {
-  .ti-article { color: #8cb0ff; } .ti-conf { color: #b79bff; } .ti-preprint { color: #f0a070; }
-  .ti-report { color: #9db8d0; } .ti-book, .ti-chapter { color: #d8ab6e; } .ti-thesis { color: #f08a8a; }
-  .ti-web { color: #6fd0d0; } .ti-code { color: #bbb; } .ti-data { color: #7fd395; } .ti-slides, .ti-media { color: #f08ace; }
-}
+[data-theme="dark"] .ti-article { color: #8cb0ff; }
+[data-theme="dark"] .ti-conf { color: #b79bff; }
+[data-theme="dark"] .ti-preprint { color: #f0a070; }
+[data-theme="dark"] .ti-report { color: #9db8d0; }
+[data-theme="dark"] .ti-book, [data-theme="dark"] .ti-chapter { color: #d8ab6e; }
+[data-theme="dark"] .ti-thesis { color: #f08a8a; }
+[data-theme="dark"] .ti-web { color: #6fd0d0; }
+[data-theme="dark"] .ti-code { color: #bbb; }
+[data-theme="dark"] .ti-data { color: #7fd395; }
+[data-theme="dark"] .ti-slides, [data-theme="dark"] .ti-media { color: #f08ace; }
 table.entries tr.row { cursor: default; }
 table.entries tr.row.sel td { background: var(--sel); }
 table.entries tr.row.sel td a { text-decoration: none; }

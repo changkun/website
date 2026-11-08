@@ -13,6 +13,21 @@
     if (window.ResizeObserver) new ResizeObserver(fit).observe(header);
   }
 
+  // The theme button: a click is a choice, kept under the key the home
+  // page and the blog share; until then the page follows the system.
+  var root = document.documentElement;
+  var toggle = document.querySelector('.theme-toggle');
+  if (toggle) toggle.addEventListener('click', function () {
+    var t = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', t);
+    try { localStorage.setItem('theme', t); } catch (e) {}
+  });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+    var t = null;
+    try { t = localStorage.getItem('theme'); } catch (err) {}
+    if (t !== 'light' && t !== 'dark') root.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+  });
+
   var sync = document.querySelector('form[action="/library/sync"] input[name=next]');
   if (sync) sync.value = location.pathname + location.search;
 

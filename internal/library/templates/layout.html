@@ -7,12 +7,23 @@
 <meta name="referrer" content="no-referrer">
 <title>{{.Title}} · Library</title>
 {{if and .Total .Synced.IsZero}}<meta http-equiv="refresh" content="5">{{end}}
-<link rel="stylesheet" href="/library/assets/library.css?v={{assetVersion}}">
+<meta name="color-scheme" content="light dark">
 <script>
-// Before the first paint, so a new page does not jump: the column widths
-// kept in this browser.
+// Before the first paint, so a new page does not jump or flash: the theme,
+// whose key the home page and the blog share, and the column widths kept
+// in this browser. Only 'light' or 'dark' is a choice.
+(function () {
+  var t = null;
+  try { t = localStorage.getItem('theme'); } catch (e) {}
+  if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', t);
+})();
 try { ['side', 'pane'].forEach(function (k) { var v = localStorage.getItem('library.' + k); if (v) document.documentElement.style.setProperty('--' + k + '-w', v); }); } catch (e) {}
 </script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/library/assets/library.css?v={{assetVersion}}">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -35,7 +46,7 @@ try { ['side', 'pane'].forEach(function (k) { var v = localStorage.getItem('libr
 </svg>
 <div class="top">
 <header class="site">
-  <div class="site-name"><a href="/">Changkun Ou</a><span class="sep">|</span>{{if .Home}}<a href="{{.Home}}">Library</a>{{else}}<span>Library</span>{{end}}</div>
+  <div class="site-name"><a href="/">Changkun Ou</a><span class="sep">/</span>{{if .Home}}<a href="{{.Home}}">Library</a>{{else}}<span>Library</span>{{end}}</div>
   {{if .Owner}}
   <nav>
     {{if not (or .Total .SyncErr)}}<span class="synced">Synced {{ago .Synced}}</span>{{end}}
@@ -47,6 +58,10 @@ try { ['side', 'pane'].forEach(function (k) { var v = localStorage.getItem('libr
     </form>
   </nav>
   {{end}}
+  <button class="theme-toggle" type="button" aria-label="Toggle theme">
+    <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  </button>
 </header>
 {{if and .Owner (or .Total .SyncErr)}}
 <p class="status{{if .SyncErr}} bad{{end}}">
