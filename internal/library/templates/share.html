@@ -1,6 +1,6 @@
 {{define "content"}}<div class="app{{if not (or .Pane (and (eq .Show "discussion") .Data.Member))}} no-pane{{end}}">
 {{with .Data}}
-<aside class="side">{{template "side" (side .TreeBase .List.Path "All topics" (not .List.T) .Tree)}}</aside>{{template "side-scroll"}}
+<aside class="side">{{template "side" (side .TreeBase .List.Path .AllName (not .List.T) .Tree)}}</aside>{{template "side-scroll"}}
 <div class="grip" data-grip="side" title="Drag to resize; double-click to reset"></div>
 <section class="list">
 <div class="head">

@@ -128,16 +128,16 @@ try { ['side', 'pane'].forEach(function (k) { var v = localStorage.getItem('libr
 {{define "side"}}{{$base := .base}}
 <details class="side-box" open>
   <summary>Topics</summary>
-  <ul class="tree">
+  {{if .allName}}<ul class="tree">
     <li><a class="node{{if .allCurrent}} current{{end}}" href="{{.allHref}}">{{.allName}}</a></li>
-  </ul>
+  </ul>{{end}}
   {{template "tree" (tree $base .nodes)}}
 </details>
 {{end}}
 
 {{define "tree"}}{{$base := .base}}
 <ul class="tree">
-{{range .nodes}}<li>{{if .Children}}<details{{if .Open}} open{{end}}><summary><a class="node{{if .Current}} current{{end}}" href="{{$base}}{{.Key}}">{{.Name}} <span class="n">{{.Count}}</span></a></summary>{{template "tree" (tree $base .Children)}}</details>{{else}}<a class="node leaf{{if .Current}} current{{end}}" href="{{$base}}{{.Key}}">{{.Name}} <span class="n">{{.Count}}</span></a>{{end}}</li>
+{{range .nodes}}<li>{{if .Children}}<details{{if .Open}} open{{end}}><summary><a class="node{{if .Current}} current{{end}}" href="{{if .Href}}{{.Href}}{{else}}{{$base}}{{.Key}}{{end}}">{{.Name}} <span class="n">{{.Count}}</span></a></summary>{{template "tree" (tree $base .Children)}}</details>{{else}}<a class="node leaf{{if .Current}} current{{end}}" href="{{if .Href}}{{.Href}}{{else}}{{$base}}{{.Key}}{{end}}">{{.Name}} <span class="n">{{.Count}}</span></a>{{end}}</li>
 {{end}}</ul>
 {{end}}
 {{define "side-scroll"}}<script>

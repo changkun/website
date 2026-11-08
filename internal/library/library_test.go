@@ -472,6 +472,10 @@ func TestShares(t *testing.T) {
 		!strings.Contains(body, `data-href="/library/e/AAAA"`) || !strings.Contains(body, "Log in") {
 		t.Fatalf("public view:\n%s", body)
 	}
+	// Its one root topic heads the tree, linking to the whole view.
+	if !strings.Contains(body, `href="/library/">Systems`) || strings.Contains(body, "All topics") {
+		t.Fatalf("public view tree:\n%s", body)
+	}
 	if body := get(t, h, "/library/e/AAAA", false).Body.String(); !strings.Contains(body, "Pollux") || strings.Contains(body, "Read §3") {
 		t.Fatalf("public view entry:\n%s", body)
 	}

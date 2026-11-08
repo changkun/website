@@ -462,8 +462,9 @@ type node struct {
 	Name     string
 	Count    int
 	Children []*node
-	Current  bool // the topic the page shows
-	Open     bool // Current is this node or below it, so the tree shows it open
+	Current  bool   // the topic the page shows
+	Open     bool   // Current is this node or below it, so the tree shows it open
+	Href     string // where it links, if not the tree's base and its key
 }
 
 // mark sets Current on the node with key and Open on it and its ancestors,
@@ -911,6 +912,7 @@ type sharePage struct {
 	Token       string
 	Tree        []*node
 	TreeBase    string        // a topic's link is TreeBase + its key
+	AllName     string        // the tree's first link, to the whole share; "" if a root topic is that link
 	Sub         []*Collection // the selected topic's path below the share's topic, if one is selected
 	List        *list
 	Comments    []*Post // on the whole share
@@ -1058,8 +1060,15 @@ func (s *Service) sharePage(w http.ResponseWriter, r *http.Request, sh *Share, m
 		}
 		p.Sub = path
 	}
-	if len(p.Tree) == 1 { // the one root topic is the whole share, which "All" shows
-		p.Tree = p.Tree[0].Children
+	p.AllName = "All topics"
+	if len(p.Tree) == 1 {
+		// One root topic is the whole share: it heads the tree as the link
+		// to the whole share, its subtopics below it, in place of "All".
+		root := p.Tree[0]
+		root.Href = path
+		root.Current = t == "" || t == root.Key
+		root.Open = true
+		p.AllName = ""
 	}
 	counts := map[string]int{}
 	if m != nil { // the public sees no comments
