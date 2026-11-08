@@ -1390,6 +1390,9 @@ svg { width: 16px; height: 16px; flex: none; }
 
 .editor-fields .editor-tags input { flex: 1 0 90px; padding: 0; border: 0; line-height: 21px; }
 
+/* The list of the blog's tags opens as one types, without an arrow. */
+.editor-tags input::-webkit-calendar-picker-indicator { display: none !important; }
+
 .editor-tag {
     display: inline-flex;
     align-items: center;
