@@ -140,8 +140,6 @@ nav.topics .n { color: var(--text-secondary); font-size: 13px; }
 nav.topics a.current .n { color: inherit; opacity: 0.8; }
 .status.bad, .note.bad, .tag.bad, .share-head .bad { color: var(--bad); }
 .note.good { color: var(--good); }
-.crumbs { margin: 0; color: var(--text-secondary); }
-.crumbs a { color: var(--text-secondary); }
 
 details { margin: 8px 0; }
 summary { cursor: pointer; color: var(--text-secondary); }
@@ -213,7 +211,6 @@ pre.bibtex {
 .post a, table.fields td a, .inbox .what a { text-decoration: underline; text-decoration-color: var(--border-strong); }
 .post .meta { color: var(--text-secondary); font-size: 13px; }
 .post .ref, .inbox .ref { font-family: var(--mono); font-size: 13px; overflow-wrap: anywhere; }
-.post-form { margin: 8px 0 16px; }
 
 table.inbox td { padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--border); }
 table.inbox td:first-child { width: 24px; }

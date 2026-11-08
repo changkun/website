@@ -189,9 +189,8 @@ type view struct {
 }
 
 // Handler serves the blog at Prefix from dir, a checkout of changkun/blog,
-// and its editor, if ed is not nil. Without a content folder in dir, as
-// before the checkout took the place of Hugo's output, it passes every
-// request to files, which serves dir at Prefix.
+// and its editor, if ed is not nil. Without a content folder in dir, it
+// passes every request to files, which serves dir at Prefix.
 func Handler(dir string, files http.Handler, ed *Editor, l *log.Logger) http.Handler {
 	h := &handler{dir: dir, content: filepath.Join(dir, "content"), files: files, editor: ed, log: l}
 	h.editorMux = h.editorRoutes()

@@ -83,7 +83,7 @@
     for (var i = 0; i < dynamic.length; i++) {
       dynamic[i].parentNode.removeChild(dynamic[i]);
     }
-    // Restore original Hugo-rendered cards
+    // Show the cards the page was served with again
     if (originalCards) {
       for (var j = 0; j < originalCards.length; j++) {
         originalCards[j].style.display = '';

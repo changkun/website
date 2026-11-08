@@ -1060,7 +1060,7 @@ svg { width: 16px; height: 16px; flex: none; }
     resize: none;
 }
 
-/* Both grow with what is in them, sized by compose.js; the text also
+/* Both grow with what is in them, sized by editor.js; the text also
  * fills what is left of the window, so a click anywhere below lands in it. */
 .compose-title {
     flex: none;

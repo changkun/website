@@ -69,8 +69,7 @@ there publishes a post. The addresses are those Hugo, which built the blog
 before, gave the pages, and `internal/blog/testdata/live.txt` lists them;
 `BLOG_CHECKOUT=<checkout> go test ./internal/blog` checks a checkout against
 it. Math between `$` or `$$` reaches MathJax as written. Without a `content`
-folder, as while the folder still holds Hugo's output, it is served like any
-other.
+folder, the folder is served like any other.
 
 `/blog/new` is the blog's editor, for the owner only: a post or an idea in
 markdown, with files attached by button, drop or paste, up to 25 MB each,
