@@ -130,7 +130,8 @@ svg { width: 16px; height: 16px; flex: none; }
 .header-actions { display: flex; align-items: center; gap: 8px; }
 
 .lang-toggle,
-.theme-toggle {
+.theme-toggle,
+.header-new {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -149,9 +150,11 @@ svg { width: 16px; height: 16px; flex: none; }
 .lang-toggle { font-size: 13px; font-weight: 500; white-space: nowrap; }
 
 .lang-toggle:hover,
-.theme-toggle:hover { color: var(--text); background: var(--bg-raised); }
+.theme-toggle:hover,
+.header-new:hover { color: var(--text); background: var(--bg-raised); text-decoration: none; }
 
-.theme-toggle svg { width: 18px; height: 18px; }
+.theme-toggle svg,
+.header-new svg { width: 18px; height: 18px; }
 
 [data-theme="light"] .icon-sun,
 [data-theme="dark"] .icon-moon { display: none; }
@@ -449,23 +452,6 @@ svg { width: 16px; height: 16px; flex: none; }
 .ideas-intro p { margin: 0; }
 
 .ideas-search-wrap { display: flex; align-items: center; gap: 10px; }
-
-.compose-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: none;
-    width: 36px;
-    height: 36px;
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    background: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: color 0.2s, background-color 0.2s;
-}
-
-.compose-btn:hover { color: var(--text); background: var(--bg-raised); text-decoration: none; }
 
 .ideas-search-box { position: relative; flex: 1; min-width: 0; }
 

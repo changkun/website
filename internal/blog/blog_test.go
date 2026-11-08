@@ -56,7 +56,7 @@ func TestPages(t *testing.T) {
 		{"/blog/posts/a-bundle/one.png", 200, []string{"PNG"}, nil},
 		{"/blog/posts/2021-02-02-bundle/one.png", 404, nil, nil},
 		{"/blog/images/x.png", 200, []string{"PNG"}, nil},
-		{"/blog/ideas/", 200, []string{"Scattered thoughts.", `"1 / 1 ideas"`, `fetch("/blog/ideas/index.json")`, `href="/blog/new"`}, []string{"compose.js", "login-sdk.js"}},
+		{"/blog/ideas/", 200, []string{"Scattered thoughts.", `"1 / 1 ideas"`, `fetch("/blog/ideas/index.json")`, `class="header-new" href="/blog/new"`}, []string{"compose.js", "login-sdk.js"}},
 		{"/blog/ideas/idea-one/", 200, []string{`<div class="idea-augmented">`, `id="context"`, `id="context-1"`}, []string{"toc-rail"}},
 		{"/blog/about/", 200, []string{"Last update: 2026/10/03", `aria-current="page">`}, nil},
 		{"/blog/posts/", 200, []string{`id="archive-year-2021"`, "2 <span"}, nil},
