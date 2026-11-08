@@ -3,7 +3,8 @@
 # license that can be found in the LICENSE file.
 
 FROM alpine
-# The ideas API calls the model gateway and the GitHub API over TLS.
+# Publishing calls the model gateway and the GitHub API, and the login
+# fetches latere's keys, all over TLS.
 RUN apk add --no-cache ca-certificates
 COPY website /app/website
 EXPOSE 80

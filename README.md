@@ -5,9 +5,6 @@ One Go binary serves changkun.de:
 - `/` serves the static site embedded from `static/`.
 - `/<folder>/` serves each folder of `WWW_DIR`, such as the books and the
   blog. See [Folders](#folders).
-- `/ideas/` is an API that polishes, translates, and expands an idea with LLMs,
-  then commits it as bilingual markdown to
-  [changkun/blog](https://github.com/changkun/blog).
 - `/library/` is Changkun's Zotero library, browsable by the owner and
   shareable by topic. See [Library](#library).
 
@@ -22,9 +19,9 @@ $ make build && make up
 
 `make build` runs the tests, builds a Linux binary, and builds the image.
 
-The site needs no configuration. Without the ideas credentials, the site still
-serves and `/ideas/` answers 503; without the Zotero credentials, `/library/`
-answers 503.
+The site needs no configuration. Without the publishing credentials, the
+blog's editor previews but does not publish; without the Zotero credentials,
+`/library/` answers 503.
 
 ## Layout
 
@@ -33,7 +30,7 @@ answers 503.
 | `main.go` | Signal handling, the HTTP server, request logging |
 | `site.go` | The embedded `static/` site and its file server |
 | `www.go` | The folders of `WWW_DIR` and the sites of `WWW_SITES` |
-| `internal/ideas/` | The ideas API, and commits to the blog repository |
+| `internal/ideas/` | Commits to the blog repository, and the pipeline that writes up an idea |
 | `internal/ideas/prompts/` | Model prompts, as Go text templates embedded in the binary |
 | `internal/research/` | The research page, rendered from a checkout of changkun/research |
 | `internal/blog/` | The blog, rendered from a checkout of changkun/blog, and its editor |
@@ -79,8 +76,8 @@ browser, keeps its files. Publishing a post commits it with its files in
 one commit, through GitHub's Git Data API, to
 `content/posts/<date>-<name>.md`, or to a folder of that name when it has
 files; it never replaces a page, and refuses an address a page or an alias
-has. An idea goes through the ideas API's pipeline, and into a folder when
-it has files. A video or a sound in image syntax, `![](clip.mp4)`, plays in
+has. An idea goes through the [ideas pipeline](#ideas), and into a folder
+when it has files. A video or a sound in image syntax, `![](clip.mp4)`, plays in
 the page, and a file beside a page is linked by its full address, so it
 also shows in lists and feeds. Without `GIT_TOKEN` and `LLM_API_KEY` the
 editor previews but does not publish.
@@ -94,26 +91,14 @@ In production golang.design is `/www/golang.design`, mounted read-only, which
 its repositories publish to. A missing file is a plain 404, which traefik
 replaces with the folder's `404.html`.
 
-## Ideas API
+## Ideas
 
-In production the API is at `https://api.changkun.de/ideas/`, which traefik
-routes to this binary. `changkun.de/ideas/` redirects to the blog's idea pages
-instead.
-
-| Route | Auth | Body | Reply |
-|---|---|---|---|
-| `GET /ideas/ping` | none | | `pong` |
-| `POST /ideas/post` | Bearer | `{"title", "content", "augmented"}` | `{"ok", "message"}` |
-| `POST /ideas/improve` | Bearer | `{"content"}` | `{"ok", "content"}` |
-
-Only `content` is required. `/ideas/improve` returns the content polished, and
-publishes nothing.
-
-`/ideas/post` replies at once and publishes in the background. It fetches the
-linked pages, generates a title if none is given, polishes the idea and
-translates it, picks a slug, writes a sourced deep dive unless `augmented` is
-given, translates that, and commits the post to `content/ideas/`. If the title
-or the translation fails, nothing is published.
+An idea published from the editor is written up in the background: the
+pipeline fetches the linked pages, generates a title if none is given,
+polishes the idea and translates it, picks a slug, writes a sourced deep
+dive and translates that, and commits the post to `content/ideas/`. If the
+title or the translation fails, nothing is published. `changkun.de/ideas/`
+redirects to the blog's idea pages.
 
 ### Models
 
@@ -130,15 +115,6 @@ dialect (`POST $LLM_BASE_URL/lux/v1/generate`). Hence:
 `LLM_MODEL` writes the deep dive, using web search and fetch so that citations
 point at real pages. `LLM_TITLE_MODEL` does everything else: titles, slugs,
 polishing, and translation.
-
-### Auth
-
-Routes other than `/ideas/ping` require an access token from
-[latere auth](https://auth.latere.ai), which a client gets through browser
-PKCE. The token must verify against the issuer's JWKS,
-and be issued to a client in `AUTH_ALLOWED_CLIENTS` for a principal in
-`AUTH_ALLOWED_PRINCIPALS`. Both checks matter: any latere account can get a
-valid token, for any latere client.
 
 ## Library
 
@@ -217,9 +193,9 @@ the owner here, and back with `?next=`.
 
 ## Configuration
 
-Copy `.env.template` to `.env`. The ideas API needs `LLM_API_KEY` and
-`GIT_TOKEN`, the library `ZOTERO_USER_ID` and `ZOTERO_API_KEY`; everything
-else has a default.
+Copy `.env.template` to `.env`. Publishing from the blog's editor needs
+`LLM_API_KEY` and `GIT_TOKEN`, the library `ZOTERO_USER_ID` and
+`ZOTERO_API_KEY`; everything else has a default.
 
 | Variable | Default | Description |
 |---|---|---|
@@ -235,7 +211,7 @@ else has a default.
 | `GIT_REPO` | `changkun/blog` | Target repository, as `owner/repo` |
 | `GIT_COMMITTER_NAME` | `Changkun Ideas API Server` | Name on the commits |
 | `GIT_COMMITTER_EMAIL` | `hi+ideas@changkun.de` | Email on the commits |
-| `AUTH_ALLOWED_PRINCIPALS` | | Comma-separated emails or principal ids allowed to post. Empty rejects every token |
+| `AUTH_ALLOWED_PRINCIPALS` | | Comma-separated emails or principal ids allowed to log in. Empty rejects every token |
 | `AUTH_ALLOWED_CLIENTS` | `changkun-blog` | Comma-separated OAuth client ids whose tokens are accepted |
 | `AUTH_URL` | `https://auth.latere.ai` | latere auth issuer |
 | `AUTH_JWKS_URL` | `$AUTH_URL/.well-known/jwks.json` | JWKS that verifies tokens |

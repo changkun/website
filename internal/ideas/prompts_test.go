@@ -14,7 +14,6 @@ import (
 var sampleData = map[string]any{
 	promptAugment:          augmentData{Lang: "en"},
 	promptTitle:            nil,
-	promptImprove:          nil,
 	promptDetectTranslate:  nil,
 	promptSlug:             nil,
 	promptTranslateTitle:   languageData{Language: "Chinese"},

@@ -85,18 +85,6 @@ func (c *llmClient) generateTitle(ctx context.Context, content string) (string, 
 	return c.complete(ctx, c.titleModel, system, content, maxTokensShort)
 }
 
-// improveContent fixes typos, grammar, and flow in content.
-func (c *llmClient) improveContent(ctx context.Context, content string) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-
-	system, err := renderPrompt(promptImprove, nil)
-	if err != nil {
-		return "", err
-	}
-	return c.complete(ctx, c.titleModel, system, content, maxTokensLong)
-}
-
 // translateResult is the JSON reply to detect_translate.tmpl.
 type translateResult struct {
 	Lang              string `json:"lang"`

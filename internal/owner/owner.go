@@ -6,8 +6,8 @@
 //
 // Logging in goes through latere: the library's login page runs the PKCE
 // flow in the browser with /login-sdk.js and posts the access token to
-// Login once. Login checks it against the same allowlists as the ideas API
-// and sets a cookie for the whole site, signed with a key kept on disk, so
+// Login once. Login checks it against AUTH_ALLOWED_PRINCIPALS and
+// AUTH_ALLOWED_CLIENTS and sets a cookie for the whole site, signed with a key kept on disk, so
 // that the library's private pages and the blog's editor are plain links
 // and forms after.
 package owner
@@ -179,7 +179,8 @@ func loopback(r *http.Request) bool {
 	return ip != nil && ip.IsLoopback()
 }
 
-// verifier checks latere access tokens against the ideas API's allowlists.
+// verifier checks latere access tokens against the allowlists of
+// AUTH_ALLOWED_PRINCIPALS and AUTH_ALLOWED_CLIENTS.
 type verifier struct {
 	auth    *jwt.Authenticator
 	allowed map[string]bool // lowercase emails and principal ids

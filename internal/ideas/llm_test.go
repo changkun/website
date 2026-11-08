@@ -297,15 +297,6 @@ func TestPromptTasks(t *testing.T) {
 			wantIn:    "concise noun phrase",
 		},
 		{
-			name:      "improveContent rewrites a whole body",
-			reply:     "improved text",
-			call:      func(c *llmClient) (string, error) { return c.improveContent(context.Background(), "improvd text") },
-			wantModel: smallModel,
-			wantMax:   maxTokensLong,
-			want:      "improved text",
-			wantIn:    "Fix typos",
-		},
-		{
 			name:  "generateSlug",
 			reply: "Expertise Risk Control",
 			call: func(c *llmClient) (string, error) {

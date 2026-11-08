@@ -15,7 +15,6 @@ import (
 const (
 	promptAugment          = "augment.tmpl"
 	promptTitle            = "title.tmpl"
-	promptImprove          = "improve.tmpl"
 	promptDetectTranslate  = "detect_translate.tmpl"
 	promptSlug             = "slug.tmpl"
 	promptTranslateTitle   = "translate_title.tmpl"

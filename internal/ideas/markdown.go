@@ -14,13 +14,12 @@ import (
 
 // post is an idea as the blog stores it.
 type post struct {
-	date         time.Time
-	slug         string
-	title        bilingual
-	content      bilingual
-	augmented    bilingual // the deep dive
-	llmGenerated bool      // a model wrote the deep dive
-	files        []Attachment
+	date      time.Time
+	slug      string
+	title     bilingual
+	content   bilingual
+	augmented bilingual // the deep dive, which a model writes
+	files     []Attachment
 }
 
 // An Attachment is a file, uploaded with Upload, that goes beside an idea.
@@ -75,13 +74,9 @@ func buildMarkdown(p post) string {
 	fmt.Fprintf(&b, "---\ndate: %s\nslug: %q\ntitle: %q\ntitle_zh: %q\n---\n\n",
 		p.date.Format("2006-01-02T15:04:05"), p.slug, p.title.en, p.title.zh)
 
-	var disclaimer bilingual
-	if p.llmGenerated {
-		disclaimer = disclaimers
-	}
-	writeBlock(&b, "en", p.content.en, p.augmented.en, disclaimer.en)
+	writeBlock(&b, "en", p.content.en, p.augmented.en, disclaimers.en)
 	b.WriteString("\n")
-	writeBlock(&b, "zh", p.content.zh, p.augmented.zh, disclaimer.zh)
+	writeBlock(&b, "zh", p.content.zh, p.augmented.zh, disclaimers.zh)
 	return b.String()
 }
 

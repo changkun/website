@@ -19,7 +19,7 @@ import (
 // beside it. It runs in the background and reports only to the log. The
 // steps run in the order of their model calls, which the tests script by
 // position.
-func (s *Service) processIdea(req ideaRequest, files []Attachment) {
+func (s *Service) processIdea(req idea, files []Attachment) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
@@ -59,7 +59,7 @@ func (s *Service) processIdea(req ideaRequest, files []Attachment) {
 		content: content,
 		files:   files,
 	}
-	p.augmented, p.llmGenerated = s.augment(ctx, lang, req.Title, enriched, req.Augmented)
+	p.augmented = s.augment(ctx, lang, req.Title, enriched)
 
 	if err := s.github.create(ctx, p.root(), p.repoFiles(buildMarkdown(p)), sanitizeCommitMsg("ideas: "+title.en)); err != nil {
 		s.log.Printf("GitHub commit failed: %v", err)
@@ -135,25 +135,17 @@ func (s *Service) slug(ctx context.Context, titleEn string) string {
 	return slug
 }
 
-// augment returns the deep dive in both languages, and whether a model wrote
-// it. It uses the author's deep dive if provided, and generates one otherwise.
-// If a call fails, the post publishes without the deep dive or its
-// translation.
-func (s *Service) augment(ctx context.Context, lang, title, enriched, provided string) (bilingual, bool) {
-	source := provided
-	if source != "" {
-		s.log.Printf("using provided augmented content for: %s", title)
-	} else {
-		s.log.Printf("augmenting idea: %s", title)
-		generated, err := s.llm.augment(ctx, lang, title, enriched)
-		if err != nil {
-			s.log.Printf("LLM augmentation failed, publishing without augmentation: %v", err)
-			return bilingual{}, false
-		}
-		source = generated
+// augment writes the deep dive and returns it in both languages. If a call
+// fails, the post publishes without the deep dive or its translation.
+func (s *Service) augment(ctx context.Context, lang, title, enriched string) bilingual {
+	s.log.Printf("augmenting idea: %s", title)
+	source, err := s.llm.augment(ctx, lang, title, enriched)
+	if err != nil {
+		s.log.Printf("LLM augmentation failed, publishing without augmentation: %v", err)
+		return bilingual{}
 	}
 	if source == "" {
-		return bilingual{}, false
+		return bilingual{}
 	}
 
 	target := otherLang(lang)
@@ -163,7 +155,7 @@ func (s *Service) augment(ctx context.Context, lang, title, enriched, provided s
 		s.log.Printf("augmented translation failed: %v", err)
 		translated = ""
 	}
-	return inLang(lang, source, translated), provided == ""
+	return inLang(lang, source, translated)
 }
 
 // Limits on what linked pages add to a prompt.

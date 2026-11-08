@@ -19,14 +19,13 @@ func TestBuildMarkdown(t *testing.T) {
 		want string
 	}{
 		{
-			name: "generated augmentation carries the disclaimer",
+			name: "the deep dive carries the disclaimer",
 			in: post{
-				date:         date,
-				slug:         "three-axioms",
-				title:        bilingual{en: `Three "Axioms"`, zh: "三条公理"},
-				content:      bilingual{en: "Body.", zh: "正文。"},
-				augmented:    bilingual{en: "More.", zh: "更多。"},
-				llmGenerated: true,
+				date:      date,
+				slug:      "three-axioms",
+				title:     bilingual{en: `Three "Axioms"`, zh: "三条公理"},
+				content:   bilingual{en: "Body.", zh: "正文。"},
+				augmented: bilingual{en: "More.", zh: "更多。"},
 			},
 			want: `---
 date: 2026-11-07T09:30:00
@@ -57,47 +56,13 @@ More.
 `,
 		},
 		{
-			name: "provided augmentation carries no disclaimer",
+			name: "one language without augmentation",
 			in: post{
 				date:      date,
 				slug:      "s",
 				title:     bilingual{en: "T", zh: "标题"},
 				content:   bilingual{en: "Body.", zh: "正文。"},
-				augmented: bilingual{en: "More.", zh: "更多。"},
-			},
-			want: `---
-date: 2026-11-07T09:30:00
-slug: "s"
-title: "T"
-title_zh: "标题"
----
-
-{{% en %}}
-Body.
-
-{{% augmented %}}
-More.
-{{% /augmented %}}
-{{% /en %}}
-
-{{% zh %}}
-正文。
-
-{{% augmented %}}
-更多。
-{{% /augmented %}}
-{{% /zh %}}
-`,
-		},
-		{
-			name: "one language without augmentation",
-			in: post{
-				date:         date,
-				slug:         "s",
-				title:        bilingual{en: "T", zh: "标题"},
-				content:      bilingual{en: "Body.", zh: "正文。"},
-				augmented:    bilingual{zh: "更多。"},
-				llmGenerated: true,
+				augmented: bilingual{zh: "更多。"},
 			},
 			want: `---
 date: 2026-11-07T09:30:00

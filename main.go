@@ -3,8 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Main serves changkun.de: the embedded static site, the folders of WWW_DIR,
-// and, when configured, the ideas API under /ideas/ and the library under
-// /library/. It also serves the sites WWW_SITES lists, such as golang.design,
+// and, when configured, the library under /library/. It also serves the sites WWW_SITES lists, such as golang.design,
 // each from a folder of its own.
 package main
 
@@ -92,14 +91,13 @@ func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 	}
 
 	r.Handle("/", site)
-	r.Handle(ideas.Prefix, ideas.Handler(svc, l))
 	r.Handle(library.Prefix, library.Handler(lib))
 	s := &http.Server{
 		Handler:           logging(l)(h),
 		ErrorLog:          l,
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
-		WriteTimeout:      2 * time.Minute, // /ideas/improve waits on a model
+		WriteTimeout:      2 * time.Minute, // publishing a post waits on GitHub
 		IdleTimeout:       time.Minute,
 	}
 

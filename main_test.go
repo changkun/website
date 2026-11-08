@@ -214,8 +214,8 @@ func get(t *testing.T, addr, path string) (int, []byte) {
 	return resp.StatusCode, body
 }
 
-// TestBinaryEndToEnd runs the binary without ideas credentials. It must still
-// serve the site, answer /ideas/ with 503, and exit cleanly on SIGTERM.
+// TestBinaryEndToEnd runs the binary without credentials. It must still serve
+// the site, and exit cleanly on SIGTERM.
 func TestBinaryEndToEnd(t *testing.T) {
 	if testing.Short() {
 		t.Skip("the end to end test builds the binary")
@@ -231,10 +231,6 @@ func TestBinaryEndToEnd(t *testing.T) {
 		t.Error("the served body is not the embedded home page")
 	}
 
-	if code, _ := get(t, addr, "/ideas/ping"); code != http.StatusServiceUnavailable {
-		t.Errorf("GET /ideas/ping = %d, want %d", code, http.StatusServiceUnavailable)
-	}
-
 	if err := site.Process.Signal(syscall.SIGTERM); err != nil {
 		t.Fatalf("cannot send SIGTERM: %v", err)
 	}
@@ -246,14 +242,14 @@ func TestBinaryEndToEnd(t *testing.T) {
 	}
 }
 
-// TestBinaryServesSiteAndIdeas runs the binary with ideas credentials, and
-// checks that one process serves both the site and the API.
-func TestBinaryServesSiteAndIdeas(t *testing.T) {
+// TestBinaryServesSiteWithCredentials runs the binary with the publishing
+// credentials, and checks that it serves the site with publishing set up.
+func TestBinaryServesSiteWithCredentials(t *testing.T) {
 	if testing.Short() {
 		t.Skip("the end to end test builds the binary")
 	}
 
-	addr, _, _ := startSite(t,
+	addr, out, _ := startSite(t,
 		"LLM_BASE_URL=https://lux.example",
 		"LLM_API_KEY=key",
 		"GIT_TOKEN=token",
@@ -267,12 +263,8 @@ func TestBinaryServesSiteAndIdeas(t *testing.T) {
 		t.Error("the served body is not the embedded home page")
 	}
 
-	code, body = get(t, addr, "/ideas/ping")
-	if code != http.StatusOK {
-		t.Errorf("GET /ideas/ping = %d, want %d", code, http.StatusOK)
-	}
-	if got := strings.TrimSpace(string(body)); got != "pong" {
-		t.Errorf("GET /ideas/ping = %q, want pong", got)
+	if got := out.String(); strings.Contains(got, "publishing is unconfigured") {
+		t.Errorf("the site did not set up publishing:\n%s", got)
 	}
 }
 
@@ -296,7 +288,7 @@ func (b *lockedBuffer) String() string {
 }
 
 // TestServeSites checks that serve answers a site of WWW_SITES before
-// changkun.de's routes, so neither /ideas/ nor /library/ answer for it.
+// changkun.de's routes, so neither /blog/ nor /library/ answer for it.
 func TestServeSites(t *testing.T) {
 	dir := t.TempDir()
 	if err := os.WriteFile(filepath.Join(dir, "index.html"), []byte("golang.design"), 0o644); err != nil {
@@ -317,7 +309,7 @@ func TestServeSites(t *testing.T) {
 
 	for path, want := range map[string]string{
 		"/":         "200 golang.design",
-		"/ideas/":   "404 404 page not found\n",
+		"/blog/":    "404 404 page not found\n",
 		"/library/": "404 404 page not found\n",
 	} {
 		r, err := http.NewRequest(http.MethodGet, "http://"+ln.Addr().String()+path, nil)
