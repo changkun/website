@@ -465,6 +465,34 @@ func TestShares(t *testing.T) {
 		t.Fatalf("public entry page:\n%s", body)
 	}
 
+	// Everyone but the owner sees the public share at /library/ itself, its
+	// entries under /library/e/, and nothing outside it.
+	body = get(t, h, "/library/", false).Body.String()
+	if !strings.Contains(body, "Pollux") || !strings.Contains(body, ">Borg<") || strings.Contains(body, "Direct Manipulation") ||
+		!strings.Contains(body, `data-href="/library/e/AAAA"`) || !strings.Contains(body, "Log in") {
+		t.Fatalf("public view:\n%s", body)
+	}
+	if body := get(t, h, "/library/e/AAAA", false).Body.String(); !strings.Contains(body, "Pollux") || strings.Contains(body, "Read §3") {
+		t.Fatalf("public view entry:\n%s", body)
+	}
+	if body := get(t, h, "/library/e/BBBB", false).Body.String(); strings.Contains(body, "HCI") {
+		t.Fatal("a public view entry leaks a topic outside it")
+	}
+	for _, path := range []string{"/library/e/CCCC", "/library/t/SYS", "/library/inbox"} {
+		if rec := get(t, h, path, false); rec.Code != http.StatusSeeOther {
+			t.Fatalf("anonymous GET %s = %d, want a redirect to login", path, rec.Code)
+		}
+	}
+	if body := get(t, h, "/library/all.bib", false).Body.String(); !strings.Contains(body, "Pollux") || strings.Contains(body, "Direct") {
+		t.Fatalf("public view .bib:\n%s", body)
+	}
+	if body := get(t, h, "/library/?t=HCI", false).Body.String(); strings.Contains(body, "Direct Manipulation") {
+		t.Fatal("the public view shows a topic outside it")
+	}
+	if body := get(t, h, "/library/", true).Body.String(); !strings.Contains(body, "Direct Manipulation") {
+		t.Fatal("the owner no longer sees the whole library")
+	}
+
 	// The owner's inbox lists both, unread; mark one read, hide the other.
 	body = get(t, h, "/library/inbox", true).Body.String()
 	if !strings.Contains(body, "Inbox <b>(2)</b>") || !strings.Contains(body, "arXiv:2101.00001") {
@@ -499,6 +527,9 @@ func TestShares(t *testing.T) {
 	post(t, h, "/library/shares/"+sh.ID, url.Values{"title": {"Reading group"}}, true)
 	if get(t, h, "/library/p/"+sh.ID, false).Code != http.StatusNotFound {
 		t.Fatal("public page still served")
+	}
+	if rec := get(t, h, "/library/", false); rec.Code != http.StatusSeeOther {
+		t.Fatalf("anonymous GET /library/ with nothing public = %d, want a redirect to login", rec.Code)
 	}
 
 	// The owner's list with ?e= shows the entry's comments in the pane.

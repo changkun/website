@@ -108,6 +108,7 @@ type view struct {
 	Pane    *view  // the entry shown in the right pane of a list page, if any
 	Home    string // where "Library" in the header leads: the owner's library or the share
 	Show    string // ?show=: the panel the right pane opens with when no entry is selected
+	Visitor bool   // the public view at Prefix, whose header offers the owner's login
 }
 
 func (s *Service) render(w http.ResponseWriter, r *http.Request, status int, name string, v view) {
@@ -170,23 +171,21 @@ func (s *Service) routes() http.Handler {
 	m.HandleFunc("POST /library/login", s.owner.login)
 	m.HandleFunc("POST /library/logout", s.owner.logout)
 
-	own := func(h http.HandlerFunc) http.HandlerFunc {
+	// ownOr serves the owner with h and everyone else with other.
+	ownOr := func(h, other http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			if s.owner.is(r) {
 				h(w, r)
 				return
 			}
-			if r.Method == http.MethodGet {
-				http.Redirect(w, r, Prefix+"login?next="+url.QueryEscape(r.URL.RequestURI()), http.StatusSeeOther)
-				return
-			}
-			http.Error(w, "forbidden", http.StatusForbidden)
+			other(w, r)
 		}
 	}
-	m.HandleFunc("GET /library/{$}", own(s.home))
-	m.HandleFunc("GET /library/all.bib", own(s.home))
+	own := func(h http.HandlerFunc) http.HandlerFunc { return ownOr(h, toLogin) }
+	m.HandleFunc("GET /library/{$}", ownOr(s.home, s.publicHome))
+	m.HandleFunc("GET /library/all.bib", ownOr(s.home, s.publicHome))
 	m.HandleFunc("GET /library/t/{key}", own(s.topic))
-	m.HandleFunc("GET /library/e/{key}", own(s.ownerEntry))
+	m.HandleFunc("GET /library/e/{key}", ownOr(s.ownerEntry, s.publicHomeEntry))
 	m.HandleFunc("GET /library/inbox", own(s.inbox))
 	m.HandleFunc("POST /library/inbox/read", own(s.markRead))
 	m.HandleFunc("POST /library/sync", own(s.syncNow))
@@ -211,6 +210,16 @@ func (s *Service) routes() http.Handler {
 		w.Header().Set("X-Robots-Tag", "noindex")
 		m.ServeHTTP(w, r)
 	})
+}
+
+// toLogin sends a GET to the login page, which returns to it after, and
+// refuses anything else.
+func toLogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		http.Redirect(w, r, Prefix+"login?next="+url.QueryEscape(r.URL.RequestURI()), http.StatusSeeOther)
+		return
+	}
+	http.Error(w, "forbidden", http.StatusForbidden)
 }
 
 func (s *Service) healthz(w http.ResponseWriter, r *http.Request) {
@@ -931,6 +940,71 @@ func (ix *index) shareEntries(sh *Share) []*Entry {
 	return ix.entriesIn(sh.Topics)
 }
 
+// publicView is what everyone but the owner sees at Prefix: the topics of
+// every public share together, as one share, read-only and without
+// comments. It is nil when no share is public.
+func (s *Service) publicView(ix *index) *Share {
+	var pub []*Share
+	for _, sh := range s.store.allShares() {
+		if sh.Public {
+			pub = append(pub, sh)
+		}
+	}
+	if len(pub) == 0 {
+		return nil
+	}
+	v := &Share{Title: "Shared topics", Public: true}
+	if len(pub) == 1 {
+		v.Title = pub[0].Title
+	}
+	var all []string
+	for _, sh := range pub {
+		for _, t := range sh.Topics {
+			if !slices.Contains(all, t) {
+				all = append(all, t)
+			}
+		}
+	}
+	// A topic inside another public topic is already listed under it.
+	for _, t := range all {
+		inside := false
+		for _, u := range all {
+			if u != t && slices.Contains(ix.subtree(u), t) {
+				inside = true
+				break
+			}
+		}
+		if !inside {
+			v.Topics = append(v.Topics, t)
+		}
+	}
+	return v
+}
+
+// publicHome is Prefix, or its .bib, for everyone but the owner: the public
+// view, or the login page when nothing is public.
+func (s *Service) publicHome(w http.ResponseWriter, r *http.Request) {
+	pub := s.publicView(s.ix.Load())
+	if pub == nil {
+		toLogin(w, r)
+		return
+	}
+	s.sharePage(w, r, pub, nil, "", strings.HasSuffix(r.URL.Path, ".bib"), Prefix)
+}
+
+// publicHomeEntry is an entry's page for everyone but the owner: shown if
+// it is in the public view, and the login page otherwise, since the owner
+// may follow one of his own links while logged out.
+func (s *Service) publicHomeEntry(w http.ResponseWriter, r *http.Request) {
+	ix := s.ix.Load()
+	pub := s.publicView(ix)
+	if pub == nil || !ix.inTopics(r.PathValue("key"), pub.Topics) {
+		toLogin(w, r)
+		return
+	}
+	s.shareEntry(w, r, pub, nil, "", Prefix)
+}
+
 func (s *Service) memberShare(w http.ResponseWriter, r *http.Request) {
 	token, bib := strings.CutSuffix(r.PathValue("token"), ".bib")
 	sh, m := s.store.member(token)
@@ -1001,8 +1075,9 @@ func (s *Service) sharePage(w http.ResponseWriter, r *http.Request, sh *Share, m
 	}
 	p.List = newList(r, path, shown, counts)
 	p.List.T = t
-	s.render(w, r, http.StatusOK, "share", view{Title: sh.Title, Base: path + "/e/", Home: path, Data: p,
-		Pane: pane(r, false, path+"/e/", p.List, func(e *Entry) *entryPage { return s.sharePane(ix, sh, m, token, e) })})
+	base := strings.TrimSuffix(path, "/") + "/e/"
+	s.render(w, r, http.StatusOK, "share", view{Title: sh.Title, Base: base, Home: path, Data: p, Visitor: path == Prefix,
+		Pane: pane(r, false, base, p.List, func(e *Entry) *entryPage { return s.sharePane(ix, sh, m, token, e) })})
 }
 
 func (s *Service) memberEntry(w http.ResponseWriter, r *http.Request) {
@@ -1034,7 +1109,7 @@ func (s *Service) shareEntry(w http.ResponseWriter, r *http.Request, sh *Share, 
 	p := s.sharePane(ix, sh, m, token, ix.entries[key])
 	p.Done = r.URL.Query().Get("done")
 	p.Back = listBack(r, path)
-	s.renderEntry(w, r, view{Title: p.Title, Base: path + "/e/", Data: p})
+	s.renderEntry(w, r, view{Title: p.Title, Base: strings.TrimSuffix(path, "/") + "/e/", Home: path, Data: p, Visitor: path == Prefix})
 }
 
 // sharePane is an entry as a share's member or the public sees it: only the

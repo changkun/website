@@ -158,8 +158,10 @@ an hour old.
 | Route | Who | Returns |
 |---|---|---|
 | `GET /library/` | owner | Topic tree and all entries |
+| `GET /library/` | anyone else | Every public share's topics together, read-only, without comments; the login page if none is public |
 | `GET /library/t/<key>` | owner | One topic, with its subtopics' entries |
 | `GET /library/e/<key>` | owner | One entry, with comments from every share |
+| `GET /library/e/<key>` | anyone else | One entry of a public share, without comments; else the login page |
 | `GET /library/inbox` | owner | Every comment and suggestion, unread in bold |
 | `GET /library/shares` | owner | Every share, its links, revoke |
 | `POST /library/sync` | owner | Sync now |
