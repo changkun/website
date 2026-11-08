@@ -1,0 +1,56 @@
+{{define "main"}}
+<section class="intro">
+  <img class="intro-portrait" src="https://changkun.de/logo.png" alt="Changkun Ou" width="130" height="130">
+  <div class="intro-name-block">
+    <h1 class="intro-name">{{t "Name"}}</h1>
+  </div>
+  <div class="intro-about">
+    <p class="intro-role">{{t "SiteSubtitle"}}</p>
+    <p class="intro-bio">{{t "Description"}}</p>
+  </div>
+</section>
+<section class="stream">
+{{- range .Pages}}
+  {{- if .IsPost}}
+  <article class="entry">
+    <div class="entry-meta">
+      <span class="kind">{{t "Post"}}</span>
+      <time datetime="{{.Date.Format "2006-01-02"}}">{{.Date.Format "2006-01-02"}}</time>
+      <span>{{.ReadingTime}} min</span>
+    </div>
+    <h2 class="entry-title"><a href="{{url .}}">{{template "title" .}}</a></h2>
+    <div class="entry-summary">
+    {{- with excerpt .}}
+    {{- if .Zh}}
+      <p class="lang-en">{{.En}}</p>
+      <p class="lang-zh">{{.Zh}}</p>
+    {{- else}}
+      <p>{{.En}}</p>
+    {{- end}}
+    {{- end}}
+    </div>
+    {{- if .Truncated}}
+    <a class="entry-more" href="{{url .}}" rel="contents">{{t "ReadMore"}} &rarr;</a>
+    {{- end}}
+  </article>
+  {{- else}}
+  <article class="idea-card" id="idea-{{.BaseName}}">
+    <div class="idea-meta">
+      <span class="kind">{{t "Idea"}}</span>
+      <time class="idea-date" datetime="{{.Date.Format "2006-01-02T15:04:05"}}">{{.Date.Format "2006-01-02 15:04:05"}}</time>
+      {{template "share" .}}
+    </div>
+    <h2 class="idea-title"><a href="{{url .}}">{{template "title" .}}</a></h2>
+    <div class="idea-body prose">
+      {{.Content}}
+    </div>
+    {{- if augmented .}}
+    <button class="idea-toggle" type="button" onclick="toggleAugmented(this)"><span class="lang-en">Show deep dive</span><span class="lang-zh">展开深度分析</span></button>
+    {{- end}}
+  </article>
+  {{- end}}
+{{- end}}
+</section>
+{{template "pagination" .Pager}}
+{{template "idea-scripts"}}
+{{end}}

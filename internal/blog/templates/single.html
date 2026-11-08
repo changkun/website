@@ -1,0 +1,74 @@
+{{define "main"}}{{with .Page}}
+<div class="page{{if $.Rail}} has-toc{{end}}">
+  <article class="article post-type-normal">
+    <header class="article-header">
+      <h1 class="article-title">{{template "title" .}}</h1>
+      {{- if .Dated}}
+      <div class="article-meta">
+        <time datetime="{{.Date.Format "2006-01-02T15:04:05Z07:00"}}">{{.Date.Format "2006-01-02"}}</time>
+        {{- if .IsPost}}
+        <span>{{.ReadingTime}} min</span>
+        {{- end}}
+        <span>PV/UV <span id="urlstat-page-pv"></span>/<span id="urlstat-page-uv"></span></span>
+      </div>
+      {{- end}}
+    </header>
+    {{- if $.Rail}}
+    <details class="toc-inline">
+      <summary>{{t "Contents"}}</summary>
+      {{template "toc" .TOC}}
+    </details>
+    {{template "toc-script"}}
+    {{- end}}
+    <div class="prose post-body">
+    {{.Content}}
+    </div>
+    <footer class="article-footer">
+      {{- with .Tags}}
+      <div class="tags">
+        {{range .}}<a class="tag" href="{{tagURL .}}" rel="tag">#{{.}}</a>{{end}}
+      </div>
+      {{- end}}
+      {{- if .IsPost}}
+      <dl class="article-license">
+        <dt>{{t "Author"}}</dt><dd>{{t "Name"}}</dd>
+        <dt>{{t "LinkLabel"}}</dt><dd><a href="{{permalink .}}">{{permalink .}}</a></dd>
+        <dd class="article-license-note">{{t "License"}} <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0</a> {{t "LicenseEnd"}}</dd>
+      </dl>
+      {{- if or .Newer .Older}}
+      <nav class="prenext" aria-label="More posts">
+        <div class="prenext-item prenext-newer">
+          {{with .Newer}}<a href="{{url .}}" rel="next"><span class="prenext-dir">&larr;</span> {{template "title" .}}</a>{{end}}
+        </div>
+        <div class="prenext-item prenext-older">
+          {{with .Older}}<a href="{{url .}}" rel="prev">{{template "title" .}} <span class="prenext-dir">&rarr;</span></a>{{end}}
+        </div>
+      </nav>
+      {{- end}}
+      {{- end}}
+      <aside class="feedback">
+        <svg aria-hidden="true"><use href="#i-email"/></svg>
+        <div>
+          <p class="feedback-heading">{{t "FeedbackHeading"}}</p>
+          <p class="feedback-desc">{{t "FeedbackDesc"}}</p>
+          <a href="mailto:hi@changkun.de">hi@changkun.de &rarr;</a>
+        </div>
+      </aside>
+    </footer>
+  </article>
+  {{- if .Scripts}}
+  {{- /* A post that lists scripts in its front matter gets the figure kit
+         and those scripts, from its own bundle. */}}
+  <script defer src="{{asset "ifig.js"}}"></script>
+  {{- range scripts .}}
+  <script defer src="{{.}}"></script>
+  {{- end}}
+  {{- end}}
+  {{- if $.Rail}}
+  <aside class="toc-rail" aria-label="Contents">
+    <div class="toc-label">{{t "Contents"}}</div>
+    {{template "toc" .TOC}}
+  </aside>
+  {{- end}}
+</div>
+{{end}}{{end}}

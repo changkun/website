@@ -1,0 +1,1416 @@
+# The addresses changkun.de/blog answered when Hugo built it, on
+# 2026-11-08, and what each answers now: 200, a redirect for good to the
+# address after it, or 404 for what is no longer published (the _todo
+# notes, the tags only they had, /categories/, /tags/index.xml, and pages
+# an old build left behind). Paths are below /blog, unescaped.
+200 /
+200 /404.html
+404 /_todo/
+404 /_todo/0-99-1-尝试证明/
+404 /_todo/2017-08-25-critique-notes-on-hci-research/
+404 /_todo/2017-09-23-金融学七大理论之有效市场假说/
+404 /_todo/2017-10-24-cnn-literature-review/
+404 /_todo/2017-10-24-基于移动交互行为的用户情感推断/
+404 /_todo/2018-01-30-统计学习理论综述/
+404 /_todo/2018-03-21-go-web-in-1-hour/
+404 /_todo/2018-03-26-论文笔记generalization-in-machine-learning-via-analytical-learning-theory/
+404 /_todo/2018-03-27-umslt05/
+404 /_todo/2018-05-23-流形学习与对抗网络/
+404 /_todo/2018-05-26-strong-man-is-strongest-alone/
+404 /_todo/2018-08-14-guacamole-source-analysis/
+404 /_todo/ddos-攻击防护初步/
+404 /_todo/docker-极速入门教程3-数据与网络管理及docker安全/
+404 /_todo/hamilton-找不到三维复数的原因/
+404 /_todo/html-css-一日概览/
+404 /_todo/n-次方程有n个根/
+404 /_todo/r语言初体验/
+404 /_todo/shallow-learning-and-deep-learning/
+404 /_todo/sinx-与超越数/
+404 /_todo/the-ultimate-brownie-pan/
+404 /_todo/ycbcr颜色空间中的肤色椭圆模型/
+404 /_todo/三斜求积-海伦公式/
+404 /_todo/人机交互的过去现在与未来一可用性易用性用户用户体验/
+404 /_todo/关于教学质量的评价问题的分析与探讨/
+404 /_todo/图形拓扑论-趣话奇趣矩阵/
+404 /_todo/基于-electron-编写跨平台客户端的若干实践/
+404 /_todo/基于pid与神经元算法的制动器试验台的控制方法分析/
+404 /_todo/基于非线性拟合与积分方法对储油罐的变位识别与罐容表标定相关问题的研究/
+404 /_todo/基于非线性规划方法的露天矿生产车辆的安排算法/
+404 /_todo/基础不等式/
+404 /_todo/对最优漂流调度方案的研究study-on-the-optimal-scheduling-scheme-for-drifting/
+404 /_todo/广义结合律/
+404 /_todo/当我们在进行学术演讲时我们应该谈论什么/
+404 /_todo/德国与中国的研究生教育有何不同/
+404 /_todo/数论定理证明/
+404 /_todo/最近经历的两次-hackathon/
+404 /_todo/极大初等图像变换浅谈/
+404 /_todo/概率论值古典概率模型/
+404 /_todo/深圳人口增长及其对医疗需求影响的预测/
+404 /_todo/论十九世纪单值函数论的发展对流形思想演变的影响以及微分流形的未来/
+404 /_todo/论预测模型/
+404 /_todo/试用-fermat-数-再证素数无穷/
+404 /_todo/话说矩阵-定义新变换-赢得矩阵/
+404 /_todo/这些年/
+404 /_todo/配置mysql主从热备实现读写分离/
+404 /_todo/面向协议编程小谈/
+404 /_todo/饮酒与驾车关系的微分方程模型分析与评价/
+200 /about/
+301 /archives/2009/04/1/ /posts/释怀/
+301 /archives/2009/04/10/ /posts/独唱情歌/
+301 /archives/2009/04/2/ /posts/人生轨迹/
+301 /archives/2009/04/3/ /posts/人生轨迹ii/
+301 /archives/2009/04/4/ /posts/春醒/
+301 /archives/2009/04/5/ /posts/冷月/
+301 /archives/2009/04/6/ /posts/思念/
+301 /archives/2009/04/7/ /posts/无题/
+301 /archives/2009/04/8/ /posts/暖春/
+301 /archives/2009/04/9/ /posts/无愁/
+301 /archives/2009/05/11/ /posts/无题2/
+301 /archives/2009/05/12/ /posts/无题3/
+301 /archives/2009/05/13/ /posts/那些花儿盛开了散落了/
+301 /archives/2009/05/14/ /posts/人的一生时起时落但是确实美好的/
+301 /archives/2009/05/15/ /posts/真与伪-善与恶/
+301 /archives/2009/05/16/ /posts/删除记忆/
+301 /archives/2009/05/17/ /posts/夏季流年昨/
+301 /archives/2009/05/18/ /posts/不想说再见/
+301 /archives/2009/05/19/ /posts/我家的鹦鹉/
+301 /archives/2009/05/20/ /posts/娱乐至死/
+301 /archives/2009/05/21/ /posts/一路走来我/
+301 /archives/2009/05/22/ /posts/烟波江南/
+301 /archives/2009/05/23/ /posts/数学家不后悔/
+301 /archives/2009/05/24/ /posts/路灯/
+301 /archives/2009/05/25/ /posts/隔帘听/
+301 /archives/2009/05/26/ /posts/那片海/
+301 /archives/2009/05/27/ /posts/繁星客栈/
+301 /archives/2009/06/28/ /posts/任性了太久之后想法/
+301 /archives/2009/07/29/ /posts/人生/
+301 /archives/2009/08/30/ /posts/再谈孤独的果实/
+301 /archives/2009/08/31/ /posts/小谈瑕积分/
+301 /archives/2009/09/32/ /posts/人事已非/
+301 /archives/2009/10/33/ /posts/我将记得你/
+301 /archives/2009/10/34/ /posts/一阵风一场梦/
+301 /archives/2009/10/35/ /posts/得与失/
+301 /archives/2009/11/36/ /posts/永远不要问我为什么/
+301 /archives/2009/11/37/ /posts/电影2012影评/
+301 /archives/2010/01/38/ /posts/on-my-way/
+301 /archives/2010/01/39/ /posts/所谓爱情/
+301 /archives/2010/01/40/ /posts/无题4/
+301 /archives/2010/02/41/ /posts/烟火过境/
+301 /archives/2010/02/42/ /posts/深夜/
+301 /archives/2010/02/43/ /posts/风雪二月/
+301 /archives/2010/02/44/ /posts/所谓语言/
+301 /archives/2010/02/45/ /posts/追逐/
+301 /archives/2010/02/46/ /posts/丢失的情人节/
+301 /archives/2010/02/47/ /posts/牢不可破的誓言/
+301 /archives/2010/02/48/ /posts/无言/
+301 /archives/2010/02/49/ /posts/又见夏洛克/
+301 /archives/2010/02/50/ /posts/例证法/
+301 /archives/2010/02/51/ /posts/再谈例证法/
+301 /archives/2010/03/52/ /posts/黑白世/
+301 /archives/2010/03/53/ /posts/狗屁二三事/
+301 /archives/2010/03/54/ /posts/春天来了一切都还是温暖的/
+301 /archives/2010/03/55/ /posts/禁言/
+301 /archives/2010/03/56/ /posts/龙崎君/
+301 /archives/2010/04/57/ /posts/见鬼/
+301 /archives/2010/09/58/ /posts/小-q-自传/
+301 /archives/2010/10/59/ /posts/错失的机遇/
+301 /archives/2010/11/60/ /posts/无奈/
+301 /archives/2011/01/61/ /posts/人品守恒定律/
+301 /archives/2011/01/62/ /posts/素数无穷多的拓扑学证明/
+301 /archives/2011/02/63/ /posts/为什么做不完高考数学/
+301 /archives/2011/03/64/ /posts/游戏装备升级问题/
+301 /archives/2011/03/65/ /posts/把伤痕当酒窝/
+301 /archives/2011/04/439/ /posts/把爱情写的最透彻的文章/
+301 /archives/2011/04/66/ /posts/赌博必定破产/
+301 /archives/2011/04/67/ /posts/核辐射没那么可怕/
+301 /archives/2011/06/68/ /posts/某不等式/
+301 /archives/2011/06/69/ /posts/记事簿1/
+301 /archives/2011/06/70/ /posts/记事簿2/
+301 /archives/2011/06/71/ /posts/记事簿3/
+301 /archives/2011/06/72/ /posts/记事簿4/
+301 /archives/2011/06/73/ /posts/记事簿5/
+301 /archives/2011/06/74/ /posts/故城1/
+301 /archives/2011/08/75/ /posts/用数学眼光看世界之焦点访谈的播出时间/
+301 /archives/2012/03/392/ /posts/摄影技巧美食摄影技巧单反摄影技巧旅游及风光摄影技巧提升照片构图的技巧人像摄影专业技巧/
+301 /archives/2012/03/393/ /posts/欧几里得的宣言/
+301 /archives/2012/04/76/ /posts/数学系就业方向小谈/
+301 /archives/2012/04/77/ /posts/高考后的计划第一版/
+301 /archives/2012/05/78/ /posts/黎明前的黑暗/
+301 /archives/2012/06/79/ /posts/我坚信/
+301 /archives/2012/06/80/ /posts/x-2222-计划/
+301 /archives/2012/06/81/ /posts/谈谈良序原理/
+301 /archives/2012/07/82/ /posts/文艺还是苦逼确实不是一个问题/
+301 /archives/2012/08/83/ /posts/又是一月流阙时/
+301 /archives/2012/11/84/ /posts/谈谈google和android/
+301 /archives/2012/11/85/ /posts/一个人的锦都/
+301 /archives/2012/12/86/ /posts/2012-summary/
+301 /archives/2012/12/87/ /posts/为什么要有特征值和特征向量/
+301 /archives/2012/12/88/ /posts/谈线性空间定义中加法交换律独立性/
+301 /archives/2013/01/89/ /posts/zfc-集合论中各公理的意义及作用/
+301 /archives/2013/03/90/ /posts/又读流形/
+301 /archives/2013/03/91/ /posts/c-details-之-基本细节/
+301 /archives/2013/03/92/ /posts/通过安装-wordpress-插件所学到的/
+301 /archives/2013/03/93/ /posts/string-标准库实现日志/
+301 /archives/2013/04/94/ /posts/从装系统中学到的/
+301 /archives/2013/04/95/ /posts/全空间和空空间/
+301 /archives/2013/04/96/ /posts/逃生时间初算/
+301 /archives/2013/05/100/ /posts/多线程之间的通信-gpu计算-单摄像头图像识别-初步思考/
+301 /archives/2013/05/101/ /posts/物理世界是离散的却为什么可以大量的使用微分和积分/
+301 /archives/2013/05/97/ /posts/ubuntu-相关/
+301 /archives/2013/05/98/ /posts/结构体排序引发的一连串问题/
+301 /archives/2013/05/99/ /posts/我这是要转-ubuntu-的节奏吗/
+301 /archives/2013/06/102/ /posts/陈老爷子/
+301 /archives/2013/07/103/ /posts/大一总结/
+301 /archives/2013/07/104/ /posts/条件收敛与一致收敛的深刻背景分析/
+301 /archives/2013/08/105/ /posts/install-opencv-on-mac/
+301 /archives/2013/08/106/ /posts/windows-mfc-1/
+301 /archives/2013/08/107/ /posts/在堆上分配内存/
+301 /archives/2013/08/108/ /posts/kalman-filter-principle/
+301 /archives/2013/09/109/ /posts/下一次的数学突破/
+301 /archives/2013/09/110/ /posts/meanshift-algorithm/
+301 /archives/2013/09/111/ /posts/模版链表实现与模版声明定义分离编译错误/
+301 /archives/2013/09/112/ /posts/from-windows-to-macintosh/
+301 /archives/2013/09/113/ /posts/基于图像信号分析的碎纸片的拼接复原/
+301 /archives/2013/09/114/ /posts/谈人与事/
+301 /archives/2013/09/115/ /posts/通信信号与正交向量之间的关系/
+301 /archives/2013/09/116/ /posts/反转单链表/
+301 /archives/2013/10/117/ /posts/jobs-movie-review/
+301 /archives/2013/10/118/ /posts/从圆锥体积谈起/
+301 /archives/2013/10/119/ /posts/模版链栈实现/
+301 /archives/2013/10/120/ /posts/模版链队实现/
+301 /archives/2013/10/121/ /posts/fourier-transformation-notes/
+301 /archives/2013/10/122/ /posts/曾勇老师语录/
+301 /archives/2013/10/123/ /posts/数学建模协会入会笔试题/
+301 /archives/2013/10/124/ /posts/中国要是有一千个陈景润就不得了了/
+301 /archives/2013/10/125/ /posts/integral-and-function/
+301 /archives/2013/11/126/ /posts/talk-about-binary-search/
+301 /archives/2013/11/127/ /posts/c-expert-programming-reading-notes/
+301 /archives/2013/11/128/ /posts/learn-linux-1/
+301 /archives/2013/11/129/ /posts/learn-linux-2/
+301 /archives/2013/11/130/ /posts/learn-linux-3/
+301 /archives/2013/11/131/ /posts/talk-about-android/
+301 /archives/2013/12/132/ /posts/learn-linux-4/
+301 /archives/2013/12/133/ /posts/learn-linux-7/
+301 /archives/2013/12/134/ /posts/learn-linux-5/
+301 /archives/2013/12/135/ /posts/learn-linux-6/
+301 /archives/2013/12/136/ /posts/这学期大创项目总算是告一段落了/
+301 /archives/2013/12/137/ /posts/review-harry-potter/
+301 /archives/2013/12/138/ /posts/2013-summary/
+301 /archives/2014/01/139/ /posts/最近读了点人工智能/
+301 /archives/2014/01/140/ /posts/今天编译项目真心觉得很憔悴啊/
+301 /archives/2014/02/141/ /posts/人机交互的进展及面临的挑战/
+301 /archives/2014/02/142/ /posts/看了这么久外剧也就发现这部片子火这么厉害/
+301 /archives/2014/03/143/ /posts/崇祯为什么不跑南京/
+301 /archives/2014/03/144/ /posts/lua-1/
+301 /archives/2014/03/145/ /posts/lua-2/
+301 /archives/2014/03/146/ /posts/lua-3/
+301 /archives/2014/03/147/ /posts/lua-4/
+301 /archives/2014/03/148/ /posts/lua-5/
+301 /archives/2014/03/149/ /posts/delete-mactex/
+301 /archives/2014/03/150/ /posts/打砖块无尽版/
+301 /archives/2014/03/151/ /posts/谈谈对编程语言的一般性认识/
+301 /archives/2014/03/152/ /posts/python-quickstart/
+301 /archives/2014/04/153/ /posts/论文都是逼出来的/
+301 /archives/2014/04/154/ /posts/put-color-on-mac-terminal/
+301 /archives/2014/04/155/ /posts/matlab-2013a-for-mac-hanging-issue/
+301 /archives/2014/05/156/ /posts/login-issue-after-install-mysql-on-mac/
+301 /archives/2014/06/157/ /posts/拙谈人工智能的未来/
+301 /archives/2014/07/158/ /posts/计算机科学和数学的那点儿破事儿/
+301 /archives/2014/07/159/ /posts/install-opencv-python-on-mac/
+301 /archives/2014/07/160/ /posts/从坐公交车想到的和看到的/
+301 /archives/2014/08/161/ /posts/难以置信的大坑/
+301 /archives/2014/09/162/ /posts/delete-mac-mysql/
+301 /archives/2014/10/163/ /posts/about-riemann/
+301 /archives/2014/10/164/ /posts/the-worst-presentation/
+301 /archives/2014/10/165/ /posts/图书馆真是越来越无趣了/
+301 /archives/2014/10/166/ /posts/simple-logging-analysis/
+301 /archives/2014/11/167/ /posts/talk-about-cv/
+301 /archives/2014/11/168/ /posts/python-mysqldb-tutorial/
+301 /archives/2014/11/169/ /posts/watchkit-and-watchapp/
+301 /archives/2014/12/170/ /posts/2014-reading/
+301 /archives/2014/12/171/ /posts/2014-summary/
+301 /archives/2015/02/172/ /posts/什么是泛函空间的大数定律/
+301 /archives/2015/03/173/ /posts/linux-kernel-1/
+301 /archives/2015/03/174/ /posts/linux-kernel-2/
+301 /archives/2015/03/175/ /posts/ubuntu1404-install-oracle/
+301 /archives/2015/03/176/ /posts/linux-kernel-3/
+301 /archives/2015/03/177/ /posts/wordpress-站点搬家/
+301 /archives/2015/03/178/ /posts/doxygen-latex-doc/
+301 /archives/2015/03/179/ /posts/linux-kernel-4/
+301 /archives/2015/04/180/ /posts/大创项目的标题真是每年都在考验同学们的想象力啊/
+301 /archives/2015/04/181/ /posts/linux-kernel-5/
+301 /archives/2015/04/182/ /posts/小说泽缘/
+301 /archives/2015/04/183/ /posts/linux-kernel-6/
+301 /archives/2015/05/184/ /posts/这个世界终究不会是我们的/
+301 /archives/2015/06/185/ /posts/大三总结/
+301 /archives/2015/09/186/ /posts/博客迁移记录/
+301 /archives/2015/10/187/ /posts/转眼就快两个月了/
+301 /archives/2015/11/188/ /posts/负能量爆表/
+301 /archives/2015/12/189/ /posts/2015-summary/
+301 /archives/2015/12/190/ /posts/2015-reading/
+301 /archives/2016/02/191/ /posts/小结一下这学期的收获/
+301 /archives/2016/02/192/ /posts/githug-record/
+301 /archives/2016/04/193/ /posts/所以其实论文并没有什么鬼用/
+301 /archives/2016/04/194/ /posts/所以其实论文并没有什么鬼用/
+301 /archives/2016/04/195/ /posts/有趣的人类/
+301 /archives/2016/05/196/ /posts/swift-api-design-guidelines/
+301 /archives/2016/05/197/ /posts/从科研写作谈起/
+301 /archives/2016/06/198/ /posts/install-kaldi/
+301 /archives/2016/06/199/ /posts/kaldi-timit-example/
+301 /archives/2016/06/200/ /posts/kaldi-timit-example2/
+301 /archives/2016/07/201/ /posts/hash-碰撞的一种思路/
+301 /archives/2016/07/202/ /posts/apple-released-lzfse/
+301 /archives/2016/07/203/ /posts/all-in-https/
+301 /archives/2016/07/204/ /posts/elk-redis-best-practice/
+301 /archives/2016/07/205/ /posts/阶段性沉默/
+301 /archives/2016/08/206/ /posts/docker-tutorial-1/
+301 /archives/2016/08/207/ /posts/docker-tutorial-2/
+301 /archives/2016/08/208/ /posts/modern-cpp-v1-is-live/
+301 /archives/2016/08/209/ /posts/guacamole-源码分析与-vnc-中-rfb-协议的坑/
+301 /archives/2016/09/210/ /posts/给博客做了一个桌面客户端/
+301 /archives/2016/09/211/ /posts/谈谈过去三个月在实验楼的实习经历/
+301 /archives/2016/09/212/ /posts/微信小程序文档极致总结/
+301 /archives/2016/11/213/ /posts/最近在着手写的文章/
+301 /archives/2016/12/214/ /posts/2016-reading/
+301 /archives/2017/01/215/ /posts/2016-summary/
+301 /archives/2017/03/216/ /posts/良好的编码体验的三个方面/
+301 /archives/2017/03/217/ /posts/electron-summary/
+301 /archives/2017/03/218/ /posts/migrate-to-disqus/
+301 /archives/2017/03/219/ /posts/实验楼楼赛第3期-python-题解/
+301 /archives/2017/05/220/ /posts/这可能不是一个技术博客了/
+301 /archives/2017/05/221/ /posts/在德国的医疗及住院体验/
+301 /archives/2017/05/222/ /posts/对后辈同学在计算机专业上的答疑与解惑/
+301 /archives/2017/05/223/ /posts/human-computation-1/
+301 /archives/2017/05/224/ /posts/human-computation-2/
+301 /archives/2017/05/225/ /posts/human-computation-3/
+301 /archives/2017/05/226/ /posts/又一次打整了一下博客/
+301 /archives/2017/06/227/ /posts/human-computation-4/
+301 /archives/2017/06/228/ /posts/对现代企业理论与当下it企业的商业模式和信息产业链的规律性的思考/
+301 /archives/2017/06/229/ /posts/return-of-studies/
+301 /archives/2017/06/230/ /posts/human-computation-5/
+301 /archives/2017/06/231/ /posts/human-computation-6/
+301 /archives/2017/06/232/ /posts/hexo-github-travis-ci-vps-ci-cd/
+301 /archives/2017/06/233/ /posts/human-computation-7/
+301 /archives/2017/07/234/ /posts/human-computation-8/
+301 /archives/2017/07/235/ /posts/do-not-talk/
+301 /archives/2017/07/236/ /posts/human-computation-9/
+301 /archives/2017/07/237/ /posts/human-computation-10/
+301 /archives/2017/09/238/ /posts/first-year-of-master-studies/
+301 /archives/2017/11/239/ /posts/delete-pushed-info-from-github/
+301 /archives/2017/12/240/ /posts/an-intro-to-generalization-theory/
+301 /archives/2017/12/241/ /posts/2017-reading/
+301 /archives/2018/01/242/ /posts/2017-summary/
+301 /archives/2018/01/243/ /posts/generalization-in-deep-learning/
+301 /archives/2018/02/244/ /posts/不笑不足以为道/
+301 /archives/2018/02/245/ /posts/a-breif-history-of-regularization/
+301 /archives/2018/02/246/ /posts/a-breif-history-of-neural-networks/
+301 /archives/2018/03/247/ /posts/a-gentle-start-of-learning-theory/
+301 /archives/2018/03/248/ /posts/the-past-and-present-of-sgd/
+301 /archives/2018/03/249/ /posts/go-in-1-hour/
+301 /archives/2018/03/250/ /posts/compression-and-dnn-generalization/
+301 /archives/2018/03/251/ /posts/issues-of-human-bot-interaction/
+301 /archives/2018/06/252/ /posts/a-common-misunderstanding-of-the-cap-theory/
+301 /archives/2018/07/253/ /posts/designing-asynchronous-restful-apis/
+301 /archives/2018/07/254/ /posts/a-million-websocket-and-go/
+301 /archives/2018/09/255/ /posts/go-runtime-programming/
+301 /archives/2018/09/256/ /posts/go-source-sync-pool/
+301 /archives/2018/09/257/ /posts/go-source-unsafe-pattern/
+301 /archives/2018/10/258/ /posts/go-source-code-study-is-open-source/
+301 /archives/2018/12/259/ /posts/2018-summary/
+301 /archives/2019/05/260/ /posts/rethinking-the-reflections-on-communications-and-trusts/
+301 /archives/2019/06/261/ /posts/ten-years-of-blogging/
+301 /archives/2020/01/262/ /posts/2018-2019-reading/
+301 /archives/2020/02/263/ /posts/2019-summary/
+301 /archives/2020/03/264/ /posts/why-i-stopped-blogging/
+301 /archives/2020/03/265/ /posts/setup-wordpress-in-10-minutes/
+301 /archives/2020/09/266/ /posts/eliminating-a-source-of-measurement-errors-in-benchmarks/
+301 /archives/2020/11/267/ /posts/pointers-might-not-be-ideal-for-parameters/
+200 /augmentedtouch/
+200 /bachelorthesis/
+404 /categories/
+200 /clients/
+200 /cv/
+200 /demo/
+200 /favicon.ico
+200 /files/cv/28922.cer.html
+200 /files/cv/28922.public.html
+200 /files/cv/bachelor-thesis-cn.html
+200 /files/cv/bachelor-thesis-en.html
+200 /files/cv/touch.swun.html
+200 /files/cv/vision.swun.html
+200 /files/graffle/changkun-de-arch.graffle
+200 /ideas/
+200 /ideas/a-first-look-at-io/fs/
+200 /ideas/a-new-gc-pacer/
+200 /ideas/a-timer-optimization/
+200 /ideas/abandoned-skills-lifeline/
+200 /ideas/adversarial-debate-trust/
+200 /ideas/agent-autonomy-verification/
+200 /ideas/agents-byzantine-tolerance/
+200 /ideas/ai-agent-security/
+200 /ideas/ai-alignment-equilibria/
+200 /ideas/ai-architecture-stability/
+200 /ideas/ai-civilizational-atrophy/
+200 /ideas/ai-product-forms/
+200 /ideas/ai-self-collapse/
+200 /ideas/apple-silicon/
+200 /ideas/approval-scaling/
+200 /ideas/autonomous-microworlds-interop/
+200 /ideas/bayesian-rlhf-ai/
+200 /ideas/benchmark-testing-the-extras/
+200 /ideas/beyond-preferences-alignment/
+200 /ideas/big-changes-in-go-1.17/
+200 /ideas/chinese-literary-classics/
+200 /ideas/cognition-complexity-limits/
+200 /ideas/concurrency-patterns/
+200 /ideas/context-files-coding-agents/
+200 /ideas/creating-a-window/
+200 /ideas/cursor-workflow-disruption/
+200 /ideas/daily-201230/
+200 /ideas/daily-201231/
+200 /ideas/daily-210105/
+200 /ideas/daily-210118/
+200 /ideas/daily-readings/
+200 /ideas/data-races-memory/
+200 /ideas/deprecating-ioutil/
+200 /ideas/detach-a-context/
+200 /ideas/deterministic-adaptive-agents/
+200 /ideas/energy-optimization-paradox/
+200 /ideas/error-proposals-summary/
+200 /ideas/expertise-risk-control/
+200 /ideas/focus-noise-isolation/
+200 /ideas/getting-goroutine-id/
+200 /ideas/go-1.16-big-changes/
+200 /ideas/go-error-handling/
+200 /ideas/go113-error-regret/
+200 /ideas/hello/
+200 /ideas/homecoming-inner-confusion/
+200 /ideas/human-generalization-tokens/
+200 /ideas/human-in-the-loop-agents/
+200 /ideas/index.json
+200 /ideas/index.xml
+200 /ideas/ineffectiveness-discovery/
+200 /ideas/inexpressibility-traps/
+200 /ideas/knowledge-belief-paradoxes/
+200 /ideas/language-vs-visual-ai/
+200 /ideas/lbry/
+200 /ideas/life-stage-axiom/
+200 /ideas/llm-courses/
+200 /ideas/llm-guided-optimization/
+200 /ideas/llm-hci-reporting/
+200 /ideas/llms-arch-judgment/
+200 /ideas/llms-optimization-tools/
+200 /ideas/macos-clock-freq/
+200 /ideas/math-attention-focus/
+200 /ideas/ml-human-preferences/
+200 /ideas/moral-judgment-action/
+200 /ideas/multi-agent-topology/
+200 /ideas/nesting-issues-with-t.cleanup/
+200 /ideas/operator-precedence/
+301 /ideas/page/1/ /ideas/
+200 /ideas/page/10/
+200 /ideas/page/2/
+200 /ideas/page/3/
+200 /ideas/page/4/
+200 /ideas/page/5/
+200 /ideas/page/6/
+200 /ideas/page/7/
+200 /ideas/page/8/
+200 /ideas/page/9/
+200 /ideas/pair-coding-suggestions/
+200 /ideas/pareto-infinite-ethics/
+200 /ideas/pbo-methods/
+200 /ideas/philosophy-encyclopedia/
+200 /ideas/preference-mechanisms/
+200 /ideas/preference-symmetry/
+200 /ideas/prior-hidden-artifact/
+200 /ideas/proebstings-law/
+200 /ideas/programmer-identity-threat/
+200 /ideas/psychology-ai-identity/
+200 /ideas/ranked-choice-manipulation/
+200 /ideas/responding-doubts/
+200 /ideas/revisiting-asynchronous-preemption/
+200 /ideas/reward-hacking-misalignment/
+200 /ideas/self-reference-paradoxes/
+200 /ideas/situation-mountain/
+200 /ideas/societies-rewards/
+200 /ideas/specialized-architecture-evolution/
+200 /ideas/stability-patterns/
+200 /ideas/taste-experience/
+200 /ideas/tech-career-timing/
+200 /ideas/telegram-bot/
+200 /ideas/testing-io/fs-implementations/
+200 /ideas/testing-the-ideas-api/
+200 /ideas/tool-bench/
+200 /ideas/tradeoffs-responsibility-loops/
+200 /ideas/trading-space-for-time/
+200 /ideas/unpredictable-emergence-scaling/
+200 /ideas/value-vs-pointer/
+200 /ideas/voter-model-dynamics/
+200 /ideas/wall-facer-transparency/
+200 /ideas/worse-is-better/
+200 /images/cc-by-nc-nd.svg
+200 /images/clients/1.png
+200 /images/demo/1.jpg
+200 /images/demo/2.jpg
+200 /images/demo/3.jpg
+200 /images/demo/4.jpg
+200 /images/math-modeling/cover.jpg
+200 /images/pay/alipay.jpg
+200 /images/pay/wechat.jpg
+200 /images/posts/old/psb-0.png
+200 /images/posts/old/psb-1.png
+200 /images/posts/old/psb-10.png
+200 /images/posts/old/psb-11.png
+200 /images/posts/old/psb-12.png
+200 /images/posts/old/psb-13.png
+200 /images/posts/old/psb-14.png
+200 /images/posts/old/psb-15.png
+200 /images/posts/old/psb-16.png
+200 /images/posts/old/psb-17.png
+200 /images/posts/old/psb-18.png
+200 /images/posts/old/psb-19.png
+200 /images/posts/old/psb-2.png
+200 /images/posts/old/psb-20.png
+200 /images/posts/old/psb-21.png
+200 /images/posts/old/psb-22.png
+200 /images/posts/old/psb-23.png
+200 /images/posts/old/psb-24.png
+200 /images/posts/old/psb-25.png
+200 /images/posts/old/psb-26.png
+200 /images/posts/old/psb-27.png
+200 /images/posts/old/psb-28.png
+200 /images/posts/old/psb-29.png
+200 /images/posts/old/psb-3.png
+200 /images/posts/old/psb-30.png
+200 /images/posts/old/psb-31.png
+200 /images/posts/old/psb-4.png
+200 /images/posts/old/psb-5.png
+200 /images/posts/old/psb-6.png
+200 /images/posts/old/psb-7.png
+200 /images/posts/old/psb-8.png
+200 /images/posts/old/psb-9.png
+200 /images/posts/old/psb.png
+200 /images/posts/old/psbb.png
+200 /images/quote-l.svg
+200 /images/quote-r.svg
+200 /index.xml
+200 /math-modeling/
+301 /page/1/ /
+200 /page/10/
+200 /page/11/
+200 /page/12/
+200 /page/13/
+200 /page/14/
+200 /page/15/
+200 /page/16/
+200 /page/17/
+200 /page/18/
+200 /page/19/
+200 /page/2/
+200 /page/20/
+200 /page/21/
+200 /page/22/
+200 /page/23/
+200 /page/24/
+200 /page/25/
+200 /page/26/
+200 /page/27/
+200 /page/28/
+200 /page/29/
+200 /page/3/
+200 /page/30/
+200 /page/31/
+200 /page/32/
+200 /page/33/
+200 /page/34/
+200 /page/35/
+200 /page/36/
+200 /page/37/
+200 /page/38/
+200 /page/39/
+200 /page/4/
+200 /page/5/
+200 /page/6/
+200 /page/7/
+200 /page/8/
+200 /page/9/
+200 /posts/
+200 /posts/2012-summary/
+200 /posts/2013-summary/
+200 /posts/2014-reading/
+200 /posts/2014-summary/
+200 /posts/2015-reading/
+200 /posts/2015-summary/
+200 /posts/2015-summary/baoyan.png
+200 /posts/2015-summary/class.jpg
+200 /posts/2015-summary/country.jpg
+200 /posts/2015-summary/en-pre.jpg
+200 /posts/2015-summary/feiji.jpg
+200 /posts/2015-summary/group.jpg
+200 /posts/2015-summary/helicopter.jpg
+200 /posts/2015-summary/huiyi.jpg
+200 /posts/2015-summary/jieti.jpg
+200 /posts/2015-summary/myown.jpg
+200 /posts/2015-summary/poster.jpg
+200 /posts/2015-summary/pre.jpg
+200 /posts/2016-reading/
+200 /posts/2016-summary/
+200 /posts/2017-reading/
+200 /posts/2017-summary/
+200 /posts/2018-2019-reading/
+200 /posts/2018-summary/
+200 /posts/2019-summary/
+200 /posts/2019-summary/1.jpg
+200 /posts/2019-summary/2.jpg
+200 /posts/2019-summary/3.jpg
+200 /posts/2019-summary/4.jpg
+200 /posts/2019-summary/5.jpg
+200 /posts/2019-summary/6.jpg
+200 /posts/2019-summary/7.jpg
+200 /posts/2019-summary/8.jpg
+200 /posts/2019-summary/9.jpg
+200 /posts/2020-reading/
+200 /posts/2020-summary/
+200 /posts/2020-summary/gp.png
+200 /posts/2020-summary/grade_raw.png
+200 /posts/2020-summary/mindmap.png
+200 /posts/2020-summary/outlook.png
+200 /posts/2020-summary/rendering.png
+200 /posts/2020-summary/snow.mp4
+200 /posts/2020-summary/stats.png
+200 /posts/2020-summary/venice-2.JPG
+200 /posts/2020-summary/venice.JPG
+200 /posts/2021-reading/
+200 /posts/2022-reading/
+200 /posts/2023-reading/
+200 /posts/2026-self-reference-boundary/
+200 /posts/a-breif-history-of-neural-networks/
+200 /posts/a-breif-history-of-regularization/
+200 /posts/a-common-misunderstanding-of-the-cap-theory/
+200 /posts/a-common-misunderstanding-of-the-cap-theory/1.png
+200 /posts/a-gentle-start-of-learning-theory/
+200 /posts/a-million-websocket-and-go/
+200 /posts/about-riemann/
+200 /posts/all-in-go/
+200 /posts/all-in-go/1.png
+200 /posts/all-in-go/2.png
+200 /posts/all-in-go/arch.png
+200 /posts/all-in-go/go.jpeg
+200 /posts/all-in-go/hexo.jpg
+200 /posts/all-in-go/https.png
+200 /posts/all-in-go/https2.png
+200 /posts/all-in-go/lamp.jpeg
+200 /posts/all-in-https/
+200 /posts/all-in-https/1.png
+200 /posts/an-intro-to-generalization-theory/
+200 /posts/apple-released-lzfse/
+200 /posts/bayesian-optimization-book/
+200 /posts/c-details-之-基本细节/
+200 /posts/c-expert-programming-reading-notes/
+200 /posts/compression-and-dnn-generalization/
+200 /posts/compression-and-dnn-generalization/acompare.png
+200 /posts/compression-and-dnn-generalization/aexpression1.png
+200 /posts/compression-and-dnn-generalization/aflatminima.png
+200 /posts/compression-and-dnn-generalization/alinear.png
+200 /posts/compression-and-dnn-generalization/aspectrumlayer10.png
+200 /posts/compression-and-dnn-generalization/attenuate.jpg
+200 /posts/dark-forest-theory/
+200 /posts/dark-forest-theory/DarkForest.lean
+200 /posts/dark-forest-theory/fig-chain.png
+200 /posts/dark-forest-theory/fig-forest.png
+200 /posts/dark-forest-theory/figures.js
+200 /posts/delete-mac-mysql/
+200 /posts/delete-mactex/
+200 /posts/delete-pushed-info-from-github/
+200 /posts/designing-asynchronous-restful-apis/
+200 /posts/do-not-talk/
+200 /posts/docker-tutorial-1/
+200 /posts/docker-tutorial-1/1.png
+200 /posts/docker-tutorial-1/10.png
+200 /posts/docker-tutorial-1/2.png
+200 /posts/docker-tutorial-1/3.png
+200 /posts/docker-tutorial-1/4.png
+200 /posts/docker-tutorial-1/5.png
+200 /posts/docker-tutorial-1/6.png
+200 /posts/docker-tutorial-1/7.png
+200 /posts/docker-tutorial-1/8.png
+200 /posts/docker-tutorial-1/9.png
+200 /posts/docker-tutorial-1/arch.svg
+200 /posts/docker-tutorial-2/
+200 /posts/docker-tutorial-2/1.png
+200 /posts/docker-tutorial-2/2.png
+200 /posts/docker-tutorial-2/3.png
+200 /posts/docker-tutorial-2/4.png
+200 /posts/docker-tutorial-2/5.png
+200 /posts/docker-tutorial-2/6.png
+200 /posts/docker-tutorial-2/7.png
+200 /posts/doxygen-latex-doc/
+200 /posts/electron-summary/
+200 /posts/electron-summary/arch.png
+200 /posts/electron-summary/mind.png
+200 /posts/electron-summary/preload.png
+200 /posts/electron-summary/url-check-1.png
+200 /posts/electron-summary/url-check-2.png
+200 /posts/eliminating-a-source-of-measurement-errors-in-benchmarks/
+200 /posts/eliminating-a-source-of-measurement-errors-in-benchmarks/bench-time.png
+200 /posts/eliminating-a-source-of-measurement-errors-in-benchmarks/pprof1.png
+200 /posts/eliminating-a-source-of-measurement-errors-in-benchmarks/pprof2.png
+200 /posts/elk-redis-best-practice/
+200 /posts/elk-redis-best-practice/1.png
+200 /posts/elk-redis-best-practice/2.png
+200 /posts/first-year-of-master-studies/
+200 /posts/fourier-transformation-notes/
+200 /posts/from-windows-to-macintosh/
+200 /posts/generalization-in-deep-learning/
+200 /posts/generalization-in-deep-learning/1.png
+200 /posts/generalization-in-deep-learning/2.png
+200 /posts/githug-record/
+200 /posts/go-in-1-hour/
+200 /posts/go-runtime-programming/
+200 /posts/go-source-code-study-is-open-source/
+200 /posts/go-source-sync-pool/
+200 /posts/go-source-unsafe-pattern/
+200 /posts/goalless-agents/
+200 /posts/goalless-agents/fig1.png
+200 /posts/goalless-agents/fig2.png
+200 /posts/goalless-agents/fig3.png
+200 /posts/goalless-agents/fig4.png
+200 /posts/goalless-agents/fig5.png
+200 /posts/goalless-agents/figures.js
+200 /posts/guacamole-源码分析与-vnc-中-rfb-协议的坑/
+200 /posts/guacamole-源码分析与-vnc-中-rfb-协议的坑/1.png
+200 /posts/hash-碰撞的一种思路/
+200 /posts/hash-碰撞的一种思路/1.png
+200 /posts/hexo-github-travis-ci-vps-ci-cd/
+200 /posts/hexo-github-travis-ci-vps-ci-cd/1.png
+200 /posts/human-computation-1/
+200 /posts/human-computation-1/1.png
+200 /posts/human-computation-10/
+200 /posts/human-computation-2/
+200 /posts/human-computation-3/
+200 /posts/human-computation-4/
+200 /posts/human-computation-4/pagerank.png
+200 /posts/human-computation-5/
+200 /posts/human-computation-6/
+200 /posts/human-computation-7/
+200 /posts/human-computation-7/1.png
+200 /posts/human-computation-7/2.png
+200 /posts/human-computation-7/3.png
+200 /posts/human-computation-7/4.png
+200 /posts/human-computation-8/
+200 /posts/human-computation-9/
+200 /posts/index.xml
+200 /posts/install-kaldi/
+200 /posts/install-opencv-on-mac/
+200 /posts/install-opencv-on-mac/1.png
+200 /posts/install-opencv-on-mac/10.png
+200 /posts/install-opencv-on-mac/11.png
+200 /posts/install-opencv-on-mac/12.png
+200 /posts/install-opencv-on-mac/13.png
+200 /posts/install-opencv-on-mac/2.png
+200 /posts/install-opencv-on-mac/3.png
+200 /posts/install-opencv-on-mac/4.png
+200 /posts/install-opencv-on-mac/5.png
+200 /posts/install-opencv-on-mac/6.png
+200 /posts/install-opencv-on-mac/7.png
+200 /posts/install-opencv-on-mac/8.png
+200 /posts/install-opencv-on-mac/9.png
+200 /posts/install-opencv-python-on-mac/
+200 /posts/integral-and-function/
+200 /posts/issues-of-human-bot-interaction/
+200 /posts/jobs-movie-review/
+200 /posts/kaldi-timit-example/
+200 /posts/kaldi-timit-example/1.png
+200 /posts/kaldi-timit-example2/
+200 /posts/kaldi-timit-example2/1.png
+200 /posts/kaldi-timit-example2/2.png
+200 /posts/kaldi-timit-example2/3.png
+200 /posts/kaldi-timit-example2/4.png
+200 /posts/kalman-filter-principle/
+200 /posts/learn-linux-1/
+200 /posts/learn-linux-2/
+200 /posts/learn-linux-3/
+200 /posts/learn-linux-4/
+200 /posts/learn-linux-5/
+200 /posts/learn-linux-6/
+200 /posts/learn-linux-7/
+200 /posts/linux-kernel-1/
+200 /posts/linux-kernel-1/1.png
+200 /posts/linux-kernel-1/10.png
+200 /posts/linux-kernel-1/2.png
+200 /posts/linux-kernel-1/3.png
+200 /posts/linux-kernel-1/4.png
+200 /posts/linux-kernel-1/5.png
+200 /posts/linux-kernel-1/6.png
+200 /posts/linux-kernel-1/7.png
+200 /posts/linux-kernel-1/8.png
+200 /posts/linux-kernel-1/9.png
+200 /posts/linux-kernel-2/
+200 /posts/linux-kernel-2/1.png
+200 /posts/linux-kernel-2/2.png
+200 /posts/linux-kernel-2/3.png
+200 /posts/linux-kernel-2/4.png
+200 /posts/linux-kernel-3/
+200 /posts/linux-kernel-3/1.png
+200 /posts/linux-kernel-3/10.png
+200 /posts/linux-kernel-3/11.png
+200 /posts/linux-kernel-3/12.png
+200 /posts/linux-kernel-3/13.jpg
+200 /posts/linux-kernel-3/2.png
+200 /posts/linux-kernel-3/3.png
+200 /posts/linux-kernel-3/4.png
+200 /posts/linux-kernel-3/5.png
+200 /posts/linux-kernel-3/6.png
+200 /posts/linux-kernel-3/7.png
+200 /posts/linux-kernel-3/8.png
+200 /posts/linux-kernel-3/9.png
+200 /posts/linux-kernel-4/
+200 /posts/linux-kernel-5/
+200 /posts/linux-kernel-5/1.png
+200 /posts/linux-kernel-5/2.png
+200 /posts/linux-kernel-5/3.png
+200 /posts/linux-kernel-6/
+200 /posts/linux-kernel-6/1.png
+200 /posts/login-issue-after-install-mysql-on-mac/
+200 /posts/lua-1/
+200 /posts/lua-1/1.png
+200 /posts/lua-1/2.png
+200 /posts/lua-1/3.png
+200 /posts/lua-1/4.png
+200 /posts/lua-2/
+200 /posts/lua-3/
+200 /posts/lua-4/
+200 /posts/lua-5/
+200 /posts/lua-5/1.png
+200 /posts/lua-5/10.png
+200 /posts/lua-5/11.png
+200 /posts/lua-5/2.png
+200 /posts/lua-5/3.png
+200 /posts/lua-5/4.png
+200 /posts/lua-5/5.png
+200 /posts/lua-5/6.png
+200 /posts/lua-5/7.png
+200 /posts/lua-5/8.png
+200 /posts/lua-5/9.png
+200 /posts/matlab-2013a-for-mac-hanging-issue/
+200 /posts/meanshift-algorithm/
+200 /posts/migrate-to-disqus/
+200 /posts/modern-cpp-v1-is-live/
+200 /posts/modern-cpp-v1-is-live/1.jpg
+200 /posts/modern-cpp-v1-is-live/2.png
+200 /posts/more-is-not-new/
+200 /posts/more-is-not-new/fig1-quadrants.png
+200 /posts/more-is-not-new/fig2-hierarchy.png
+200 /posts/more-is-not-new/fig3-twocurves.png
+200 /posts/more-is-not-new/fig4-landscape.png
+200 /posts/more-is-not-new/figures.js
+200 /posts/on-my-way/
+200 /posts/page-fault-vs-prefetch/
+200 /posts/page-fault-vs-prefetch/bench.png
+301 /posts/page/1/ /posts/
+200 /posts/page/2/
+200 /posts/page/3/
+200 /posts/page/4/
+200 /posts/page/5/
+200 /posts/page/6/
+404 /posts/page/7/
+200 /posts/pointers-might-not-be-ideal-for-parameters/
+200 /posts/pointers-might-not-be-ideal-for-parameters/pointer-params-vis.png
+200 /posts/pss-uss-rss/
+200 /posts/put-color-on-mac-terminal/
+200 /posts/python-mysqldb-tutorial/
+200 /posts/python-quickstart/
+200 /posts/rethinking-the-reflections-on-communications-and-trusts/
+200 /posts/return-of-studies/
+200 /posts/review-harry-potter/
+200 /posts/see-you-down-the-road/
+301 /posts/self-reference-boundary/ /posts/2026-self-reference-boundary/
+200 /posts/setup-wordpress-in-10-minutes/
+200 /posts/simple-logging-analysis/
+200 /posts/string-标准库实现日志/
+200 /posts/string-标准库实现日志/1.jpg
+200 /posts/swift-api-design-guidelines/
+200 /posts/talk-about-android/
+200 /posts/talk-about-binary-search/
+200 /posts/talk-about-cv/
+200 /posts/ten-years-of-blogging/
+200 /posts/ten-years-of-blogging/pay.jpg
+200 /posts/the-past-and-present-of-sgd/
+200 /posts/the-worst-presentation/
+200 /posts/trusting-trustworthiness/
+200 /posts/trusting-trustworthiness/fig1.png
+200 /posts/trusting-trustworthiness/fig2.png
+200 /posts/trusting-trustworthiness/fig3.png
+200 /posts/trusting-trustworthiness/fig4.png
+200 /posts/trusting-trustworthiness/fig5.png
+200 /posts/trusting-trustworthiness/fig6.png
+200 /posts/trusting-trustworthiness/figures.js
+200 /posts/trusting-trustworthiness/fonts/Spectral-Italic.ttf
+200 /posts/trusting-trustworthiness/fonts/Spectral-Medium.ttf
+200 /posts/trusting-trustworthiness/fonts/Spectral-Regular.ttf
+200 /posts/trusting-trustworthiness/fonts/Spectral-SemiBold.ttf
+200 /posts/ubuntu-相关/
+200 /posts/ubuntu1404-install-oracle/
+200 /posts/watchkit-and-watchapp/
+200 /posts/why-i-stopped-blogging/
+200 /posts/windows-mfc-1/
+200 /posts/windows-mfc-1/1.jpg
+200 /posts/windows-mfc-1/2.jpg
+200 /posts/windows-mfc-1/3.jpg
+200 /posts/windows-mfc-1/4.jpg
+200 /posts/windows-mfc-1/5.jpg
+200 /posts/windows-mfc-1/6.jpg
+200 /posts/wordpress-站点搬家/
+200 /posts/x-2222-计划/
+200 /posts/zero-downtime-migration/
+200 /posts/zero-downtime-migration/arch.png
+200 /posts/zero-downtime-migration/dockers.png
+200 /posts/zero-downtime-migration/legacy-node.png
+200 /posts/zero-downtime-migration/traefik.png
+200 /posts/zfc-集合论中各公理的意义及作用/
+200 /posts/一个人的锦都/
+200 /posts/一路走来我/
+200 /posts/一阵风一场梦/
+200 /posts/下一次的数学突破/
+200 /posts/不想说再见/
+200 /posts/不笑不足以为道/
+200 /posts/丢失的情人节/
+200 /posts/中国要是有一千个陈景润就不得了了/
+200 /posts/为什么做不完高考数学/
+200 /posts/为什么要有特征值和特征向量/
+200 /posts/人事已非/
+200 /posts/人品守恒定律/
+200 /posts/人机交互的进展及面临的挑战/
+200 /posts/人机交互的进展及面临的挑战/1.jpg
+200 /posts/人生/
+200 /posts/人生轨迹/
+200 /posts/人生轨迹ii/
+200 /posts/人的一生时起时落但是确实美好的/
+200 /posts/什么是泛函空间的大数定律/
+200 /posts/今天编译项目真心觉得很憔悴啊/
+200 /posts/从圆锥体积谈起/
+200 /posts/从坐公交车想到的和看到的/
+200 /posts/从科研写作谈起/
+200 /posts/从装系统中学到的/
+200 /posts/从装系统中学到的/1.jpeg
+200 /posts/从装系统中学到的/10.jpeg
+200 /posts/从装系统中学到的/11.jpeg
+200 /posts/从装系统中学到的/12.jpeg
+200 /posts/从装系统中学到的/13.jpeg
+200 /posts/从装系统中学到的/14.jpeg
+200 /posts/从装系统中学到的/15.jpeg
+200 /posts/从装系统中学到的/16.jpeg
+200 /posts/从装系统中学到的/17.jpeg
+200 /posts/从装系统中学到的/18.jpeg
+200 /posts/从装系统中学到的/19.jpeg
+200 /posts/从装系统中学到的/2.jpeg
+200 /posts/从装系统中学到的/20.jpeg
+200 /posts/从装系统中学到的/21.jpeg
+200 /posts/从装系统中学到的/3.jpeg
+200 /posts/从装系统中学到的/4.jpeg
+200 /posts/从装系统中学到的/5.jpeg
+200 /posts/从装系统中学到的/6.jpeg
+200 /posts/从装系统中学到的/7.jpeg
+200 /posts/从装系统中学到的/8.jpeg
+200 /posts/从装系统中学到的/9.jpeg
+200 /posts/任性了太久之后想法/
+200 /posts/例证法/
+200 /posts/全空间和空空间/
+200 /posts/再谈例证法/
+200 /posts/再谈孤独的果实/
+200 /posts/冷月/
+200 /posts/删除记忆/
+200 /posts/博客迁移记录/
+200 /posts/又一次打整了一下博客/
+200 /posts/又是一月流阙时/
+200 /posts/又见夏洛克/
+200 /posts/又读流形/
+200 /posts/反转单链表/
+200 /posts/图书馆真是越来越无趣了/
+200 /posts/在堆上分配内存/
+200 /posts/在德国的医疗及住院体验/
+200 /posts/基于图像信号分析的碎纸片的拼接复原/
+200 /posts/夏季流年昨/
+200 /posts/多线程之间的通信-gpu计算-单摄像头图像识别-初步思考/
+200 /posts/大一总结/
+200 /posts/大三总结/
+200 /posts/大创项目的标题真是每年都在考验同学们的想象力啊/
+200 /posts/娱乐至死/
+200 /posts/实验楼楼赛第3期-python-题解/
+200 /posts/对后辈同学在计算机专业上的答疑与解惑/
+200 /posts/对现代企业理论与当下it企业的商业模式和信息产业链的规律性的思考/
+200 /posts/小-q-自传/
+200 /posts/小结一下这学期的收获/
+200 /posts/小说泽缘/
+200 /posts/小谈瑕积分/
+200 /posts/崇祯为什么不跑南京/
+200 /posts/得与失/
+200 /posts/微信小程序文档极致总结/
+200 /posts/思念/
+200 /posts/我坚信/
+200 /posts/我家的鹦鹉/
+200 /posts/我家的鹦鹉/1.jpeg
+200 /posts/我将记得你/
+200 /posts/我这是要转-ubuntu-的节奏吗/
+200 /posts/所以其实论文并没有什么鬼用/
+200 /posts/所谓爱情/
+200 /posts/所谓语言/
+200 /posts/打砖块无尽版/
+200 /posts/把伤痕当酒窝/
+200 /posts/把爱情写的最透彻的文章/
+200 /posts/拙谈人工智能的未来/
+200 /posts/摄影技巧美食摄影技巧单反摄影技巧旅游及风光摄影技巧提升照片构图的技巧人像摄影专业技巧/
+200 /posts/故城1/
+200 /posts/数学家不后悔/
+200 /posts/数学建模协会入会笔试题/
+200 /posts/数学建模协会入会笔试题/1.jpg
+200 /posts/数学建模协会入会笔试题/2.jpg
+200 /posts/数学建模协会入会笔试题/3.jpg
+200 /posts/数学系就业方向小谈/
+200 /posts/文艺还是苦逼确实不是一个问题/
+200 /posts/无奈/
+200 /posts/无愁/
+200 /posts/无言/
+200 /posts/无题/
+200 /posts/无题2/
+200 /posts/无题3/
+200 /posts/无题4/
+200 /posts/春天来了一切都还是温暖的/
+200 /posts/春醒/
+200 /posts/暖春/
+200 /posts/曾勇老师语录/
+200 /posts/最近在着手写的文章/
+200 /posts/最近读了点人工智能/
+200 /posts/有趣的人类/
+200 /posts/条件收敛与一致收敛的深刻背景分析/
+200 /posts/条件收敛与一致收敛的深刻背景分析/1.png
+200 /posts/条件收敛与一致收敛的深刻背景分析/2.png
+200 /posts/条件收敛与一致收敛的深刻背景分析/3.png
+200 /posts/某不等式/
+200 /posts/核辐射没那么可怕/
+200 /posts/模版链栈实现/
+200 /posts/模版链表实现与模版声明定义分离编译错误/
+200 /posts/模版链队实现/
+200 /posts/欧几里得的宣言/
+200 /posts/永远不要问我为什么/
+200 /posts/深夜/
+200 /posts/游戏装备升级问题/
+200 /posts/烟波江南/
+200 /posts/烟火过境/
+200 /posts/牢不可破的誓言/
+200 /posts/物理世界是离散的却为什么可以大量的使用微分和积分/
+200 /posts/狗屁二三事/
+200 /posts/独唱情歌/
+200 /posts/用数学眼光看世界之焦点访谈的播出时间/
+200 /posts/电影2012影评/
+200 /posts/看了这么久外剧也就发现这部片子火这么厉害/
+200 /posts/真与伪-善与恶/
+200 /posts/禁言/
+200 /posts/素数无穷多的拓扑学证明/
+200 /posts/繁星客栈/
+200 /posts/结构体排序引发的一连串问题/
+200 /posts/给博客做了一个桌面客户端/
+200 /posts/良好的编码体验的三个方面/
+200 /posts/见鬼/
+200 /posts/计算机科学和数学的那点儿破事儿/
+200 /posts/记事簿1/
+200 /posts/记事簿2/
+200 /posts/记事簿3/
+200 /posts/记事簿4/
+200 /posts/记事簿5/
+200 /posts/论文都是逼出来的/
+200 /posts/谈人与事/
+200 /posts/谈线性空间定义中加法交换律独立性/
+200 /posts/谈谈google和android/
+200 /posts/谈谈对编程语言的一般性认识/
+200 /posts/谈谈对编程语言的一般性认识/1.jpg
+200 /posts/谈谈良序原理/
+200 /posts/谈谈过去三个月在实验楼的实习经历/
+200 /posts/谈谈过去三个月在实验楼的实习经历/1.png
+200 /posts/负能量爆表/
+200 /posts/赌博必定破产/
+200 /posts/路灯/
+200 /posts/转眼就快两个月了/
+200 /posts/这个世界终究不会是我们的/
+200 /posts/这个世界终究不会是我们的/1.jpeg
+200 /posts/这个世界终究不会是我们的/2.jpeg
+200 /posts/这个世界终究不会是我们的/3.jpeg
+200 /posts/这个世界终究不会是我们的/4.jpeg
+200 /posts/这个世界终究不会是我们的/5.jpeg
+200 /posts/这可能不是一个技术博客了/
+200 /posts/这学期大创项目总算是告一段落了/
+200 /posts/追逐/
+200 /posts/逃生时间初算/
+200 /posts/通信信号与正交向量之间的关系/
+200 /posts/通过安装-wordpress-插件所学到的/
+200 /posts/通过安装-wordpress-插件所学到的/1.jpg
+200 /posts/通过安装-wordpress-插件所学到的/2.jpg
+200 /posts/通过安装-wordpress-插件所学到的/3.jpg
+200 /posts/那些花儿盛开了散落了/
+200 /posts/那片海/
+200 /posts/释怀/
+200 /posts/错失的机遇/
+200 /posts/阶段性沉默/
+200 /posts/陈老爷子/
+200 /posts/隔帘听/
+200 /posts/难以置信的大坑/
+200 /posts/风雪二月/
+200 /posts/高考后的计划第一版/
+200 /posts/黎明前的黑暗/
+200 /posts/黑白世/
+200 /posts/龙崎君/
+200 /sitemap.xml
+200 /specialization/
+200 /tags/
+404 /tags/apache/
+404 /tags/apache/index.xml
+200 /tags/apple-watch/
+200 /tags/apple-watch/index.xml
+200 /tags/apple/
+200 /tags/apple/index.xml
+200 /tags/c++/
+200 /tags/c++/index.xml
+200 /tags/c++11/
+200 /tags/c++11/index.xml
+200 /tags/c++14/
+200 /tags/c++14/index.xml
+200 /tags/c/
+200 /tags/c/index.xml
+200 /tags/cap-定理/
+200 /tags/cap-定理/index.xml
+404 /tags/cnn/
+404 /tags/cnn/index.xml
+200 /tags/cocos2dx/
+200 /tags/cocos2dx/index.xml
+200 /tags/deep-learning/
+200 /tags/deep-learning/index.xml
+200 /tags/devops/
+200 /tags/devops/index.xml
+200 /tags/docker/
+200 /tags/docker/index.xml
+200 /tags/elasticsearch/
+200 /tags/elasticsearch/index.xml
+200 /tags/electron/
+200 /tags/electron/index.xml
+200 /tags/elk/
+200 /tags/elk/index.xml
+200 /tags/generalization/
+200 /tags/generalization/index.xml
+200 /tags/git/
+200 /tags/git/index.xml
+200 /tags/github/
+200 /tags/github/index.xml
+200 /tags/go/
+200 /tags/go/index.xml
+200 /tags/google/
+200 /tags/google/index.xml
+200 /tags/gpu/
+200 /tags/gpu/index.xml
+200 /tags/guacamole/
+200 /tags/guacamole/index.xml
+200 /tags/hash-碰撞/
+200 /tags/hash-碰撞/index.xml
+200 /tags/hexo/
+200 /tags/hexo/index.xml
+200 /tags/hugo/
+200 /tags/hugo/index.xml
+200 /tags/hypervisor/
+200 /tags/hypervisor/index.xml
+404 /tags/index.xml
+200 /tags/ios/
+200 /tags/ios/index.xml
+200 /tags/javascript/
+200 /tags/javascript/index.xml
+200 /tags/jupyter/
+200 /tags/jupyter/index.xml
+200 /tags/kaldi/
+200 /tags/kaldi/index.xml
+200 /tags/kibana/
+200 /tags/kibana/index.xml
+200 /tags/kubernetes/
+200 /tags/kubernetes/index.xml
+200 /tags/latex/
+200 /tags/latex/index.xml
+200 /tags/linux/
+200 /tags/linux/index.xml
+200 /tags/lnmp/
+200 /tags/lnmp/index.xml
+200 /tags/logstash/
+200 /tags/logstash/index.xml
+200 /tags/lua/
+200 /tags/lua/index.xml
+200 /tags/mac/
+200 /tags/mac/index.xml
+200 /tags/mactex/
+200 /tags/mactex/index.xml
+200 /tags/mailgun/
+200 /tags/mailgun/index.xml
+200 /tags/math/
+200 /tags/math/index.xml
+200 /tags/matlab/
+200 /tags/matlab/index.xml
+200 /tags/mfc/
+200 /tags/mfc/index.xml
+200 /tags/mysql/
+200 /tags/mysql/index.xml
+200 /tags/nginx/
+200 /tags/nginx/index.xml
+200 /tags/node.js/
+200 /tags/node.js/index.xml
+200 /tags/objective-c/
+200 /tags/objective-c/index.xml
+200 /tags/opencv/
+200 /tags/opencv/index.xml
+200 /tags/oracle/
+200 /tags/oracle/index.xml
+200 /tags/pagerank/
+200 /tags/pagerank/index.xml
+200 /tags/python/
+200 /tags/python/index.xml
+200 /tags/qq空间/
+200 /tags/qq空间/index.xml
+200 /tags/redis/
+200 /tags/redis/index.xml
+200 /tags/restful/
+200 /tags/restful/index.xml
+200 /tags/runtime/
+200 /tags/runtime/index.xml
+200 /tags/scheduler/
+200 /tags/scheduler/index.xml
+200 /tags/swift/
+200 /tags/swift/index.xml
+200 /tags/test/
+200 /tags/test/index.xml
+200 /tags/tmux/
+200 /tags/tmux/index.xml
+200 /tags/traefik/
+200 /tags/traefik/index.xml
+200 /tags/ubuntu/
+200 /tags/ubuntu/index.xml
+200 /tags/unsafe/
+200 /tags/unsafe/index.xml
+200 /tags/vim/
+200 /tags/vim/index.xml
+200 /tags/vnc/
+200 /tags/vnc/index.xml
+200 /tags/web/
+200 /tags/web/index.xml
+200 /tags/websocket/
+200 /tags/websocket/index.xml
+200 /tags/windows/
+200 /tags/windows/index.xml
+200 /tags/wordpress/
+200 /tags/wordpress/index.xml
+200 /tags/zfc/
+200 /tags/zfc/index.xml
+200 /tags/个人日记/
+200 /tags/个人日记/index.xml
+200 /tags/乔布斯/
+200 /tags/乔布斯/index.xml
+200 /tags/产业规律/
+200 /tags/产业规律/index.xml
+200 /tags/人工智能/
+200 /tags/人工智能/index.xml
+200 /tags/人机交互/
+200 /tags/人机交互/index.xml
+200 /tags/人生感悟/
+200 /tags/人生感悟/index.xml
+200 /tags/人肉计算/
+200 /tags/人肉计算/index.xml
+200 /tags/企业理论/
+200 /tags/企业理论/index.xml
+200 /tags/众包/
+200 /tags/众包/index.xml
+200 /tags/信任/
+200 /tags/信任/index.xml
+200 /tags/信号分析/
+200 /tags/信号分析/index.xml
+200 /tags/信息安全/
+200 /tags/信息安全/index.xml
+200 /tags/信用风险评级/
+200 /tags/信用风险评级/index.xml
+200 /tags/傅里叶变换/
+200 /tags/傅里叶变换/index.xml
+200 /tags/公理化/
+200 /tags/公理化/index.xml
+200 /tags/内存管理/
+200 /tags/内存管理/index.xml
+200 /tags/内核/
+200 /tags/内核/index.xml
+200 /tags/写作/
+200 /tags/写作/index.xml
+200 /tags/决策理论/
+200 /tags/决策理论/index.xml
+200 /tags/分布式/
+200 /tags/分布式/index.xml
+200 /tags/分析学/
+200 /tags/分析学/index.xml
+200 /tags/博客/
+200 /tags/博客/index.xml
+200 /tags/博弈论/
+200 /tags/博弈论/index.xml
+200 /tags/压缩算法/
+200 /tags/压缩算法/index.xml
+200 /tags/商业模式/
+200 /tags/商业模式/index.xml
+200 /tags/地震测算/
+200 /tags/地震测算/index.xml
+200 /tags/学术/
+200 /tags/学术/index.xml
+200 /tags/宇宙社会学/
+200 /tags/宇宙社会学/index.xml
+200 /tags/实分析/
+200 /tags/实分析/index.xml
+200 /tags/小说/
+200 /tags/小说/index.xml
+200 /tags/工具/
+200 /tags/工具/index.xml
+200 /tags/广义积分/
+200 /tags/广义积分/index.xml
+200 /tags/异步/
+200 /tags/异步/index.xml
+200 /tags/影评/
+200 /tags/影评/index.xml
+200 /tags/微信/
+200 /tags/微信/index.xml
+200 /tags/总结/
+200 /tags/总结/index.xml
+200 /tags/意图博弈/
+200 /tags/意图博弈/index.xml
+200 /tags/拓扑/
+200 /tags/拓扑/index.xml
+200 /tags/排序/
+200 /tags/排序/index.xml
+200 /tags/教程/
+200 /tags/教程/index.xml
+200 /tags/数学/
+200 /tags/数学/index.xml
+200 /tags/数学史/
+200 /tags/数学史/index.xml
+200 /tags/数学文化/
+200 /tags/数学文化/index.xml
+200 /tags/数据挖掘/
+200 /tags/数据挖掘/index.xml
+200 /tags/数据科学/
+200 /tags/数据科学/index.xml
+200 /tags/数据结构/
+200 /tags/数据结构/index.xml
+200 /tags/数据聚合/
+200 /tags/数据聚合/index.xml
+200 /tags/日志分析/
+200 /tags/日志分析/index.xml
+200 /tags/最佳实践/
+200 /tags/最佳实践/index.xml
+200 /tags/机器学习/
+200 /tags/机器学习/index.xml
+200 /tags/标准库/
+200 /tags/标准库/index.xml
+200 /tags/概率/
+200 /tags/概率/index.xml
+200 /tags/概率论/
+200 /tags/概率论/index.xml
+200 /tags/模式识别/
+200 /tags/模式识别/index.xml
+200 /tags/模板/
+200 /tags/模板/index.xml
+200 /tags/正交/
+200 /tags/正交/index.xml
+200 /tags/泛函分析/
+200 /tags/泛函分析/index.xml
+200 /tags/泛化理论/
+200 /tags/泛化理论/index.xml
+200 /tags/泛型编程/
+200 /tags/泛型编程/index.xml
+200 /tags/流形/
+200 /tags/流形/index.xml
+200 /tags/测度论/
+200 /tags/测度论/index.xml
+200 /tags/深度学习/
+200 /tags/深度学习/index.xml
+200 /tags/源码分析/
+200 /tags/源码分析/index.xml
+200 /tags/物理/
+200 /tags/物理/index.xml
+200 /tags/理论/
+200 /tags/理论/index.xml
+200 /tags/瑕积分/
+200 /tags/瑕积分/index.xml
+200 /tags/监控指标/
+200 /tags/监控指标/index.xml
+200 /tags/研究/
+200 /tags/研究/index.xml
+200 /tags/社会行为分析/
+200 /tags/社会行为分析/index.xml
+200 /tags/神经网络/
+200 /tags/神经网络/index.xml
+200 /tags/科学/
+200 /tags/科学/index.xml
+200 /tags/科研/
+200 /tags/科研/index.xml
+200 /tags/积分/
+200 /tags/积分/index.xml
+200 /tags/算法/
+200 /tags/算法/index.xml
+200 /tags/线性代数/
+200 /tags/线性代数/index.xml
+200 /tags/线性空间/
+200 /tags/线性空间/index.xml
+404 /tags/统计/
+404 /tags/统计/index.xml
+200 /tags/统计学/
+200 /tags/统计学/index.xml
+200 /tags/统计学习/
+200 /tags/统计学习/index.xml
+200 /tags/缓存池/
+200 /tags/缓存池/index.xml
+200 /tags/编译/
+200 /tags/编译/index.xml
+200 /tags/群众智慧/
+200 /tags/群众智慧/index.xml
+200 /tags/良序原理/
+200 /tags/良序原理/index.xml
+200 /tags/计算复杂性/
+200 /tags/计算复杂性/index.xml
+200 /tags/计算机体系结构/
+200 /tags/计算机体系结构/index.xml
+200 /tags/计算机视觉/
+200 /tags/计算机视觉/index.xml
+200 /tags/设计/
+200 /tags/设计/index.xml
+200 /tags/语音交互/
+200 /tags/语音交互/index.xml
+200 /tags/语音识别/
+200 /tags/语音识别/index.xml
+200 /tags/读书清单/
+200 /tags/读书清单/index.xml
+200 /tags/读书笔记/
+200 /tags/读书笔记/index.xml
+200 /tags/调度器/
+200 /tags/调度器/index.xml
+200 /tags/贝叶斯/
+200 /tags/贝叶斯/index.xml
+200 /tags/贝叶斯优化/
+200 /tags/贝叶斯优化/index.xml
+200 /tags/软件工程/
+200 /tags/软件工程/index.xml
+200 /tags/运维/
+200 /tags/运维/index.xml
+200 /tags/运行时/
+200 /tags/运行时/index.xml
+200 /tags/通信/
+200 /tags/通信/index.xml
+200 /tags/道德陷阱/
+200 /tags/道德陷阱/index.xml
+200 /tags/金融/
+200 /tags/金融/index.xml
+200 /tags/链路预测/
+200 /tags/链路预测/index.xml
+200 /tags/随笔/
+200 /tags/随笔/index.xml
+200 /tags/随笔/page/2/
+200 /tags/随笔/page/3/
+200 /tags/集合论/
+200 /tags/集合论/index.xml
+200 /tags/预测市场/
+200 /tags/预测市场/index.xml

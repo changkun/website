@@ -1,0 +1,4 @@
+---
+title: TagsCloud
+type: tags
+---

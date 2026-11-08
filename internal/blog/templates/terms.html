@@ -1,0 +1,13 @@
+{{define "main"}}
+<section class="archive archive-cloud">
+  <header class="archive-header">
+    <h1 class="archive-title">{{t "MenuTags"}}</h1>
+    <p class="archive-count">{{len .Tags}} {{t "StatsTags"}}</p>
+  </header>
+  <div class="tag-cloud">
+    {{- range .Tags}}
+    <a class="cloud-tag{{if ge (len .Pages) 10}} cloud-tag-major{{end}}" href="{{.URL}}" style="font-size: {{.FontSize}}px">{{.Key}}<span class="tag-count">{{len .Pages}}</span></a>
+    {{- end}}
+  </div>
+</section>
+{{end}}

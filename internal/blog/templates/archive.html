@@ -1,0 +1,19 @@
+{{define "main"}}
+<section class="archive">
+  <header class="archive-header">
+    {{- if .Tag}}
+    <div class="eyebrow">{{t "Tag"}}</div>
+    <h1 class="archive-title">#{{.Tag.Name}}</h1>
+    <p class="archive-count">{{len .Tag.Pages}}</p>
+    {{- else}}
+    <h1 class="archive-title">Posts</h1>
+    <p class="archive-count">{{.Count}} {{t "StatsBlogs"}}</p>
+    {{- end}}
+  </header>
+  {{- range .Groups}}
+  <h2 class="archive-year" id="archive-year-{{.Year}}">{{.Year}}</h2>
+  {{template "archive-list" .Pages}}
+  {{- end}}
+</section>
+{{template "pagination" .Pager}}
+{{end}}

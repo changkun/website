@@ -36,6 +36,7 @@ answers 503.
 | `internal/ideas/` | The ideas API |
 | `internal/ideas/prompts/` | Model prompts, as Go text templates embedded in the binary |
 | `internal/research/` | The research page, rendered from a checkout of changkun/research |
+| `internal/blog/` | The blog, rendered from a checkout of changkun/blog |
 | `internal/library/` | The library: Zotero sync, owner pages, shares, comments |
 
 ## Folders
@@ -58,6 +59,17 @@ serves the page's stylesheet and portrait from the binary. A talk at
 `/research/talks/<name>.pdf`, where `/talk/<name>.pdf` redirects, is found in
 the dated folder that holds it. Without a `README.md` the folder is served like
 any other.
+
+`blog` is a checkout of [changkun/blog](https://github.com/changkun/blog),
+which holds the posts and ideas as markdown in its `content` folder. The
+website renders every page, list, tag, feed and the sitemap from it, and
+builds them again within seconds of the checkout changing, so a `git pull`
+there publishes a post. The addresses are those Hugo, which built the blog
+before, gave the pages, and `internal/blog/testdata/live.txt` lists them;
+`BLOG_CHECKOUT=<checkout> go test ./internal/blog` checks a checkout against
+it. Math between `$` or `$$` reaches MathJax as written. Without a `content`
+folder, as while the folder still holds Hugo's output, it is served like any
+other.
 
 ## Sites
 

@@ -3,6 +3,8 @@ module changkun.de/x/website
 go 1.27.3
 
 require (
+	github.com/alecthomas/chroma/v2 v2.27.0
+	github.com/gohugoio/hugo-goldmark-extensions/passthrough v0.6.0
 	github.com/yuin/goldmark v1.8.7
 	go.yaml.in/yaml/v3 v3.0.5
 	latere.ai/x/pkg v0.94.0
@@ -11,6 +13,7 @@ require (
 require (
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/dlclark/regexp2/v2 v2.2.1 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

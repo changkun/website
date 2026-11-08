@@ -15,13 +15,16 @@ import (
 	"strings"
 	"time"
 
+	"changkun.de/x/website/internal/blog"
 	"changkun.de/x/website/internal/research"
 )
 
 // withWWW serves the folders of WWW_DIR in front of next, each at /<name>/,
 // as WWW_CORS configures. Publishing a folder takes a copy or
 // a clone into WWW_DIR, and no restart. The research folder, a checkout of
-// changkun/research, also has its page rendered; see package research.
+// changkun/research, also has its page rendered; see package research. The
+// blog folder, a checkout of changkun/blog, has its pages rendered; see
+// package blog.
 // Without WWW_DIR, it returns next.
 func withWWW(l *log.Logger, next http.Handler) (http.Handler, error) {
 	dir := os.Getenv("WWW_DIR")
@@ -44,6 +47,7 @@ func withWWW(l *log.Logger, next http.Handler) (http.Handler, error) {
 		files: files,
 		own: map[string]http.Handler{
 			"research": research.Handler(filepath.Join(dir, "research"), "/research/", files, l),
+			"blog":     blog.Handler(filepath.Join(dir, "blog"), files, l),
 		},
 		site: fsys,
 		cors: cors,

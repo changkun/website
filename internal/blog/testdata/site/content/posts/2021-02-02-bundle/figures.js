@@ -1,0 +1,1 @@
+ifig.register("one.png", function(){});
