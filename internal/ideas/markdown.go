@@ -20,13 +20,47 @@ type post struct {
 	content      bilingual
 	augmented    bilingual // the deep dive
 	llmGenerated bool      // a model wrote the deep dive
+	files        []Attachment
 }
 
-func (p post) filename() string {
-	return fmt.Sprintf("%s-%s.md", p.date.Format("2006-01-02"), p.slug)
+// An Attachment is a file, uploaded with Upload, that goes beside an idea.
+type Attachment struct {
+	Name string // in the idea's folder
+	SHA  string
 }
 
-func (p post) path() string { return "content/ideas/" + p.filename() }
+// root is where p goes in the repository: a markdown file, or, with files,
+// a folder that holds it as index.md beside them.
+func (p post) root() string {
+	name := "content/ideas/" + p.date.Format("2006-01-02") + "-" + p.slug
+	if len(p.files) == 0 {
+		return name + ".md"
+	}
+	return name
+}
+
+// repoFiles are the files that make up p, with md its markdown.
+func (p post) repoFiles(md string) []File {
+	if len(p.files) == 0 {
+		return []File{{Path: p.root(), Text: md}}
+	}
+	out := []File{{Path: p.root() + "/index.md", Text: md}}
+	for _, a := range p.files {
+		out = append(out, File{Path: p.root() + "/" + a.Name, SHA: a.SHA})
+	}
+	return out
+}
+
+// keepFiles adds a reference to each of files that text does not mention,
+// as when a model drops one while it polishes or translates the text.
+func keepFiles(text string, files []Attachment) string {
+	for _, f := range files {
+		if !strings.Contains(text, f.Name) {
+			text = strings.TrimRight(text, "\n") + "\n\n![](" + f.Name + ")"
+		}
+	}
+	return text
+}
 
 // disclaimers precede a deep dive that a model wrote.
 var disclaimers = bilingual{

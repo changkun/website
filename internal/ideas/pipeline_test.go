@@ -6,67 +6,15 @@ package ideas
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"sync"
 	"testing"
 	"unicode/utf8"
 )
-
-// commit is a file the pipeline committed.
-type commit struct {
-	path    string
-	message string
-	content string
-}
-
-// fakeGitHub records the files createFile commits.
-type fakeGitHub struct {
-	srv *httptest.Server
-
-	mu      sync.Mutex
-	commits []commit
-}
-
-func newFakeGitHub(t *testing.T) *fakeGitHub {
-	t.Helper()
-
-	f := &fakeGitHub{}
-	f.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var body createFileRequest
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-			t.Errorf("decode commit: %v", err)
-		}
-		content, err := base64.StdEncoding.DecodeString(body.Content)
-		if err != nil {
-			t.Errorf("decode content: %v", err)
-		}
-
-		f.mu.Lock()
-		f.commits = append(f.commits, commit{
-			path:    strings.TrimPrefix(r.URL.Path, "/repos/changkun/blog/contents/"),
-			message: body.Message,
-			content: string(content),
-		})
-		f.mu.Unlock()
-
-		w.WriteHeader(http.StatusCreated)
-		_, _ = w.Write([]byte(`{}`))
-	}))
-	t.Cleanup(f.srv.Close)
-	return f
-}
-
-func (f *fakeGitHub) got() []commit {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	return append([]commit(nil), f.commits...)
-}
 
 func newPipeline(t *testing.T, g *scriptedGateway) (*Service, *fakeGitHub) {
 	t.Helper()
@@ -95,7 +43,7 @@ func TestProcessIdeaWithholdsOnGatewayOutage(t *testing.T) {
 	g := newScriptedGateway(t) // no replies: every call answers 500
 	svc, gh := newPipeline(t, g)
 
-	svc.processIdea(ideaRequest{Content: zhIdea})
+	svc.processIdea(ideaRequest{Content: zhIdea}, nil)
 
 	if got := gh.got(); len(got) != 0 {
 		t.Fatalf("committed %d file(s) during an outage, want none: %+v", len(got), got)
@@ -119,7 +67,7 @@ func TestProcessIdeaWithholdsOnEchoedTranslation(t *testing.T) {
 	g := newScriptedGateway(t, string(echoed))
 	svc, gh := newPipeline(t, g)
 
-	svc.processIdea(ideaRequest{Title: "公理", Content: zhIdea})
+	svc.processIdea(ideaRequest{Title: "公理", Content: zhIdea}, nil)
 
 	if got := gh.got(); len(got) != 0 {
 		t.Fatalf("committed %d untranslated file(s), want none: %+v", len(got), got)
@@ -132,7 +80,7 @@ func TestProcessIdeaWithholdsWithoutTitle(t *testing.T) {
 	g := newScriptedGateway(t) // no replies: the title call fails
 	svc, gh := newPipeline(t, g)
 
-	svc.processIdea(ideaRequest{Content: zhIdea})
+	svc.processIdea(ideaRequest{Content: zhIdea}, nil)
 
 	if got := g.count(); got != 1 {
 		t.Errorf("made %d gateway calls, want 1: the run must stop at the title", got)
@@ -167,7 +115,7 @@ func TestProcessIdeaPublishesBilingual(t *testing.T) {
 		Title:     "三条公理",
 		Content:   zhIdea,
 		Augmented: "这是补充说明。",
-	})
+	}, nil)
 
 	got := gh.got()
 	if len(got) != 1 {
@@ -203,7 +151,7 @@ func TestProcessIdeaFallbackPlacesEnglishSource(t *testing.T) {
 		Title:     "Three Axioms",
 		Content:   enIdea,
 		Augmented: "A note added by hand.",
-	})
+	}, nil)
 
 	got := gh.got()
 	if len(got) != 1 {
@@ -287,5 +235,47 @@ func TestFetchURLKeepsWholeRunes(t *testing.T) {
 				t.Fatalf("fetchURL() = %d bytes, want %d", len(got), len(tt.want))
 			}
 		})
+	}
+}
+
+// TestProcessIdeaWithFiles checks that an idea with files goes into a folder
+// beside them, and that a file the translation dropped is still shown.
+func TestProcessIdeaWithFiles(t *testing.T) {
+	const withFig = zhIdea + "\n\n![](fig.png)"
+	translated, err := json.Marshal(translateResult{
+		Lang:              "zh",
+		PolishedTitle:     "三条公理",
+		PolishedContent:   withFig,
+		TranslatedTitle:   "Three Axioms",
+		TranslatedContent: "Three axioms drawn from my own experience.", // the figure is gone
+	})
+	if err != nil {
+		t.Fatalf("marshal reply: %v", err)
+	}
+	g := newScriptedGateway(t, string(translated), "three-axioms", "An English rendering of the note.")
+	svc, gh := newPipeline(t, g)
+	sha, err := svc.Upload(context.Background(), []byte("PNG"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	svc.processIdea(ideaRequest{Title: "三条公理", Content: withFig, Augmented: "这是补充说明。"},
+		[]Attachment{{Name: "fig.png", SHA: sha}})
+
+	got := gh.got()
+	if len(got) != 2 {
+		t.Fatalf("committed %d file(s), want 2: %+v", len(got), got)
+	}
+	if !strings.HasSuffix(got[0].path, "-three-axioms/index.md") || !strings.HasSuffix(got[1].path, "-three-axioms/fig.png") {
+		t.Errorf("paths = %q, %q, want a folder with index.md and the file", got[0].path, got[1].path)
+	}
+	if got[1].content != "PNG" {
+		t.Errorf("file = %q, want the upload", got[1].content)
+	}
+	en, zh := splitLanguages(t, got[0].content)
+	assertContains(t, "the en block", en, "Three axioms drawn", "![](fig.png)")
+	assertContains(t, "the zh block", zh, "![](fig.png)")
+	if strings.Count(zh, "fig.png") != 1 {
+		t.Errorf("the zh block shows the figure %d times, want once", strings.Count(zh, "fig.png"))
 	}
 }

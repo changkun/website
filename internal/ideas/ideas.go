@@ -2,13 +2,15 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-// Package ideas implements the API behind the compose box on changkun.de. It
-// polishes and translates an idea with models behind the Lux gateway, and
-// commits the result to the blog repository as a bilingual post.
+// Package ideas writes to the blog repository. It turns an idea into a
+// bilingual post with models behind the Lux gateway and commits it, both
+// for its API and for the blog's editor, which also commits posts through
+// it.
 package ideas
 
 import (
 	"cmp"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -119,8 +121,31 @@ func (s *Service) handlePost(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	go s.processIdea(req)
+	go s.processIdea(req, nil)
 	writeJSON(w, http.StatusOK, ideaResponse{OK: true, Message: "idea accepted, publishing in background"})
+}
+
+// Upload stores data in the blog repository, to be committed with a page
+// later, and returns its SHA.
+func (s *Service) Upload(ctx context.Context, data []byte) (string, error) {
+	return s.github.upload(ctx, data)
+}
+
+// Download returns a file stored with Upload.
+func (s *Service) Download(ctx context.Context, sha string) ([]byte, error) {
+	return s.github.download(ctx, sha)
+}
+
+// Create commits files as a new page at root, a file or a folder of the
+// blog repository. It fails with ErrExists if root is taken.
+func (s *Service) Create(ctx context.Context, root string, files []File, msg string) error {
+	return s.github.create(ctx, root, files, sanitizeCommitMsg(msg))
+}
+
+// PublishIdea writes up and publishes an idea in the background, as
+// /ideas/post does, with files beside it.
+func (s *Service) PublishIdea(title, content string, files []Attachment) {
+	go s.processIdea(ideaRequest{Title: title, Content: content}, files)
 }
 
 // handleImprove replies with the content polished by the model, without

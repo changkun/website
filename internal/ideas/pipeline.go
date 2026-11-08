@@ -15,10 +15,11 @@ import (
 	"time"
 )
 
-// processIdea turns an idea into a bilingual post and commits it. It runs in
-// the background and reports only to the log. The steps run in the order of
-// their model calls, which the tests script by position.
-func (s *Service) processIdea(req ideaRequest) {
+// processIdea turns an idea into a bilingual post and commits it with files
+// beside it. It runs in the background and reports only to the log. The
+// steps run in the order of their model calls, which the tests script by
+// position.
+func (s *Service) processIdea(req ideaRequest, files []Attachment) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
@@ -49,19 +50,22 @@ func (s *Service) processIdea(req ideaRequest) {
 		return
 	}
 
+	content.en = keepFiles(content.en, files)
+	content.zh = keepFiles(content.zh, files)
 	p := post{
 		date:    time.Now(),
 		slug:    s.slug(ctx, title.en),
 		title:   title,
 		content: content,
+		files:   files,
 	}
 	p.augmented, p.llmGenerated = s.augment(ctx, lang, req.Title, enriched, req.Augmented)
 
-	if err := s.github.createFile(ctx, p.path(), buildMarkdown(p), sanitizeCommitMsg("ideas: "+title.en)); err != nil {
+	if err := s.github.create(ctx, p.root(), p.repoFiles(buildMarkdown(p)), sanitizeCommitMsg("ideas: "+title.en)); err != nil {
 		s.log.Printf("GitHub commit failed: %v", err)
 		return
 	}
-	s.log.Printf("idea published: %s", p.filename())
+	s.log.Printf("idea published: %s", p.root())
 }
 
 // references fetches the pages content links to and renders them as context
