@@ -32,6 +32,7 @@ type site struct {
 	files   map[string]string // address → file in the content folder
 	tags    []*tag            // by key
 	tagsBy  map[string]*tag   // by key
+	byID    map[string]*Page  // by the id of their front matter, for old addresses
 
 	mu    sync.Mutex
 	cache map[string]*response // rendered pages, by address
@@ -141,6 +142,7 @@ func build(dir string, l *log.Logger) (*site, error) {
 	if err := s.addFiles(dir); err != nil {
 		return nil, err
 	}
+	s.addOldURLs(dir)
 	return s, nil
 }
 

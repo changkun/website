@@ -1,8 +1,10 @@
-# The addresses changkun.de/blog answered when Hugo built it, on
-# 2026-11-08, and what each answers now: 200, a redirect for good to the
-# address after it, or 404 for what is no longer published (the _todo
-# notes, the tags only they had, /categories/, /tags/index.xml, and pages
-# an old build left behind). Paths are below /blog, unescaped.
+# Every address in the folder Hugo built for changkun.de/blog, as the
+# server held it on 2026-11-08, and what each answers now: 200, a
+# redirect for good to the address after it, or 404 for what is no longer
+# published (the _todo notes and the tags only they had, the test ideas,
+# images no post used, the feeds of tags and categories, and the hashed
+# scripts and styles of old builds). /images/logo.png, which goes to the
+# site's /logo.png, is left out. Paths are below /blog, unescaped.
 200 /
 200 /404.html
 404 /_todo/
@@ -22,7 +24,16 @@
 404 /_todo/docker-极速入门教程3-数据与网络管理及docker安全/
 404 /_todo/hamilton-找不到三维复数的原因/
 404 /_todo/html-css-一日概览/
+404 /_todo/index.xml
 404 /_todo/n-次方程有n个根/
+404 /_todo/p/1/
+404 /_todo/p/2/
+404 /_todo/p/3/
+404 /_todo/p/4/
+404 /_todo/page/1/
+404 /_todo/page/2/
+404 /_todo/page/3/
+404 /_todo/page/4/
 404 /_todo/r语言初体验/
 404 /_todo/shallow-learning-and-deep-learning/
 404 /_todo/sinx-与超越数/
@@ -327,8 +338,13 @@
 301 /archives/2020/11/267/ /posts/pointers-might-not-be-ideal-for-parameters/
 200 /augmentedtouch/
 200 /bachelorthesis/
-404 /categories/
+301 /categories/ /tags/
+404 /categories/index.xml
 200 /clients/
+404 /css/ink.min.2da741b38cfdb54614e5e732bd2fb9f3af901e28c88c76fbc389978282e36ee8.css
+404 /css/ink.min.5141010256ea569afe00ec0d0cb61e5046a798dc31b1f02d3cb1ee4dbdad7492.css
+404 /css/ink.min.55b329007415ec034a6a39cd301391b930c9405f0cd6cde3004d64a7727d1e5c.css
+404 /css/ink.min.a6137e4b5ac7244b80c45bfb27415dde57970dc94c62970764793228728b779a.css
 200 /cv/
 200 /demo/
 200 /favicon.ico
@@ -340,6 +356,54 @@
 200 /files/cv/vision.swun.html
 200 /files/graffle/changkun-de-arch.graffle
 200 /ideas/
+301 /ideas/2020-10-01-hello/ /ideas/hello/
+301 /ideas/2020-10-19-基准测试的番外/ /ideas/benchmark-testing-the-extras/
+301 /ideas/2020-10-30-获取-goroutine-id/ /ideas/getting-goroutine-id/
+301 /ideas/2020-10-31-初窥-iofs/ /ideas/a-first-look-at-io/fs/
+301 /ideas/2020-11-01-tcleanup-的嵌套问题/ /ideas/nesting-issues-with-t.cleanup/
+301 /ideas/2020-11-02-运算符的优先级/ /ideas/operator-precedence/
+301 /ideas/2020-11-03-timer-的一枚优化/ /ideas/a-timer-optimization/
+301 /ideas/2020-11-04-传值与传指针/ /ideas/value-vs-pointer/
+301 /ideas/2020-11-05-空间换时间/ /ideas/trading-space-for-time/
+301 /ideas/2020-11-07-工具-bench/ /ideas/tool-bench/
+301 /ideas/2020-11-08-detach-a-context/ /ideas/detach-a-context/
+301 /ideas/2020-11-09-macos-下获取时钟频率/ /ideas/macos-clock-freq/
+301 /ideas/2020-11-13-go-113-错误值提案的遗憾/ /ideas/go113-error-regret/
+301 /ideas/2020-11-14-关于-go-错误处理的进一步看法/ /ideas/go-error-handling/
+301 /ideas/2020-11-15-数据竞争和内存模型/ /ideas/data-races-memory/
+301 /ideas/2020-11-26-错误提案的总结/ /ideas/error-proposals-summary/
+301 /ideas/2020-12-01-回顾异步抢占/ /ideas/revisiting-asynchronous-preemption/
+301 /ideas/2020-12-07-测试-iofs-的实现/ /ideas/testing-io/fs-implementations/
+301 /ideas/2020-12-09-弃用-ioutil/ /ideas/deprecating-ioutil/
+301 /ideas/2020-12-10-apple-silicon/ /ideas/apple-silicon/
+301 /ideas/2020-12-12-telegram-bot/ /ideas/telegram-bot/
+301 /ideas/2020-12-13-proebsting-定律/ /ideas/proebstings-law/
+301 /ideas/2020-12-15-worse-is-better/ /ideas/worse-is-better/
+301 /ideas/2020-12-25-lbry/ /ideas/lbry/
+301 /ideas/2020-12-26-stability-patterns/ /ideas/stability-patterns/
+301 /ideas/2020-12-27-concurrency-patterns/ /ideas/concurrency-patterns/
+301 /ideas/2020-12-30-daily-reading/ /ideas/daily-201230/
+301 /ideas/2020-12-31-daily-reading/ /ideas/daily-201231/
+301 /ideas/2021-01-05-daily-reading/ /ideas/daily-210105/
+301 /ideas/2021-01-06-creating-a-window/ /ideas/creating-a-window/
+301 /ideas/2021-01-18-daily-reading/ /ideas/daily-210118/
+301 /ideas/2021-01-27-go-116-big-changes/ /ideas/go-1.16-big-changes/
+301 /ideas/2021-02-10-a-new-gc-pacer/ /ideas/a-new-gc-pacer/
+301 /ideas/2021-02-14-big-changes-in-go-117/ /ideas/big-changes-in-go-1.17/
+301 /ideas/2021-02-15-daily-readings/ /ideas/daily-readings/
+301 /ideas/2026-02-15-pbo-preferential-bayesian-optimization-methods/ /ideas/pbo-methods/
+404 /ideas/2026-02-15-test-idea/
+404 /ideas/2026-02-15-testing-ideas-api-functionality/
+301 /ideas/2026-02-15-testing-the-ideas-api/ /ideas/testing-the-ideas-api/
+301 /ideas/2026-02-16-distributed-ai-alignment-through-representation-equilibria/ /ideas/ai-alignment-equilibria/
+301 /ideas/2026-02-16-expertise-as-risk-control-in-human-ai-optimization/ /ideas/expertise-risk-control/
+301 /ideas/2026-02-16-language-centric-ai-while-human-cognition-shifts-toward-visual-spatial-thinking/ /ideas/language-vs-visual-ai/
+301 /ideas/2026-02-16-llms-eliminate-implementation-bottlenecks-elevating-architectural-judgment/ /ideas/llms-arch-judgment/
+301 /ideas/2026-02-16-permissiveness-as-alignment-transparency-over-suppression-stabilizes-values/ /ideas/reward-hacking-misalignment/
+301 /ideas/2026-02-16-reward-hacking-triggers-emergent-misalignment-through-self-concept-shifts/ /ideas/reward-hacking-misalignment/
+404 /ideas/2026-02-16-some-interesting-work/
+404 /ideas/2026-02-16-testing-ideas-api-with-sample-content-and-errors/
+404 /ideas/2026-02-16-testing-the-ideas-api-with-sample-content/
 200 /ideas/a-first-look-at-io/fs/
 200 /ideas/a-new-gc-pacer/
 200 /ideas/a-timer-optimization/
@@ -436,6 +500,7 @@
 200 /ideas/societies-rewards/
 200 /ideas/specialized-architecture-evolution/
 200 /ideas/stability-patterns/
+301 /ideas/symmetric-preference-determinants/ /ideas/preference-symmetry/
 200 /ideas/taste-experience/
 200 /ideas/tech-career-timing/
 200 /ideas/telegram-bot/
@@ -458,6 +523,249 @@
 200 /images/math-modeling/cover.jpg
 200 /images/pay/alipay.jpg
 200 /images/pay/wechat.jpg
+301 /images/posts/104/1.png /posts/条件收敛与一致收敛的深刻背景分析/1.png
+301 /images/posts/104/2.png /posts/条件收敛与一致收敛的深刻背景分析/2.png
+301 /images/posts/104/3.png /posts/条件收敛与一致收敛的深刻背景分析/3.png
+301 /images/posts/105/1.png /posts/install-opencv-on-mac/1.png
+301 /images/posts/105/10.png /posts/install-opencv-on-mac/10.png
+301 /images/posts/105/11.png /posts/install-opencv-on-mac/11.png
+301 /images/posts/105/12.png /posts/install-opencv-on-mac/12.png
+301 /images/posts/105/13.png /posts/install-opencv-on-mac/13.png
+301 /images/posts/105/2.png /posts/install-opencv-on-mac/2.png
+301 /images/posts/105/3.png /posts/install-opencv-on-mac/3.png
+301 /images/posts/105/4.png /posts/install-opencv-on-mac/4.png
+301 /images/posts/105/5.png /posts/install-opencv-on-mac/5.png
+301 /images/posts/105/6.png /posts/install-opencv-on-mac/6.png
+301 /images/posts/105/7.png /posts/install-opencv-on-mac/7.png
+301 /images/posts/105/8.png /posts/install-opencv-on-mac/8.png
+301 /images/posts/105/9.png /posts/install-opencv-on-mac/9.png
+301 /images/posts/106/1.jpg /posts/windows-mfc-1/1.jpg
+301 /images/posts/106/2.jpg /posts/windows-mfc-1/2.jpg
+301 /images/posts/106/3.jpg /posts/windows-mfc-1/3.jpg
+301 /images/posts/106/4.jpg /posts/windows-mfc-1/4.jpg
+301 /images/posts/106/5.jpg /posts/windows-mfc-1/5.jpg
+301 /images/posts/106/6.jpg /posts/windows-mfc-1/6.jpg
+301 /images/posts/123/1.jpg /posts/数学建模协会入会笔试题/1.jpg
+301 /images/posts/123/2.jpg /posts/数学建模协会入会笔试题/2.jpg
+301 /images/posts/123/3.jpg /posts/数学建模协会入会笔试题/3.jpg
+301 /images/posts/141/1.jpg /posts/人机交互的进展及面临的挑战/1.jpg
+301 /images/posts/144/1.png /posts/lua-1/1.png
+301 /images/posts/144/2.png /posts/lua-1/2.png
+301 /images/posts/144/3.png /posts/lua-1/3.png
+301 /images/posts/144/4.png /posts/lua-1/4.png
+301 /images/posts/148/1.png /posts/lua-5/1.png
+301 /images/posts/148/10.png /posts/lua-5/10.png
+301 /images/posts/148/11.png /posts/lua-5/11.png
+301 /images/posts/148/2.png /posts/lua-5/2.png
+301 /images/posts/148/3.png /posts/lua-5/3.png
+301 /images/posts/148/4.png /posts/lua-5/4.png
+301 /images/posts/148/5.png /posts/lua-5/5.png
+301 /images/posts/148/6.png /posts/lua-5/6.png
+301 /images/posts/148/7.png /posts/lua-5/7.png
+301 /images/posts/148/8.png /posts/lua-5/8.png
+301 /images/posts/148/9.png /posts/lua-5/9.png
+301 /images/posts/151/1.jpg /posts/谈谈对编程语言的一般性认识/1.jpg
+301 /images/posts/173/1.png /posts/linux-kernel-1/1.png
+301 /images/posts/173/10.png /posts/linux-kernel-1/10.png
+301 /images/posts/173/2.png /posts/linux-kernel-1/2.png
+301 /images/posts/173/3.png /posts/linux-kernel-1/3.png
+301 /images/posts/173/4.png /posts/linux-kernel-1/4.png
+301 /images/posts/173/5.png /posts/linux-kernel-1/5.png
+301 /images/posts/173/6.png /posts/linux-kernel-1/6.png
+301 /images/posts/173/7.png /posts/linux-kernel-1/7.png
+301 /images/posts/173/8.png /posts/linux-kernel-1/8.png
+301 /images/posts/173/9.png /posts/linux-kernel-1/9.png
+301 /images/posts/174/1.png /posts/linux-kernel-2/1.png
+301 /images/posts/174/2.png /posts/linux-kernel-2/2.png
+301 /images/posts/174/3.png /posts/linux-kernel-2/3.png
+301 /images/posts/174/4.png /posts/linux-kernel-2/4.png
+301 /images/posts/176/1.png /posts/linux-kernel-3/1.png
+301 /images/posts/176/10.png /posts/linux-kernel-3/10.png
+301 /images/posts/176/11.png /posts/linux-kernel-3/11.png
+301 /images/posts/176/12.png /posts/linux-kernel-3/12.png
+301 /images/posts/176/13.jpg /posts/linux-kernel-3/13.jpg
+301 /images/posts/176/2.png /posts/linux-kernel-3/2.png
+301 /images/posts/176/3.png /posts/linux-kernel-3/3.png
+301 /images/posts/176/4.png /posts/linux-kernel-3/4.png
+301 /images/posts/176/5.png /posts/linux-kernel-3/5.png
+301 /images/posts/176/6.png /posts/linux-kernel-3/6.png
+301 /images/posts/176/7.png /posts/linux-kernel-3/7.png
+301 /images/posts/176/8.png /posts/linux-kernel-3/8.png
+301 /images/posts/176/9.png /posts/linux-kernel-3/9.png
+301 /images/posts/181/1.png /posts/linux-kernel-5/1.png
+301 /images/posts/181/2.png /posts/linux-kernel-5/2.png
+301 /images/posts/181/3.png /posts/linux-kernel-5/3.png
+404 /images/posts/181/4.jpg
+301 /images/posts/183/1.png /posts/linux-kernel-6/1.png
+301 /images/posts/184/1.jpeg /posts/这个世界终究不会是我们的/1.jpeg
+301 /images/posts/184/1.jpeg.jpg /posts/这个世界终究不会是我们的/1.jpeg
+301 /images/posts/184/2.jpeg /posts/这个世界终究不会是我们的/2.jpeg
+301 /images/posts/184/2.jpeg.jpg /posts/这个世界终究不会是我们的/2.jpeg
+301 /images/posts/184/3.jpeg /posts/这个世界终究不会是我们的/3.jpeg
+301 /images/posts/184/3.jpeg.jpg /posts/这个世界终究不会是我们的/3.jpeg
+301 /images/posts/184/4.jpeg /posts/这个世界终究不会是我们的/4.jpeg
+301 /images/posts/184/4.jpeg.jpg /posts/这个世界终究不会是我们的/4.jpeg
+301 /images/posts/184/5.jpeg /posts/这个世界终究不会是我们的/5.jpeg
+301 /images/posts/184/5.jpeg.jpg /posts/这个世界终究不会是我们的/5.jpeg
+301 /images/posts/189/baoyan.png /posts/2015-summary/baoyan.png
+404 /images/posts/189/bier.jpg
+301 /images/posts/189/class.jpg /posts/2015-summary/class.jpg
+301 /images/posts/189/country.jpg /posts/2015-summary/country.jpg
+404 /images/posts/189/dianke.jpg
+404 /images/posts/189/dinner.jpg
+301 /images/posts/189/en-pre.jpg /posts/2015-summary/en-pre.jpg
+301 /images/posts/189/feiji.jpg /posts/2015-summary/feiji.jpg
+301 /images/posts/189/group.jpg /posts/2015-summary/group.jpg
+301 /images/posts/189/helicopter.jpg /posts/2015-summary/helicopter.jpg
+301 /images/posts/189/huiyi.jpg /posts/2015-summary/huiyi.jpg
+301 /images/posts/189/jieti.jpg /posts/2015-summary/jieti.jpg
+404 /images/posts/189/laoxia.jpg
+404 /images/posts/189/museum.jpg
+301 /images/posts/189/myown.jpg /posts/2015-summary/myown.jpg
+301 /images/posts/189/poster.jpg /posts/2015-summary/poster.jpg
+301 /images/posts/189/pre.jpg /posts/2015-summary/pre.jpg
+301 /images/posts/19/1.jpeg /posts/我家的鹦鹉/1.jpeg
+301 /images/posts/19/1.jpeg.jpg /posts/我家的鹦鹉/1.jpeg
+301 /images/posts/199/1.png /posts/kaldi-timit-example/1.png
+301 /images/posts/200/1.png /posts/kaldi-timit-example2/1.png
+301 /images/posts/200/2.png /posts/kaldi-timit-example2/2.png
+301 /images/posts/200/3.png /posts/kaldi-timit-example2/3.png
+301 /images/posts/200/4.png /posts/kaldi-timit-example2/4.png
+301 /images/posts/201/1.png /posts/hash-碰撞的一种思路/1.png
+301 /images/posts/203/1.png /posts/all-in-https/1.png
+301 /images/posts/204/1.png /posts/elk-redis-best-practice/1.png
+301 /images/posts/204/2.png /posts/elk-redis-best-practice/2.png
+301 /images/posts/206/1.png /posts/docker-tutorial-1/1.png
+301 /images/posts/206/10.png /posts/docker-tutorial-1/10.png
+301 /images/posts/206/2.png /posts/docker-tutorial-1/2.png
+301 /images/posts/206/3.png /posts/docker-tutorial-1/3.png
+301 /images/posts/206/4.png /posts/docker-tutorial-1/4.png
+301 /images/posts/206/5.png /posts/docker-tutorial-1/5.png
+301 /images/posts/206/6.png /posts/docker-tutorial-1/6.png
+301 /images/posts/206/7.png /posts/docker-tutorial-1/7.png
+301 /images/posts/206/8.png /posts/docker-tutorial-1/8.png
+301 /images/posts/206/9.png /posts/docker-tutorial-1/9.png
+301 /images/posts/206/arch.svg /posts/docker-tutorial-1/arch.svg
+301 /images/posts/207/1.png /posts/docker-tutorial-2/1.png
+301 /images/posts/207/2.png /posts/docker-tutorial-2/2.png
+301 /images/posts/207/3.png /posts/docker-tutorial-2/3.png
+301 /images/posts/207/4.png /posts/docker-tutorial-2/4.png
+301 /images/posts/207/5.png /posts/docker-tutorial-2/5.png
+301 /images/posts/207/6.png /posts/docker-tutorial-2/6.png
+301 /images/posts/207/7.png /posts/docker-tutorial-2/7.png
+301 /images/posts/208/1.jpg /posts/modern-cpp-v1-is-live/1.jpg
+301 /images/posts/208/2.png /posts/modern-cpp-v1-is-live/2.png
+301 /images/posts/209/1.png /posts/guacamole-源码分析与-vnc-中-rfb-协议的坑/1.png
+301 /images/posts/211/1.png /posts/谈谈过去三个月在实验楼的实习经历/1.png
+301 /images/posts/217/arch.png /posts/electron-summary/arch.png
+301 /images/posts/217/mind.png /posts/electron-summary/mind.png
+301 /images/posts/217/preload.png /posts/electron-summary/preload.png
+301 /images/posts/217/url-check-1.png /posts/electron-summary/url-check-1.png
+301 /images/posts/217/url-check-2.png /posts/electron-summary/url-check-2.png
+301 /images/posts/223/1.png /posts/human-computation-1/1.png
+301 /images/posts/227/pagerank.png /posts/human-computation-4/pagerank.png
+301 /images/posts/232/1.png /posts/hexo-github-travis-ci-vps-ci-cd/1.png
+301 /images/posts/233/1.png /posts/human-computation-7/1.png
+301 /images/posts/233/2.png /posts/human-computation-7/2.png
+301 /images/posts/233/3.png /posts/human-computation-7/3.png
+301 /images/posts/233/4.png /posts/human-computation-7/4.png
+301 /images/posts/243/1.png /posts/generalization-in-deep-learning/1.png
+301 /images/posts/243/2.png /posts/generalization-in-deep-learning/2.png
+301 /images/posts/250/acompare.png /posts/compression-and-dnn-generalization/acompare.png
+301 /images/posts/250/aexpression1.png /posts/compression-and-dnn-generalization/aexpression1.png
+301 /images/posts/250/aflatminima.png /posts/compression-and-dnn-generalization/aflatminima.png
+301 /images/posts/250/alinear.png /posts/compression-and-dnn-generalization/alinear.png
+301 /images/posts/250/aspectrumlayer10.png /posts/compression-and-dnn-generalization/aspectrumlayer10.png
+301 /images/posts/250/attenuate.jpg /posts/compression-and-dnn-generalization/attenuate.jpg
+301 /images/posts/252/1.png /posts/a-common-misunderstanding-of-the-cap-theory/1.png
+301 /images/posts/261/pay.jpg /posts/ten-years-of-blogging/pay.jpg
+301 /images/posts/263/1.jpg /posts/2019-summary/1.jpg
+301 /images/posts/263/2.jpg /posts/2019-summary/2.jpg
+301 /images/posts/263/3.jpg /posts/2019-summary/3.jpg
+301 /images/posts/263/4.jpg /posts/2019-summary/4.jpg
+301 /images/posts/263/5.jpg /posts/2019-summary/5.jpg
+301 /images/posts/263/6.jpg /posts/2019-summary/6.jpg
+301 /images/posts/263/7.jpg /posts/2019-summary/7.jpg
+301 /images/posts/263/8.jpg /posts/2019-summary/8.jpg
+301 /images/posts/263/9.jpg /posts/2019-summary/9.jpg
+301 /images/posts/266/bench-time.png /posts/eliminating-a-source-of-measurement-errors-in-benchmarks/bench-time.png
+301 /images/posts/266/pprof1.png /posts/eliminating-a-source-of-measurement-errors-in-benchmarks/pprof1.png
+301 /images/posts/266/pprof2.png /posts/eliminating-a-source-of-measurement-errors-in-benchmarks/pprof2.png
+301 /images/posts/267/pointer-params-vis.png /posts/pointers-might-not-be-ideal-for-parameters/pointer-params-vis.png
+301 /images/posts/268/1.png /posts/all-in-go/1.png
+301 /images/posts/268/2.png /posts/all-in-go/2.png
+301 /images/posts/268/arch.png /posts/all-in-go/arch.png
+301 /images/posts/268/go.jpeg /posts/all-in-go/go.jpeg
+404 /images/posts/268/go.png
+301 /images/posts/268/hexo.jpg /posts/all-in-go/hexo.jpg
+301 /images/posts/268/https.png /posts/all-in-go/https.png
+301 /images/posts/268/https2.png /posts/all-in-go/https2.png
+301 /images/posts/268/lamp.jpeg /posts/all-in-go/lamp.jpeg
+301 /images/posts/270/dockers.png /posts/zero-downtime-migration/dockers.png
+404 /images/posts/270/google-analytics.png
+301 /images/posts/270/legacy-node.png /posts/zero-downtime-migration/legacy-node.png
+301 /images/posts/270/traefik.png /posts/zero-downtime-migration/traefik.png
+301 /images/posts/271/gp.png /posts/2020-summary/gp.png
+301 /images/posts/271/grade_raw.png /posts/2020-summary/grade_raw.png
+301 /images/posts/271/mindmap.png /posts/2020-summary/mindmap.png
+301 /images/posts/271/outlook.png /posts/2020-summary/outlook.png
+301 /images/posts/271/rendering.png /posts/2020-summary/rendering.png
+301 /images/posts/271/snow.mp4 /posts/2020-summary/snow.mp4
+301 /images/posts/271/stats.png /posts/2020-summary/stats.png
+301 /images/posts/271/venice-2.JPG /posts/2020-summary/venice-2.JPG
+301 /images/posts/271/venice.JPG /posts/2020-summary/venice.JPG
+301 /images/posts/272/bench.png /posts/page-fault-vs-prefetch/bench.png
+301 /images/posts/92/1.jpg /posts/通过安装-wordpress-插件所学到的/1.jpg
+301 /images/posts/92/2.jpg /posts/通过安装-wordpress-插件所学到的/2.jpg
+301 /images/posts/92/3.jpg /posts/通过安装-wordpress-插件所学到的/3.jpg
+301 /images/posts/93/1.jpg /posts/string-标准库实现日志/1.jpg
+301 /images/posts/94/1.jpeg /posts/从装系统中学到的/1.jpeg
+301 /images/posts/94/1.jpeg.jpg /posts/从装系统中学到的/1.jpeg
+301 /images/posts/94/10.jpeg /posts/从装系统中学到的/10.jpeg
+301 /images/posts/94/10.jpeg.jpg /posts/从装系统中学到的/10.jpeg
+301 /images/posts/94/11.jpeg /posts/从装系统中学到的/11.jpeg
+301 /images/posts/94/11.jpeg.jpg /posts/从装系统中学到的/11.jpeg
+301 /images/posts/94/12.jpeg /posts/从装系统中学到的/12.jpeg
+301 /images/posts/94/12.jpeg.jpg /posts/从装系统中学到的/12.jpeg
+301 /images/posts/94/13.jpeg /posts/从装系统中学到的/13.jpeg
+301 /images/posts/94/13.jpeg.jpg /posts/从装系统中学到的/13.jpeg
+301 /images/posts/94/14.jpeg /posts/从装系统中学到的/14.jpeg
+301 /images/posts/94/14.jpeg.jpg /posts/从装系统中学到的/14.jpeg
+301 /images/posts/94/15.jpeg /posts/从装系统中学到的/15.jpeg
+301 /images/posts/94/15.jpeg.jpg /posts/从装系统中学到的/15.jpeg
+301 /images/posts/94/16.jpeg /posts/从装系统中学到的/16.jpeg
+301 /images/posts/94/16.jpeg.jpg /posts/从装系统中学到的/16.jpeg
+301 /images/posts/94/17.jpeg /posts/从装系统中学到的/17.jpeg
+301 /images/posts/94/17.jpeg.jpg /posts/从装系统中学到的/17.jpeg
+301 /images/posts/94/18.jpeg /posts/从装系统中学到的/18.jpeg
+301 /images/posts/94/18.jpeg.jpg /posts/从装系统中学到的/18.jpeg
+301 /images/posts/94/19.jpeg /posts/从装系统中学到的/19.jpeg
+301 /images/posts/94/19.jpeg.jpg /posts/从装系统中学到的/19.jpeg
+301 /images/posts/94/2.jpeg /posts/从装系统中学到的/2.jpeg
+301 /images/posts/94/2.jpeg.jpg /posts/从装系统中学到的/2.jpeg
+301 /images/posts/94/20.jpeg /posts/从装系统中学到的/20.jpeg
+301 /images/posts/94/20.jpeg.jpg /posts/从装系统中学到的/20.jpeg
+301 /images/posts/94/21.jpeg /posts/从装系统中学到的/21.jpeg
+301 /images/posts/94/21.jpeg.jpg /posts/从装系统中学到的/21.jpeg
+301 /images/posts/94/3.jpeg /posts/从装系统中学到的/3.jpeg
+301 /images/posts/94/3.jpeg.jpg /posts/从装系统中学到的/3.jpeg
+301 /images/posts/94/4.jpeg /posts/从装系统中学到的/4.jpeg
+301 /images/posts/94/4.jpeg.jpg /posts/从装系统中学到的/4.jpeg
+301 /images/posts/94/5.jpeg /posts/从装系统中学到的/5.jpeg
+301 /images/posts/94/5.jpeg.jpg /posts/从装系统中学到的/5.jpeg
+301 /images/posts/94/6.jpeg /posts/从装系统中学到的/6.jpeg
+301 /images/posts/94/6.jpeg.jpg /posts/从装系统中学到的/6.jpeg
+301 /images/posts/94/7.jpeg /posts/从装系统中学到的/7.jpeg
+301 /images/posts/94/7.jpeg.jpg /posts/从装系统中学到的/7.jpeg
+301 /images/posts/94/8.jpeg /posts/从装系统中学到的/8.jpeg
+301 /images/posts/94/8.jpeg.jpg /posts/从装系统中学到的/8.jpeg
+301 /images/posts/94/9.jpeg /posts/从装系统中学到的/9.jpeg
+301 /images/posts/94/9.jpeg.jpg /posts/从装系统中学到的/9.jpeg
+301 /images/posts/goless-agents/fig1.png /posts/goalless-agents/fig1.png
+301 /images/posts/goless-agents/fig2.png /posts/goalless-agents/fig2.png
+301 /images/posts/goless-agents/fig3.png /posts/goalless-agents/fig3.png
+301 /images/posts/goless-agents/fig4.png /posts/goalless-agents/fig4.png
+301 /images/posts/goless-agents/fig5.png /posts/goalless-agents/fig5.png
 200 /images/posts/old/psb-0.png
 200 /images/posts/old/psb-1.png
 200 /images/posts/old/psb-10.png
@@ -495,7 +803,67 @@
 200 /images/quote-l.svg
 200 /images/quote-r.svg
 200 /index.xml
+404 /js/compose.js
+404 /js/compose.min.f2ddb2e199ce0ad44f05096d5b5498ef4315dafe6f15bde034fc25e8c0135935.js
+404 /js/ifig.min.7cb92363308811027ba86db65b4a0a2d5c2e2878db1b6a9fa47398f365b0eac8.js
+404 /js/lang.js
 200 /math-modeling/
+301 /p/1/ /
+301 /p/10/ /page/10/
+301 /p/11/ /page/11/
+301 /p/12/ /page/12/
+301 /p/13/ /page/13/
+301 /p/14/ /page/14/
+301 /p/15/ /page/15/
+301 /p/16/ /page/16/
+301 /p/17/ /page/17/
+301 /p/18/ /page/18/
+301 /p/19/ /page/19/
+301 /p/2/ /page/2/
+301 /p/20/ /page/20/
+301 /p/21/ /page/21/
+301 /p/22/ /page/22/
+301 /p/23/ /page/23/
+301 /p/24/ /page/24/
+301 /p/25/ /page/25/
+301 /p/26/ /page/26/
+301 /p/27/ /page/27/
+301 /p/28/ /page/28/
+301 /p/29/ /page/29/
+301 /p/3/ /page/3/
+301 /p/30/ /page/30/
+301 /p/31/ /page/31/
+301 /p/32/ /page/32/
+301 /p/33/ /page/33/
+301 /p/34/ /page/34/
+301 /p/35/ /page/35/
+301 /p/36/ /page/36/
+301 /p/37/ /page/37/
+301 /p/38/ /page/38/
+301 /p/39/ /page/39/
+301 /p/4/ /page/4/
+301 /p/40/ /
+301 /p/41/ /
+301 /p/42/ /
+301 /p/43/ /
+301 /p/44/ /
+301 /p/45/ /
+301 /p/46/ /
+301 /p/47/ /
+301 /p/48/ /
+301 /p/49/ /
+301 /p/5/ /page/5/
+301 /p/50/ /
+301 /p/51/ /
+301 /p/52/ /
+301 /p/53/ /
+301 /p/54/ /
+301 /p/55/ /
+301 /p/56/ /
+301 /p/6/ /page/6/
+301 /p/7/ /page/7/
+301 /p/8/ /page/8/
+301 /p/9/ /page/9/
 301 /page/1/ /
 200 /page/10/
 200 /page/11/
@@ -582,9 +950,11 @@
 200 /posts/2020-summary/venice-2.JPG
 200 /posts/2020-summary/venice.JPG
 200 /posts/2021-reading/
+301 /posts/2022-03-20-2021-reading/ /posts/2021-reading/
 200 /posts/2022-reading/
 200 /posts/2023-reading/
 200 /posts/2026-self-reference-boundary/
+301 /posts/2026-self-reference-boundry/ /posts/2026-self-reference-boundary/
 200 /posts/a-breif-history-of-neural-networks/
 200 /posts/a-breif-history-of-regularization/
 200 /posts/a-common-misunderstanding-of-the-cap-theory/
@@ -620,6 +990,9 @@
 200 /posts/dark-forest-theory/fig-chain.png
 200 /posts/dark-forest-theory/fig-forest.png
 200 /posts/dark-forest-theory/figures.js
+404 /posts/dark-forest-theory/figures.min.c9563947e304434ee42ec5251b235d4b2aa275f7d49078eaa2cff2bf3242856f.js
+404 /posts/dark-forest-theory/figures.min.e4adb94a118cb0304be90bef38ace6ede74a0bb8806db6bea1d79abbd508ff18.js
+404 /posts/dark-forest-theory/figures.min.fbb596e9f39150128cd8b0a1510e0f19462e52321422d206f5568537b4c71786.js
 200 /posts/delete-mac-mysql/
 200 /posts/delete-mactex/
 200 /posts/delete-pushed-info-from-github/
@@ -678,6 +1051,7 @@
 200 /posts/goalless-agents/fig4.png
 200 /posts/goalless-agents/fig5.png
 200 /posts/goalless-agents/figures.js
+404 /posts/goalless-agents/figures.min.91d1897b73422fa07d5cd0c660c861bdc0beb99eb67ff2909cb52e7817d54b89.js
 200 /posts/guacamole-源码分析与-vnc-中-rfb-协议的坑/
 200 /posts/guacamole-源码分析与-vnc-中-rfb-协议的坑/1.png
 200 /posts/hash-碰撞的一种思路/
@@ -805,16 +1179,48 @@
 200 /posts/more-is-not-new/fig3-twocurves.png
 200 /posts/more-is-not-new/fig4-landscape.png
 200 /posts/more-is-not-new/figures.js
+404 /posts/more-is-not-new/figures.min.233b46298ee95049b25cd8c61dc171d6e3c62a2cf9fb7d25b2f4ccc9b1fe6f2c.js
 200 /posts/on-my-way/
+301 /posts/p/1/ /posts/
+301 /posts/p/10/ /posts/
+301 /posts/p/11/ /posts/
+301 /posts/p/12/ /posts/
+301 /posts/p/13/ /posts/
+301 /posts/p/14/ /posts/
+301 /posts/p/15/ /posts/
+301 /posts/p/16/ /posts/
+301 /posts/p/17/ /posts/
+301 /posts/p/18/ /posts/
+301 /posts/p/19/ /posts/
+301 /posts/p/2/ /posts/page/2/
+301 /posts/p/3/ /posts/page/3/
+301 /posts/p/4/ /posts/page/4/
+301 /posts/p/5/ /posts/page/5/
+301 /posts/p/6/ /posts/page/6/
+301 /posts/p/7/ /posts/
+301 /posts/p/8/ /posts/
+301 /posts/p/9/ /posts/
 200 /posts/page-fault-vs-prefetch/
 200 /posts/page-fault-vs-prefetch/bench.png
 301 /posts/page/1/ /posts/
+301 /posts/page/10/ /posts/
+301 /posts/page/11/ /posts/
+301 /posts/page/12/ /posts/
+301 /posts/page/13/ /posts/
+301 /posts/page/14/ /posts/
+301 /posts/page/15/ /posts/
+301 /posts/page/16/ /posts/
+301 /posts/page/17/ /posts/
+301 /posts/page/18/ /posts/
+301 /posts/page/19/ /posts/
 200 /posts/page/2/
 200 /posts/page/3/
 200 /posts/page/4/
 200 /posts/page/5/
 200 /posts/page/6/
-404 /posts/page/7/
+301 /posts/page/7/ /posts/
+301 /posts/page/8/ /posts/
+301 /posts/page/9/ /posts/
 200 /posts/pointers-might-not-be-ideal-for-parameters/
 200 /posts/pointers-might-not-be-ideal-for-parameters/pointer-params-vis.png
 200 /posts/pss-uss-rss/
@@ -846,6 +1252,7 @@
 200 /posts/trusting-trustworthiness/fig5.png
 200 /posts/trusting-trustworthiness/fig6.png
 200 /posts/trusting-trustworthiness/figures.js
+404 /posts/trusting-trustworthiness/figures.min.185a42c2df2354757b1d956a0d55bb5c0f2aceec0825b23548d650203ae652b0.js
 200 /posts/trusting-trustworthiness/fonts/Spectral-Italic.ttf
 200 /posts/trusting-trustworthiness/fonts/Spectral-Medium.ttf
 200 /posts/trusting-trustworthiness/fonts/Spectral-Regular.ttf
@@ -1063,354 +1470,722 @@
 200 /sitemap.xml
 200 /specialization/
 200 /tags/
-404 /tags/apache/
+301 /tags/ai/ /tags/
+404 /tags/ai/index.xml
+301 /tags/ai/page/1/ /tags/
+301 /tags/apache/ /tags/
 404 /tags/apache/index.xml
+301 /tags/apache/p/1/ /tags/
+301 /tags/apache/page/1/ /tags/
 200 /tags/apple-watch/
 200 /tags/apple-watch/index.xml
+301 /tags/apple-watch/p/1/ /tags/apple-watch/
+301 /tags/apple-watch/page/1/ /tags/apple-watch/
 200 /tags/apple/
 200 /tags/apple/index.xml
+301 /tags/apple/p/1/ /tags/apple/
+301 /tags/apple/page/1/ /tags/apple/
 200 /tags/c++/
 200 /tags/c++/index.xml
+301 /tags/c++/p/1/ /tags/c++/
+301 /tags/c++/page/1/ /tags/c++/
 200 /tags/c++11/
 200 /tags/c++11/index.xml
+301 /tags/c++11/p/1/ /tags/c++11/
+301 /tags/c++11/page/1/ /tags/c++11/
 200 /tags/c++14/
 200 /tags/c++14/index.xml
+301 /tags/c++14/p/1/ /tags/c++14/
+301 /tags/c++14/page/1/ /tags/c++14/
 200 /tags/c/
 200 /tags/c/index.xml
+301 /tags/c/p/1/ /tags/c/
+301 /tags/c/page/1/ /tags/c/
 200 /tags/cap-定理/
 200 /tags/cap-定理/index.xml
-404 /tags/cnn/
+301 /tags/cap-定理/p/1/ /tags/cap-定理/
+301 /tags/cap-定理/page/1/ /tags/cap-定理/
+301 /tags/cnn/ /tags/
 404 /tags/cnn/index.xml
+301 /tags/cnn/p/1/ /tags/
+301 /tags/cnn/page/1/ /tags/
 200 /tags/cocos2dx/
 200 /tags/cocos2dx/index.xml
+301 /tags/cocos2dx/p/1/ /tags/cocos2dx/
+301 /tags/cocos2dx/page/1/ /tags/cocos2dx/
 200 /tags/deep-learning/
 200 /tags/deep-learning/index.xml
+301 /tags/deep-learning/p/1/ /tags/deep-learning/
+301 /tags/deep-learning/page/1/ /tags/deep-learning/
 200 /tags/devops/
 200 /tags/devops/index.xml
+301 /tags/devops/p/1/ /tags/devops/
+301 /tags/devops/page/1/ /tags/devops/
 200 /tags/docker/
 200 /tags/docker/index.xml
+301 /tags/docker/p/1/ /tags/docker/
+301 /tags/docker/page/1/ /tags/docker/
 200 /tags/elasticsearch/
 200 /tags/elasticsearch/index.xml
+301 /tags/elasticsearch/p/1/ /tags/elasticsearch/
+301 /tags/elasticsearch/page/1/ /tags/elasticsearch/
 200 /tags/electron/
 200 /tags/electron/index.xml
+301 /tags/electron/p/1/ /tags/electron/
+301 /tags/electron/page/1/ /tags/electron/
 200 /tags/elk/
 200 /tags/elk/index.xml
+301 /tags/elk/p/1/ /tags/elk/
+301 /tags/elk/page/1/ /tags/elk/
 200 /tags/generalization/
 200 /tags/generalization/index.xml
+301 /tags/generalization/p/1/ /tags/generalization/
+301 /tags/generalization/page/1/ /tags/generalization/
 200 /tags/git/
 200 /tags/git/index.xml
+301 /tags/git/p/1/ /tags/git/
+301 /tags/git/page/1/ /tags/git/
 200 /tags/github/
 200 /tags/github/index.xml
+301 /tags/github/p/1/ /tags/github/
+301 /tags/github/page/1/ /tags/github/
 200 /tags/go/
 200 /tags/go/index.xml
+301 /tags/go/p/1/ /tags/go/
+301 /tags/go/page/1/ /tags/go/
 200 /tags/google/
 200 /tags/google/index.xml
+301 /tags/google/p/1/ /tags/google/
+301 /tags/google/page/1/ /tags/google/
 200 /tags/gpu/
 200 /tags/gpu/index.xml
+301 /tags/gpu/p/1/ /tags/gpu/
+301 /tags/gpu/page/1/ /tags/gpu/
 200 /tags/guacamole/
 200 /tags/guacamole/index.xml
+301 /tags/guacamole/p/1/ /tags/guacamole/
+301 /tags/guacamole/page/1/ /tags/guacamole/
 200 /tags/hash-碰撞/
 200 /tags/hash-碰撞/index.xml
+301 /tags/hash-碰撞/p/1/ /tags/hash-碰撞/
+301 /tags/hash-碰撞/page/1/ /tags/hash-碰撞/
 200 /tags/hexo/
 200 /tags/hexo/index.xml
+301 /tags/hexo/p/1/ /tags/hexo/
+301 /tags/hexo/page/1/ /tags/hexo/
 200 /tags/hugo/
 200 /tags/hugo/index.xml
+301 /tags/hugo/p/1/ /tags/hugo/
+301 /tags/hugo/page/1/ /tags/hugo/
 200 /tags/hypervisor/
 200 /tags/hypervisor/index.xml
+301 /tags/hypervisor/p/1/ /tags/hypervisor/
+301 /tags/hypervisor/page/1/ /tags/hypervisor/
 404 /tags/index.xml
 200 /tags/ios/
 200 /tags/ios/index.xml
+301 /tags/ios/p/1/ /tags/ios/
+301 /tags/ios/page/1/ /tags/ios/
 200 /tags/javascript/
 200 /tags/javascript/index.xml
+301 /tags/javascript/p/1/ /tags/javascript/
+301 /tags/javascript/page/1/ /tags/javascript/
 200 /tags/jupyter/
 200 /tags/jupyter/index.xml
+301 /tags/jupyter/p/1/ /tags/jupyter/
+301 /tags/jupyter/page/1/ /tags/jupyter/
 200 /tags/kaldi/
 200 /tags/kaldi/index.xml
+301 /tags/kaldi/p/1/ /tags/kaldi/
+301 /tags/kaldi/page/1/ /tags/kaldi/
 200 /tags/kibana/
 200 /tags/kibana/index.xml
+301 /tags/kibana/p/1/ /tags/kibana/
+301 /tags/kibana/page/1/ /tags/kibana/
 200 /tags/kubernetes/
 200 /tags/kubernetes/index.xml
+301 /tags/kubernetes/p/1/ /tags/kubernetes/
+301 /tags/kubernetes/page/1/ /tags/kubernetes/
 200 /tags/latex/
 200 /tags/latex/index.xml
+301 /tags/latex/p/1/ /tags/latex/
+301 /tags/latex/page/1/ /tags/latex/
 200 /tags/linux/
 200 /tags/linux/index.xml
+301 /tags/linux/p/1/ /tags/linux/
+301 /tags/linux/p/2/ /tags/linux/
+301 /tags/linux/page/1/ /tags/linux/
+301 /tags/linux/page/2/ /tags/linux/
 200 /tags/lnmp/
 200 /tags/lnmp/index.xml
+301 /tags/lnmp/p/1/ /tags/lnmp/
+301 /tags/lnmp/page/1/ /tags/lnmp/
 200 /tags/logstash/
 200 /tags/logstash/index.xml
+301 /tags/logstash/p/1/ /tags/logstash/
+301 /tags/logstash/page/1/ /tags/logstash/
 200 /tags/lua/
 200 /tags/lua/index.xml
+301 /tags/lua/p/1/ /tags/lua/
+301 /tags/lua/page/1/ /tags/lua/
 200 /tags/mac/
 200 /tags/mac/index.xml
+301 /tags/mac/p/1/ /tags/mac/
+301 /tags/mac/page/1/ /tags/mac/
 200 /tags/mactex/
 200 /tags/mactex/index.xml
+301 /tags/mactex/p/1/ /tags/mactex/
+301 /tags/mactex/page/1/ /tags/mactex/
 200 /tags/mailgun/
 200 /tags/mailgun/index.xml
+301 /tags/mailgun/p/1/ /tags/mailgun/
+301 /tags/mailgun/page/1/ /tags/mailgun/
 200 /tags/math/
 200 /tags/math/index.xml
+301 /tags/math/p/1/ /tags/math/
+301 /tags/math/page/1/ /tags/math/
 200 /tags/matlab/
 200 /tags/matlab/index.xml
+301 /tags/matlab/p/1/ /tags/matlab/
+301 /tags/matlab/page/1/ /tags/matlab/
 200 /tags/mfc/
 200 /tags/mfc/index.xml
+301 /tags/mfc/p/1/ /tags/mfc/
+301 /tags/mfc/page/1/ /tags/mfc/
 200 /tags/mysql/
 200 /tags/mysql/index.xml
+301 /tags/mysql/p/1/ /tags/mysql/
+301 /tags/mysql/page/1/ /tags/mysql/
 200 /tags/nginx/
 200 /tags/nginx/index.xml
+301 /tags/nginx/p/1/ /tags/nginx/
+301 /tags/nginx/page/1/ /tags/nginx/
 200 /tags/node.js/
 200 /tags/node.js/index.xml
+301 /tags/node.js/p/1/ /tags/node.js/
+301 /tags/node.js/page/1/ /tags/node.js/
 200 /tags/objective-c/
 200 /tags/objective-c/index.xml
+301 /tags/objective-c/p/1/ /tags/objective-c/
+301 /tags/objective-c/page/1/ /tags/objective-c/
 200 /tags/opencv/
 200 /tags/opencv/index.xml
+301 /tags/opencv/p/1/ /tags/opencv/
+301 /tags/opencv/page/1/ /tags/opencv/
 200 /tags/oracle/
 200 /tags/oracle/index.xml
+301 /tags/oracle/p/1/ /tags/oracle/
+301 /tags/oracle/page/1/ /tags/oracle/
 200 /tags/pagerank/
 200 /tags/pagerank/index.xml
+301 /tags/pagerank/p/1/ /tags/pagerank/
+301 /tags/pagerank/page/1/ /tags/pagerank/
 200 /tags/python/
 200 /tags/python/index.xml
+301 /tags/python/p/1/ /tags/python/
+301 /tags/python/page/1/ /tags/python/
 200 /tags/qq空间/
 200 /tags/qq空间/index.xml
+301 /tags/qq空间/page/1/ /tags/qq空间/
 200 /tags/redis/
 200 /tags/redis/index.xml
+301 /tags/redis/p/1/ /tags/redis/
+301 /tags/redis/page/1/ /tags/redis/
 200 /tags/restful/
 200 /tags/restful/index.xml
+301 /tags/restful/p/1/ /tags/restful/
+301 /tags/restful/page/1/ /tags/restful/
 200 /tags/runtime/
 200 /tags/runtime/index.xml
+301 /tags/runtime/p/1/ /tags/runtime/
+301 /tags/runtime/page/1/ /tags/runtime/
 200 /tags/scheduler/
 200 /tags/scheduler/index.xml
+301 /tags/scheduler/p/1/ /tags/scheduler/
+301 /tags/scheduler/page/1/ /tags/scheduler/
 200 /tags/swift/
 200 /tags/swift/index.xml
+301 /tags/swift/p/1/ /tags/swift/
+301 /tags/swift/page/1/ /tags/swift/
 200 /tags/test/
 200 /tags/test/index.xml
+301 /tags/test/p/1/ /tags/test/
+301 /tags/test/p/2/ /tags/test/
+301 /tags/test/page/1/ /tags/test/
+301 /tags/test/page/2/ /tags/test/
 200 /tags/tmux/
 200 /tags/tmux/index.xml
+301 /tags/tmux/p/1/ /tags/tmux/
+301 /tags/tmux/page/1/ /tags/tmux/
 200 /tags/traefik/
 200 /tags/traefik/index.xml
+301 /tags/traefik/p/1/ /tags/traefik/
+301 /tags/traefik/page/1/ /tags/traefik/
 200 /tags/ubuntu/
 200 /tags/ubuntu/index.xml
+301 /tags/ubuntu/p/1/ /tags/ubuntu/
+301 /tags/ubuntu/page/1/ /tags/ubuntu/
 200 /tags/unsafe/
 200 /tags/unsafe/index.xml
+301 /tags/unsafe/p/1/ /tags/unsafe/
+301 /tags/unsafe/page/1/ /tags/unsafe/
 200 /tags/vim/
 200 /tags/vim/index.xml
+301 /tags/vim/p/1/ /tags/vim/
+301 /tags/vim/page/1/ /tags/vim/
 200 /tags/vnc/
 200 /tags/vnc/index.xml
+301 /tags/vnc/p/1/ /tags/vnc/
+301 /tags/vnc/page/1/ /tags/vnc/
 200 /tags/web/
 200 /tags/web/index.xml
+301 /tags/web/p/1/ /tags/web/
+301 /tags/web/page/1/ /tags/web/
 200 /tags/websocket/
 200 /tags/websocket/index.xml
+301 /tags/websocket/p/1/ /tags/websocket/
+301 /tags/websocket/page/1/ /tags/websocket/
 200 /tags/windows/
 200 /tags/windows/index.xml
+301 /tags/windows/p/1/ /tags/windows/
+301 /tags/windows/page/1/ /tags/windows/
 200 /tags/wordpress/
 200 /tags/wordpress/index.xml
+301 /tags/wordpress/p/1/ /tags/wordpress/
+301 /tags/wordpress/page/1/ /tags/wordpress/
 200 /tags/zfc/
 200 /tags/zfc/index.xml
+301 /tags/zfc/p/1/ /tags/zfc/
+301 /tags/zfc/page/1/ /tags/zfc/
 200 /tags/个人日记/
 200 /tags/个人日记/index.xml
+301 /tags/个人日记/page/1/ /tags/个人日记/
 200 /tags/乔布斯/
 200 /tags/乔布斯/index.xml
+301 /tags/乔布斯/p/1/ /tags/乔布斯/
+301 /tags/乔布斯/page/1/ /tags/乔布斯/
 200 /tags/产业规律/
 200 /tags/产业规律/index.xml
+301 /tags/产业规律/p/1/ /tags/产业规律/
+301 /tags/产业规律/page/1/ /tags/产业规律/
 200 /tags/人工智能/
 200 /tags/人工智能/index.xml
+301 /tags/人工智能/p/1/ /tags/人工智能/
+301 /tags/人工智能/page/1/ /tags/人工智能/
 200 /tags/人机交互/
 200 /tags/人机交互/index.xml
+301 /tags/人机交互/p/1/ /tags/人机交互/
+301 /tags/人机交互/page/1/ /tags/人机交互/
 200 /tags/人生感悟/
 200 /tags/人生感悟/index.xml
+301 /tags/人生感悟/p/1/ /tags/人生感悟/
+301 /tags/人生感悟/p/2/ /tags/人生感悟/
+301 /tags/人生感悟/page/1/ /tags/人生感悟/
+301 /tags/人生感悟/page/2/ /tags/人生感悟/
 200 /tags/人肉计算/
 200 /tags/人肉计算/index.xml
+301 /tags/人肉计算/p/1/ /tags/人肉计算/
+301 /tags/人肉计算/page/1/ /tags/人肉计算/
 200 /tags/企业理论/
 200 /tags/企业理论/index.xml
+301 /tags/企业理论/p/1/ /tags/企业理论/
+301 /tags/企业理论/page/1/ /tags/企业理论/
 200 /tags/众包/
 200 /tags/众包/index.xml
+301 /tags/众包/p/1/ /tags/众包/
+301 /tags/众包/page/1/ /tags/众包/
 200 /tags/信任/
 200 /tags/信任/index.xml
+301 /tags/信任/page/1/ /tags/信任/
 200 /tags/信号分析/
 200 /tags/信号分析/index.xml
+301 /tags/信号分析/p/1/ /tags/信号分析/
+301 /tags/信号分析/page/1/ /tags/信号分析/
 200 /tags/信息安全/
 200 /tags/信息安全/index.xml
+301 /tags/信息安全/p/1/ /tags/信息安全/
+301 /tags/信息安全/page/1/ /tags/信息安全/
 200 /tags/信用风险评级/
 200 /tags/信用风险评级/index.xml
+301 /tags/信用风险评级/p/1/ /tags/信用风险评级/
+301 /tags/信用风险评级/page/1/ /tags/信用风险评级/
 200 /tags/傅里叶变换/
 200 /tags/傅里叶变换/index.xml
+301 /tags/傅里叶变换/p/1/ /tags/傅里叶变换/
+301 /tags/傅里叶变换/page/1/ /tags/傅里叶变换/
 200 /tags/公理化/
 200 /tags/公理化/index.xml
+301 /tags/公理化/p/1/ /tags/公理化/
+301 /tags/公理化/page/1/ /tags/公理化/
 200 /tags/内存管理/
 200 /tags/内存管理/index.xml
+301 /tags/内存管理/p/1/ /tags/内存管理/
+301 /tags/内存管理/page/1/ /tags/内存管理/
 200 /tags/内核/
 200 /tags/内核/index.xml
+301 /tags/内核/p/1/ /tags/内核/
+301 /tags/内核/page/1/ /tags/内核/
 200 /tags/写作/
 200 /tags/写作/index.xml
+301 /tags/写作/p/1/ /tags/写作/
+301 /tags/写作/page/1/ /tags/写作/
 200 /tags/决策理论/
 200 /tags/决策理论/index.xml
+301 /tags/决策理论/page/1/ /tags/决策理论/
 200 /tags/分布式/
 200 /tags/分布式/index.xml
+301 /tags/分布式/p/1/ /tags/分布式/
+301 /tags/分布式/page/1/ /tags/分布式/
 200 /tags/分析学/
 200 /tags/分析学/index.xml
+301 /tags/分析学/p/1/ /tags/分析学/
+301 /tags/分析学/page/1/ /tags/分析学/
 200 /tags/博客/
 200 /tags/博客/index.xml
+301 /tags/博客/p/1/ /tags/博客/
+301 /tags/博客/page/1/ /tags/博客/
 200 /tags/博弈论/
 200 /tags/博弈论/index.xml
+301 /tags/博弈论/page/1/ /tags/博弈论/
 200 /tags/压缩算法/
 200 /tags/压缩算法/index.xml
+301 /tags/压缩算法/p/1/ /tags/压缩算法/
+301 /tags/压缩算法/page/1/ /tags/压缩算法/
 200 /tags/商业模式/
 200 /tags/商业模式/index.xml
+301 /tags/商业模式/p/1/ /tags/商业模式/
+301 /tags/商业模式/page/1/ /tags/商业模式/
 200 /tags/地震测算/
 200 /tags/地震测算/index.xml
+301 /tags/地震测算/p/1/ /tags/地震测算/
+301 /tags/地震测算/page/1/ /tags/地震测算/
 200 /tags/学术/
 200 /tags/学术/index.xml
+301 /tags/学术/p/1/ /tags/学术/
+301 /tags/学术/page/1/ /tags/学术/
 200 /tags/宇宙社会学/
 200 /tags/宇宙社会学/index.xml
+301 /tags/宇宙社会学/page/1/ /tags/宇宙社会学/
 200 /tags/实分析/
 200 /tags/实分析/index.xml
+301 /tags/实分析/p/1/ /tags/实分析/
+301 /tags/实分析/page/1/ /tags/实分析/
 200 /tags/小说/
 200 /tags/小说/index.xml
+301 /tags/小说/p/1/ /tags/小说/
+301 /tags/小说/page/1/ /tags/小说/
 200 /tags/工具/
 200 /tags/工具/index.xml
+301 /tags/工具/p/1/ /tags/工具/
+301 /tags/工具/page/1/ /tags/工具/
 200 /tags/广义积分/
 200 /tags/广义积分/index.xml
+301 /tags/广义积分/p/1/ /tags/广义积分/
+301 /tags/广义积分/page/1/ /tags/广义积分/
 200 /tags/异步/
 200 /tags/异步/index.xml
+301 /tags/异步/p/1/ /tags/异步/
+301 /tags/异步/page/1/ /tags/异步/
 200 /tags/影评/
 200 /tags/影评/index.xml
+301 /tags/影评/p/1/ /tags/影评/
+301 /tags/影评/page/1/ /tags/影评/
 200 /tags/微信/
 200 /tags/微信/index.xml
+301 /tags/微信/p/1/ /tags/微信/
+301 /tags/微信/page/1/ /tags/微信/
 200 /tags/总结/
 200 /tags/总结/index.xml
+301 /tags/总结/p/1/ /tags/总结/
+301 /tags/总结/page/1/ /tags/总结/
 200 /tags/意图博弈/
 200 /tags/意图博弈/index.xml
+301 /tags/意图博弈/p/1/ /tags/意图博弈/
+301 /tags/意图博弈/page/1/ /tags/意图博弈/
 200 /tags/拓扑/
 200 /tags/拓扑/index.xml
+301 /tags/拓扑/p/1/ /tags/拓扑/
+301 /tags/拓扑/page/1/ /tags/拓扑/
 200 /tags/排序/
 200 /tags/排序/index.xml
+301 /tags/排序/p/1/ /tags/排序/
+301 /tags/排序/page/1/ /tags/排序/
 200 /tags/教程/
 200 /tags/教程/index.xml
+301 /tags/教程/p/1/ /tags/教程/
+301 /tags/教程/page/1/ /tags/教程/
 200 /tags/数学/
 200 /tags/数学/index.xml
+301 /tags/数学/p/1/ /tags/数学/
+301 /tags/数学/p/2/ /tags/数学/
+301 /tags/数学/p/3/ /tags/数学/
+301 /tags/数学/p/4/ /tags/数学/
+301 /tags/数学/page/1/ /tags/数学/
+301 /tags/数学/page/2/ /tags/数学/
+301 /tags/数学/page/3/ /tags/数学/
+301 /tags/数学/page/4/ /tags/数学/
 200 /tags/数学史/
 200 /tags/数学史/index.xml
+301 /tags/数学史/p/1/ /tags/数学史/
+301 /tags/数学史/page/1/ /tags/数学史/
 200 /tags/数学文化/
 200 /tags/数学文化/index.xml
+301 /tags/数学文化/p/1/ /tags/数学文化/
+301 /tags/数学文化/page/1/ /tags/数学文化/
 200 /tags/数据挖掘/
 200 /tags/数据挖掘/index.xml
+301 /tags/数据挖掘/p/1/ /tags/数据挖掘/
+301 /tags/数据挖掘/page/1/ /tags/数据挖掘/
 200 /tags/数据科学/
 200 /tags/数据科学/index.xml
+301 /tags/数据科学/p/1/ /tags/数据科学/
+301 /tags/数据科学/page/1/ /tags/数据科学/
 200 /tags/数据结构/
 200 /tags/数据结构/index.xml
+301 /tags/数据结构/p/1/ /tags/数据结构/
+301 /tags/数据结构/page/1/ /tags/数据结构/
 200 /tags/数据聚合/
 200 /tags/数据聚合/index.xml
+301 /tags/数据聚合/p/1/ /tags/数据聚合/
+301 /tags/数据聚合/page/1/ /tags/数据聚合/
 200 /tags/日志分析/
 200 /tags/日志分析/index.xml
+301 /tags/日志分析/p/1/ /tags/日志分析/
+301 /tags/日志分析/page/1/ /tags/日志分析/
 200 /tags/最佳实践/
 200 /tags/最佳实践/index.xml
+301 /tags/最佳实践/p/1/ /tags/最佳实践/
+301 /tags/最佳实践/page/1/ /tags/最佳实践/
 200 /tags/机器学习/
 200 /tags/机器学习/index.xml
+301 /tags/机器学习/p/1/ /tags/机器学习/
+301 /tags/机器学习/p/2/ /tags/机器学习/
+301 /tags/机器学习/page/1/ /tags/机器学习/
+301 /tags/机器学习/page/2/ /tags/机器学习/
 200 /tags/标准库/
 200 /tags/标准库/index.xml
+301 /tags/标准库/p/1/ /tags/标准库/
+301 /tags/标准库/page/1/ /tags/标准库/
 200 /tags/概率/
 200 /tags/概率/index.xml
+301 /tags/概率/p/1/ /tags/概率/
+301 /tags/概率/page/1/ /tags/概率/
 200 /tags/概率论/
 200 /tags/概率论/index.xml
+301 /tags/概率论/p/1/ /tags/概率论/
+301 /tags/概率论/page/1/ /tags/概率论/
 200 /tags/模式识别/
 200 /tags/模式识别/index.xml
+301 /tags/模式识别/p/1/ /tags/模式识别/
+301 /tags/模式识别/page/1/ /tags/模式识别/
 200 /tags/模板/
 200 /tags/模板/index.xml
+301 /tags/模板/p/1/ /tags/模板/
+301 /tags/模板/page/1/ /tags/模板/
 200 /tags/正交/
 200 /tags/正交/index.xml
+301 /tags/正交/p/1/ /tags/正交/
+301 /tags/正交/page/1/ /tags/正交/
 200 /tags/泛函分析/
 200 /tags/泛函分析/index.xml
+301 /tags/泛函分析/p/1/ /tags/泛函分析/
+301 /tags/泛函分析/page/1/ /tags/泛函分析/
 200 /tags/泛化理论/
 200 /tags/泛化理论/index.xml
+301 /tags/泛化理论/p/1/ /tags/泛化理论/
+301 /tags/泛化理论/page/1/ /tags/泛化理论/
 200 /tags/泛型编程/
 200 /tags/泛型编程/index.xml
+301 /tags/泛型编程/p/1/ /tags/泛型编程/
+301 /tags/泛型编程/page/1/ /tags/泛型编程/
 200 /tags/流形/
 200 /tags/流形/index.xml
+301 /tags/流形/p/1/ /tags/流形/
+301 /tags/流形/page/1/ /tags/流形/
 200 /tags/测度论/
 200 /tags/测度论/index.xml
+301 /tags/测度论/p/1/ /tags/测度论/
+301 /tags/测度论/page/1/ /tags/测度论/
 200 /tags/深度学习/
 200 /tags/深度学习/index.xml
+301 /tags/深度学习/p/1/ /tags/深度学习/
+301 /tags/深度学习/page/1/ /tags/深度学习/
 200 /tags/源码分析/
 200 /tags/源码分析/index.xml
+301 /tags/源码分析/p/1/ /tags/源码分析/
+301 /tags/源码分析/page/1/ /tags/源码分析/
 200 /tags/物理/
 200 /tags/物理/index.xml
+301 /tags/物理/p/1/ /tags/物理/
+301 /tags/物理/page/1/ /tags/物理/
 200 /tags/理论/
 200 /tags/理论/index.xml
+301 /tags/理论/p/1/ /tags/理论/
+301 /tags/理论/page/1/ /tags/理论/
 200 /tags/瑕积分/
 200 /tags/瑕积分/index.xml
+301 /tags/瑕积分/p/1/ /tags/瑕积分/
+301 /tags/瑕积分/page/1/ /tags/瑕积分/
 200 /tags/监控指标/
 200 /tags/监控指标/index.xml
+301 /tags/监控指标/p/1/ /tags/监控指标/
+301 /tags/监控指标/page/1/ /tags/监控指标/
 200 /tags/研究/
 200 /tags/研究/index.xml
+301 /tags/研究/page/1/ /tags/研究/
 200 /tags/社会行为分析/
 200 /tags/社会行为分析/index.xml
+301 /tags/社会行为分析/p/1/ /tags/社会行为分析/
+301 /tags/社会行为分析/page/1/ /tags/社会行为分析/
 200 /tags/神经网络/
 200 /tags/神经网络/index.xml
+301 /tags/神经网络/p/1/ /tags/神经网络/
+301 /tags/神经网络/page/1/ /tags/神经网络/
 200 /tags/科学/
 200 /tags/科学/index.xml
+301 /tags/科学/p/1/ /tags/科学/
+301 /tags/科学/page/1/ /tags/科学/
 200 /tags/科研/
 200 /tags/科研/index.xml
+301 /tags/科研/p/1/ /tags/科研/
+301 /tags/科研/page/1/ /tags/科研/
 200 /tags/积分/
 200 /tags/积分/index.xml
+301 /tags/积分/p/1/ /tags/积分/
+301 /tags/积分/page/1/ /tags/积分/
 200 /tags/算法/
 200 /tags/算法/index.xml
+301 /tags/算法/p/1/ /tags/算法/
+301 /tags/算法/page/1/ /tags/算法/
 200 /tags/线性代数/
 200 /tags/线性代数/index.xml
+301 /tags/线性代数/p/1/ /tags/线性代数/
+301 /tags/线性代数/page/1/ /tags/线性代数/
 200 /tags/线性空间/
 200 /tags/线性空间/index.xml
-404 /tags/统计/
+301 /tags/线性空间/p/1/ /tags/线性空间/
+301 /tags/线性空间/page/1/ /tags/线性空间/
+301 /tags/统计/ /tags/
 404 /tags/统计/index.xml
+301 /tags/统计/p/1/ /tags/
+301 /tags/统计/page/1/ /tags/
 200 /tags/统计学/
 200 /tags/统计学/index.xml
+301 /tags/统计学/p/1/ /tags/统计学/
+301 /tags/统计学/page/1/ /tags/统计学/
 200 /tags/统计学习/
 200 /tags/统计学习/index.xml
+301 /tags/统计学习/p/1/ /tags/统计学习/
+301 /tags/统计学习/page/1/ /tags/统计学习/
 200 /tags/缓存池/
 200 /tags/缓存池/index.xml
+301 /tags/缓存池/p/1/ /tags/缓存池/
+301 /tags/缓存池/page/1/ /tags/缓存池/
 200 /tags/编译/
 200 /tags/编译/index.xml
+301 /tags/编译/p/1/ /tags/编译/
+301 /tags/编译/page/1/ /tags/编译/
 200 /tags/群众智慧/
 200 /tags/群众智慧/index.xml
+301 /tags/群众智慧/p/1/ /tags/群众智慧/
+301 /tags/群众智慧/page/1/ /tags/群众智慧/
 200 /tags/良序原理/
 200 /tags/良序原理/index.xml
+301 /tags/良序原理/p/1/ /tags/良序原理/
+301 /tags/良序原理/page/1/ /tags/良序原理/
 200 /tags/计算复杂性/
 200 /tags/计算复杂性/index.xml
+301 /tags/计算复杂性/p/1/ /tags/计算复杂性/
+301 /tags/计算复杂性/page/1/ /tags/计算复杂性/
 200 /tags/计算机体系结构/
 200 /tags/计算机体系结构/index.xml
+301 /tags/计算机体系结构/p/1/ /tags/计算机体系结构/
+301 /tags/计算机体系结构/page/1/ /tags/计算机体系结构/
 200 /tags/计算机视觉/
 200 /tags/计算机视觉/index.xml
+301 /tags/计算机视觉/p/1/ /tags/计算机视觉/
+301 /tags/计算机视觉/page/1/ /tags/计算机视觉/
 200 /tags/设计/
 200 /tags/设计/index.xml
+301 /tags/设计/p/1/ /tags/设计/
+301 /tags/设计/page/1/ /tags/设计/
 200 /tags/语音交互/
 200 /tags/语音交互/index.xml
+301 /tags/语音交互/p/1/ /tags/语音交互/
+301 /tags/语音交互/page/1/ /tags/语音交互/
 200 /tags/语音识别/
 200 /tags/语音识别/index.xml
+301 /tags/语音识别/p/1/ /tags/语音识别/
+301 /tags/语音识别/page/1/ /tags/语音识别/
 200 /tags/读书清单/
 200 /tags/读书清单/index.xml
+301 /tags/读书清单/p/1/ /tags/读书清单/
+301 /tags/读书清单/page/1/ /tags/读书清单/
 200 /tags/读书笔记/
 200 /tags/读书笔记/index.xml
+301 /tags/读书笔记/p/1/ /tags/读书笔记/
+301 /tags/读书笔记/page/1/ /tags/读书笔记/
 200 /tags/调度器/
 200 /tags/调度器/index.xml
+301 /tags/调度器/p/1/ /tags/调度器/
+301 /tags/调度器/page/1/ /tags/调度器/
 200 /tags/贝叶斯/
 200 /tags/贝叶斯/index.xml
+301 /tags/贝叶斯/p/1/ /tags/贝叶斯/
+301 /tags/贝叶斯/page/1/ /tags/贝叶斯/
 200 /tags/贝叶斯优化/
 200 /tags/贝叶斯优化/index.xml
+301 /tags/贝叶斯优化/page/1/ /tags/贝叶斯优化/
 200 /tags/软件工程/
 200 /tags/软件工程/index.xml
+301 /tags/软件工程/page/1/ /tags/软件工程/
 200 /tags/运维/
 200 /tags/运维/index.xml
+301 /tags/运维/p/1/ /tags/运维/
+301 /tags/运维/page/1/ /tags/运维/
 200 /tags/运行时/
 200 /tags/运行时/index.xml
+301 /tags/运行时/p/1/ /tags/运行时/
+301 /tags/运行时/page/1/ /tags/运行时/
 200 /tags/通信/
 200 /tags/通信/index.xml
+301 /tags/通信/p/1/ /tags/通信/
+301 /tags/通信/page/1/ /tags/通信/
 200 /tags/道德陷阱/
 200 /tags/道德陷阱/index.xml
+301 /tags/道德陷阱/p/1/ /tags/道德陷阱/
+301 /tags/道德陷阱/page/1/ /tags/道德陷阱/
 200 /tags/金融/
 200 /tags/金融/index.xml
+301 /tags/金融/p/1/ /tags/金融/
+301 /tags/金融/page/1/ /tags/金融/
 200 /tags/链路预测/
 200 /tags/链路预测/index.xml
+301 /tags/链路预测/p/1/ /tags/链路预测/
+301 /tags/链路预测/page/1/ /tags/链路预测/
 200 /tags/随笔/
 200 /tags/随笔/index.xml
+301 /tags/随笔/p/1/ /tags/随笔/
+301 /tags/随笔/p/2/ /tags/随笔/page/2/
+301 /tags/随笔/p/3/ /tags/随笔/page/3/
+301 /tags/随笔/p/4/ /tags/随笔/
+301 /tags/随笔/p/5/ /tags/随笔/
+301 /tags/随笔/p/6/ /tags/随笔/
+301 /tags/随笔/p/7/ /tags/随笔/
+301 /tags/随笔/p/8/ /tags/随笔/
+301 /tags/随笔/page/1/ /tags/随笔/
 200 /tags/随笔/page/2/
 200 /tags/随笔/page/3/
+301 /tags/随笔/page/4/ /tags/随笔/
+301 /tags/随笔/page/5/ /tags/随笔/
+301 /tags/随笔/page/6/ /tags/随笔/
+301 /tags/随笔/page/7/ /tags/随笔/
+301 /tags/随笔/page/8/ /tags/随笔/
 200 /tags/集合论/
 200 /tags/集合论/index.xml
+301 /tags/集合论/p/1/ /tags/集合论/
+301 /tags/集合论/page/1/ /tags/集合论/
 200 /tags/预测市场/
 200 /tags/预测市场/index.xml
+301 /tags/预测市场/p/1/ /tags/预测市场/
+301 /tags/预测市场/page/1/ /tags/预测市场/

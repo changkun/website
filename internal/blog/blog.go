@@ -331,8 +331,8 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		redirect(w, r, Prefix+strings.TrimPrefix(dir+"/", "/"))
 		return
 	}
-	if at == "/page/1/" || strings.HasSuffix(at, "/page/1/") {
-		redirect(w, r, Prefix+strings.TrimPrefix(strings.TrimSuffix(at, "page/1/"), "/"))
+	if to, ok := s.oldURL(at); ok {
+		redirect(w, r, to)
 		return
 	}
 	http.NotFound(w, r)

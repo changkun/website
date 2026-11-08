@@ -69,8 +69,11 @@ func TestPages(t *testing.T) {
 		{"/blog/posts/draft/", 404, nil, nil},
 		{"/blog/_todo/note/", 404, nil, nil},
 		{"/blog/_todo/note.md", 404, nil, nil},
-		{"/blog/tags/apache/", 404, nil, nil},
-		{"/blog/page/2/", 404, nil, nil},
+		{"/blog/images/posts/7/missing.png", 404, nil, nil},
+		{"/blog/images/posts/99/one.png", 404, nil, nil},
+		{"/blog/tags/go/p/x/", 404, nil, nil},
+		{"/blog/tags/apache/index.xml", 404, nil, nil},
+		{"/blog/_todo/page/1/", 404, nil, nil},
 		{"/blog/posts/hello/index.md", 404, nil, nil},
 	} {
 		rec := get(t, h, c.path)
@@ -103,6 +106,18 @@ func TestRedirects(t *testing.T) {
 		"/blog/page/1/":                "/blog/",
 		"/blog/index.html":             "/blog/",
 		"/blog/posts/hello/index.html": "/blog/posts/hello/",
+		// Old addresses Hugo also wrote.
+		"/blog/posts/2020-01-01-hello/":         "/blog/posts/hello/",
+		"/blog/p/1/":                            "/blog/",
+		"/blog/page/2/":                         "/blog/",
+		"/blog/tags/go/p/1/":                    "/blog/tags/go/",
+		"/blog/tags/go/page/9/":                 "/blog/tags/go/",
+		"/blog/tags/apache/":                    "/blog/tags/",
+		"/blog/categories/":                     "/blog/tags/",
+		"/blog/images/logo.png":                 "/logo.png",
+		"/blog/images/posts/7/one.png":          "/blog/posts/a-bundle/one.png",
+		"/blog/images/posts/7/one.png.png":      "/blog/posts/a-bundle/one.png",
+		"/blog/images/posts/old-bundle/one.png": "/blog/posts/a-bundle/one.png",
 	} {
 		rec := get(t, h, path)
 		if rec.Code != http.StatusMovedPermanently || rec.Header().Get("Location") != to {
