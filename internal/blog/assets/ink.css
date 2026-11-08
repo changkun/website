@@ -1240,6 +1240,33 @@ svg { width: 16px; height: 16px; flex: none; }
 
 .editor .compose-preview .post-body { max-width: var(--measure); margin-left: auto; margin-right: auto; }
 
+/* Both panes keep a scrollbar in sight, where the system would show one
+ * only while scrolling, so the place in a long text can always be seen. A
+ * styled scrollbar is a classic one in Chrome and Safari; Firefox takes
+ * the standard properties. */
+@media (pointer: fine) {
+    .editor .compose-write::-webkit-scrollbar,
+    .editor .compose-preview::-webkit-scrollbar { width: 12px; }
+
+    .editor .compose-write::-webkit-scrollbar-track,
+    .editor .compose-preview::-webkit-scrollbar-track { background: transparent; }
+
+    .editor .compose-write::-webkit-scrollbar-thumb,
+    .editor .compose-preview::-webkit-scrollbar-thumb {
+        border: 3px solid transparent;
+        border-radius: 6px;
+        background: color-mix(in srgb, var(--text-muted) 45%, transparent) padding-box;
+    }
+
+    .editor .compose-write::-webkit-scrollbar-thumb:hover,
+    .editor .compose-preview::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted); }
+
+    @supports not selector(::-webkit-scrollbar) {
+        .editor .compose-write,
+        .editor .compose-preview { scrollbar-width: thin; scrollbar-color: var(--text-muted) transparent; }
+    }
+}
+
 /* The preview shows the text as it is written, both languages in turn,
  * so it can scroll along with it. */
 [data-lang] .compose-preview .lang-en,
