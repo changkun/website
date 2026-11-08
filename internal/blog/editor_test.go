@@ -6,8 +6,10 @@ package blog
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -83,6 +85,39 @@ func (f *fakePublisher) PublishIdea(title, content string, files []ideas.Attachm
 	defer f.mu.Unlock()
 	f.ideas = append(f.ideas, title+"|"+content)
 	f.atts = append(f.atts, files)
+}
+
+// TranslatePost "translates" a post by marking it, and fails for a text
+// that says so.
+func (f *fakePublisher) TranslatePost(ctx context.Context, title, titleZh, body string, progress func(done, total int)) (ideas.Post, error) {
+	if strings.Contains(body, "untranslatable") {
+		return ideas.Post{}, errors.New("the model is away")
+	}
+	progress(0, 2)
+	progress(2, 2)
+	return ideas.Post{Title: title, TitleZh: cmp.Or(titleZh, "译："+title), En: body, Zh: "译：" + body}, nil
+}
+
+// waitJob follows the job a publish started to its end.
+func waitJob(t *testing.T, h http.Handler, rec *httptest.ResponseRecorder) (state, url, msg string) {
+	t.Helper()
+	var start struct{ Job string }
+	if rec.Code != http.StatusAccepted || json.Unmarshal(rec.Body.Bytes(), &start) != nil || start.Job == "" {
+		t.Fatalf("publish = %d %s, want a job", rec.Code, rec.Body)
+	}
+	for range 200 {
+		rec := do(t, h, "GET", start.Job, "", nil, true)
+		var j struct{ State, URL, Message, Error string }
+		if rec.Code != 200 || json.Unmarshal(rec.Body.Bytes(), &j) != nil {
+			t.Fatalf("GET %s = %d %s", start.Job, rec.Code, rec.Body)
+		}
+		if j.State == "done" || j.State == "failed" {
+			return j.State, j.URL, j.Message + j.Error
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	t.Fatal("the job did not end")
+	return
 }
 
 func newEditorHandler(t *testing.T, pub Publisher) http.Handler {
@@ -239,9 +274,10 @@ func TestEditorPublish(t *testing.T) {
 
 	post := draft{Kind: "post", Title: "A New: Post", TitleZh: "新文章", Tags: []string{"go", " notes ", ""},
 		Body: "Text\r\n\r\n![](fig.png)", Files: []upload{{Name: "fig.png", SHA: sha}}}
+	// Written in one language, a post is translated, then published.
 	rec := do(t, h, "POST", "/blog/new", "application/json", asJSON(t, post), true)
-	if rec.Code != http.StatusCreated || !strings.Contains(rec.Body.String(), `"url":"/blog/posts/a-new-post/"`) {
-		t.Fatalf("publish post = %d %s", rec.Code, rec.Body)
+	if state, u, msg := waitJob(t, h, rec); state != "done" || u != "/blog/posts/a-new-post/" {
+		t.Fatalf("publish post: %s %s %s", state, u, msg)
 	}
 	var root string
 	for r := range pub.created {
@@ -254,17 +290,19 @@ func TestEditorPublish(t *testing.T) {
 	}
 	md := files[0].Text
 	for _, want := range []string{"---\ndate: ", "\nslug: /posts/a-new-post\n", "\ntitle: 'A New: Post'\n",
-		"\ntitle_zh: 新文章\n", "\ntags:\n    - go\n    - notes\n---\n\nText\n\n![](fig.png)\n"} {
+		"\ntitle_zh: 新文章\n", "\ntags:\n    - go\n    - notes\n---\n\n{{% en %}}\n\nText\n\n![](fig.png)\n\n{{% /en %}}\n\n{{% zh %}}\n\n译：Text\n\n![](fig.png)\n\n{{% /zh %}}\n"} {
 		if !strings.Contains(md, want) {
 			t.Errorf("the post lacks %q:\n%s", want, md)
 		}
 	}
-	if fm, body := splitFrontMatter([]byte(md)); fm == nil || !bytes.HasPrefix(body, []byte("\nText")) {
+	if fm, body := splitFrontMatter([]byte(md)); fm == nil || !bytes.HasPrefix(body, []byte("\n{{% en %}}")) {
 		t.Errorf("the post does not read back:\n%s", md)
 	}
 
+	// Written in both languages, it is published as it is, at once.
 	// Without files, a post is one file; a name already taken is refused.
-	rec = do(t, h, "POST", "/blog/new", "application/json", asJSON(t, draft{Kind: "post", Title: "Plain", Body: "x"}), true)
+	both := "{{% en %}}\nx\n{{% /en %}}\n{{% zh %}}\n叉\n{{% /zh %}}"
+	rec = do(t, h, "POST", "/blog/new", "application/json", asJSON(t, draft{Kind: "post", Title: "Plain", Body: both}), true)
 	if rec.Code != http.StatusCreated {
 		t.Fatalf("publish plain post = %d %s", rec.Code, rec.Body)
 	}
@@ -279,7 +317,7 @@ func TestEditorPublish(t *testing.T) {
 		d    draft
 		code int
 	}{
-		{draft{Kind: "post", Title: "Hello", Body: "x"}, http.StatusConflict},                // /posts/hello/ is taken
+		{draft{Kind: "post", Title: "Hello", Body: both}, http.StatusConflict},               // /posts/hello/ is taken
 		{draft{Kind: "post", Title: "Other", Name: "hello", Body: "x"}, http.StatusConflict}, // so is its name
 		{draft{Kind: "post", Body: "x"}, http.StatusBadRequest},                              // no title
 		{draft{Kind: "post", Title: "?", Body: "x"}, http.StatusBadRequest},                  // no name
@@ -290,6 +328,16 @@ func TestEditorPublish(t *testing.T) {
 		if rec := do(t, h, "POST", "/blog/new", "application/json", asJSON(t, c.d), true); rec.Code != c.code {
 			t.Errorf("publish %+v = %d %s, want %d", c.d, rec.Code, rec.Body, c.code)
 		}
+	}
+
+	// A translation that fails publishes nothing, and says why.
+	before := len(pub.created)
+	rec = do(t, h, "POST", "/blog/new", "application/json", asJSON(t, draft{Kind: "post", Title: "Lost", Body: "untranslatable"}), true)
+	if state, _, msg := waitJob(t, h, rec); state != "failed" || !strings.Contains(msg, "could not be translated") || len(pub.created) != before {
+		t.Errorf("a failed translation: %s %q, %d posts", state, msg, len(pub.created)-before)
+	}
+	if rec := do(t, h, "GET", "/blog/new/jobs/nope", "", nil, true); rec.Code != http.StatusNotFound {
+		t.Errorf("an unknown job = %d", rec.Code)
 	}
 
 	// An idea goes to the pipeline, with its files.

@@ -214,6 +214,9 @@ type handler struct {
 	site    *site
 	key     string    // what the site was built from
 	checked time.Time // when the checkout was last looked at
+
+	jobsMu sync.Mutex
+	jobs   map[string]*job // posts being translated and published, by id
 }
 
 // checkEvery is how often the checkout is looked at for changes.

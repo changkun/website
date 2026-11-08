@@ -7,6 +7,8 @@ package blog
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"mime"
@@ -16,6 +18,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"go.yaml.in/yaml/v3"
@@ -55,6 +58,9 @@ type Publisher interface {
 	// PublishIdea writes up an idea with models and publishes it, in the
 	// background.
 	PublishIdea(title, content string, files []ideas.Attachment)
+	// TranslatePost translates a post written in one language into the
+	// other, telling progress how many of its parts are done.
+	TranslatePost(ctx context.Context, title, titleZh, body string, progress func(done, total int)) (ideas.Post, error)
 }
 
 // Limits on what the editor takes.
@@ -92,6 +98,7 @@ func (h *handler) editorRoutes() http.Handler {
 	m := http.NewServeMux()
 	m.HandleFunc("GET "+Prefix+"new", h.editorPage)
 	m.HandleFunc("POST "+Prefix+"new", h.publish)
+	m.HandleFunc("GET "+Prefix+"new/jobs/{id}", h.jobStatus)
 	m.HandleFunc("POST "+Prefix+"new/preview", h.preview)
 	m.HandleFunc("POST "+Prefix+"new/files", h.upload)
 	m.HandleFunc("GET "+Prefix+"new/files/{sha}/{name}", h.download)
@@ -268,35 +275,115 @@ func (h *handler) publish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if d.Title == "" {
+	if d.Title == "" && d.TitleZh == "" {
 		http.Error(w, "a post needs a title", http.StatusBadRequest)
 		return
+	}
+	if langBlock.MatchString(d.Body) {
+		// Written in both languages already: published as it is.
+		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
+		defer cancel()
+		u, code, err := h.createPost(ctx, d)
+		if err != nil {
+			http.Error(w, err.Error(), code)
+			return
+		}
+		writeJSON(w, http.StatusCreated, map[string]string{"url": u,
+			"message": "Published. The post shows once the server has pulled it, in a minute or so."})
+		return
+	}
+	// Written in one language, it is translated into the other first,
+	// which takes longer than a request may last, so it is a job the
+	// editor follows. A name it already has is checked now.
+	if name := postName(d.Name); name != "" || isASCII(d.Title) {
+		if name == "" {
+			name = postName(d.Title)
+		}
+		if name == "" {
+			http.Error(w, "the post's address needs letters or digits", http.StatusBadRequest)
+			return
+		}
+		if err := h.free(name); err != nil {
+			http.Error(w, err.Error(), http.StatusConflict)
+			return
+		}
+	}
+	j := h.startJob(func(j *job) {
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
+		defer cancel()
+		tr, err := pub.TranslatePost(ctx, d.Title, d.TitleZh, d.Body, func(done, total int) {
+			j.update(func() { j.Done, j.Total = done, total })
+		})
+		if err != nil {
+			h.log.Printf("blog: translate %q: %v", d.Title, err)
+			j.update(func() { j.State, j.Error = "failed", "The post could not be translated: "+err.Error() })
+			return
+		}
+		d.Title, d.TitleZh = tr.Title, tr.TitleZh
+		d.Body = "{{% en %}}\n\n" + tr.En + "\n\n{{% /en %}}\n\n{{% zh %}}\n\n" + tr.Zh + "\n\n{{% /zh %}}"
+		j.update(func() { j.State = "publishing" })
+		u, _, err := h.createPost(ctx, d)
+		if err != nil {
+			j.update(func() { j.State, j.Error = "failed", err.Error() })
+			return
+		}
+		j.update(func() {
+			j.State, j.URL = "done", u
+			j.Message = "Published in English and Chinese. The post shows once the server has pulled it, in a minute or so."
+		})
+	})
+	writeJSON(w, http.StatusAccepted, map[string]string{"job": Prefix + "new/jobs/" + j.id})
+}
+
+// langBlock finds a block of one language in a post's text.
+var langBlock = regexp.MustCompile(`\{\{%\s*(en|zh)\s*%\}\}`)
+
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] >= 0x80 {
+			return false
+		}
+	}
+	return s != ""
+}
+
+// free returns an error if a new post called name would take the address
+// of a page, or an old address of one.
+func (h *handler) free(name string) error {
+	at := "/posts/" + name + "/"
+	s, err := h.current()
+	if err != nil {
+		return nil
+	}
+	if _, ok := s.byPath[at]; ok {
+		return errors.New("a page is already at " + Prefix + strings.TrimPrefix(at, "/"))
+	}
+	if _, ok := s.aliases[at]; ok {
+		return errors.New(Prefix + strings.TrimPrefix(at, "/") + " is an old address of another page")
+	}
+	return nil
+}
+
+// createPost commits d as a new post, and returns its address, or an error
+// to show and the status it goes with.
+func (h *handler) createPost(ctx context.Context, d draft) (string, int, error) {
+	if d.Title == "" {
+		return "", http.StatusBadRequest, errors.New("a post needs a title")
 	}
 	name := postName(d.Name)
 	if d.Name == "" {
 		name = postName(d.Title)
 	}
 	if name == "" {
-		http.Error(w, "the post's address needs letters or digits", http.StatusBadRequest)
-		return
+		return "", http.StatusBadRequest, errors.New("the post's address needs letters or digits")
 	}
-	at := "/posts/" + name + "/"
-	if s, err := h.current(); err == nil {
-		if _, ok := s.byPath[at]; ok {
-			http.Error(w, "a page is already at "+Prefix+strings.TrimPrefix(at, "/"), http.StatusConflict)
-			return
-		}
-		if _, ok := s.aliases[at]; ok {
-			http.Error(w, Prefix+strings.TrimPrefix(at, "/")+" is an old address of another page", http.StatusConflict)
-			return
-		}
+	if err := h.free(name); err != nil {
+		return "", http.StatusConflict, err
 	}
-
 	now := time.Now()
 	text, err := postMarkdown(d, name, now)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return "", http.StatusBadRequest, err
 	}
 	root := "content/posts/" + now.Format("2006-01-02") + "-" + name
 	files := []ideas.File{{Path: root + "/index.md", Text: text}}
@@ -307,20 +394,70 @@ func (h *handler) publish(w http.ResponseWriter, r *http.Request) {
 		root += ".md"
 		files = []ideas.File{{Path: root, Text: text}}
 	}
-	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
-	defer cancel()
-	if err := pub.Create(ctx, root, files, "posts: "+d.Title); err != nil {
+	if err := h.editor.Publisher.Create(ctx, root, files, "posts: "+d.Title); err != nil {
 		if errors.Is(err, ideas.ErrExists) {
-			http.Error(w, "a post is already at "+root, http.StatusConflict)
-			return
+			return "", http.StatusConflict, errors.New("a post is already at " + root)
 		}
 		h.log.Printf("blog: publish %s: %v", root, err)
-		http.Error(w, "the post could not be committed", http.StatusBadGateway)
-		return
+		return "", http.StatusBadGateway, errors.New("the post could not be committed")
 	}
 	h.log.Printf("blog: published %s", root)
-	writeJSON(w, http.StatusCreated, map[string]string{"url": Prefix + strings.TrimPrefix(at, "/"),
-		"message": "Published. The post shows once the server has pulled it, in a minute or so."})
+	return Prefix + "posts/" + name + "/", 0, nil
+}
+
+// A job is a post being translated and published, which the editor
+// follows by its id.
+type job struct {
+	id string
+	at time.Time
+
+	mu      sync.Mutex
+	State   string `json:"state"` // "translating", "publishing", "done" or "failed"
+	Done    int    `json:"done"`  // parts translated
+	Total   int    `json:"total"` // parts in all
+	URL     string `json:"url,omitempty"`
+	Message string `json:"message,omitempty"`
+	Error   string `json:"error,omitempty"`
+}
+
+func (j *job) update(f func()) {
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	f()
+}
+
+// startJob runs work as a new job, and forgets jobs older than a day.
+func (h *handler) startJob(work func(*job)) *job {
+	b := make([]byte, 8)
+	rand.Read(b)
+	j := &job{id: hex.EncodeToString(b), at: time.Now(), State: "translating"}
+	h.jobsMu.Lock()
+	if h.jobs == nil {
+		h.jobs = map[string]*job{}
+	}
+	for id, old := range h.jobs {
+		if time.Since(old.at) > 24*time.Hour {
+			delete(h.jobs, id)
+		}
+	}
+	h.jobs[j.id] = j
+	h.jobsMu.Unlock()
+	go work(j)
+	return j
+}
+
+// jobStatus replies with where a job is.
+func (h *handler) jobStatus(w http.ResponseWriter, r *http.Request) {
+	h.jobsMu.Lock()
+	j := h.jobs[r.PathValue("id")]
+	h.jobsMu.Unlock()
+	if j == nil {
+		http.Error(w, "no such job; the server may have restarted", http.StatusNotFound)
+		return
+	}
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	writeJSON(w, http.StatusOK, j)
 }
 
 // postMarkdown is the markdown file of a new post called name.

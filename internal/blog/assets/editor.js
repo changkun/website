@@ -746,7 +746,8 @@
       return;
     }
     sendBtn.disabled = true;
-    status.textContent = entry ? say('Saving…', '保存中…') : say('Publishing…', '发布中…');
+    var translating = !entry && d.kind === 'post' && !/\{\{%\s*(en|zh)\s*%\}\}/.test(d.body);
+    status.textContent = entry ? say('Saving…', '保存中…') : translating ? say('Translating…', '翻译中…') : say('Publishing…', '发布中…');
     fetch(entry ? '/blog/edit' + entry.path : '/blog/new', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -763,6 +764,10 @@
         });
       }
       return r.json().then(function(res) {
+        if (res.job) {
+          followJob(res.job, 0);
+          return;
+        }
         clear();
         if (entry) {
           status.textContent = isZh() ? '已保存，服务器拉取后即可看到。' : res.message;
@@ -776,6 +781,38 @@
     }).catch(function() {
       status.textContent = say('Network error, please retry.', '网络错误，请重试。');
       sendBtn.disabled = false;
+    });
+  }
+
+  // A post written in one language is translated into the other, then
+  // published, as a job on the server; how far it is shows until it ends.
+  function followJob(url, misses) {
+    var lost = function(en, zh) {
+      status.textContent = say(en, zh);
+      sendBtn.disabled = false;
+    };
+    fetch(url, { cache: 'no-store' }).then(function(r) {
+      if (r.status === 404) return { state: 'gone' };
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    }).then(function(j) {
+      if (j.state === 'gone') {
+        lost('The server restarted while publishing. Look at the blog before trying again.', '发布时服务器重启了，请先查看博客再重试。');
+      } else if (j.state === 'failed') {
+        lost(j.error, '发布失败：' + j.error);
+      } else if (j.state === 'done') {
+        clear();
+        status.textContent = isZh() ? '已发布中英文两版，服务器拉取后即可看到。' : j.message;
+        waitFor(j.url, 0);
+      } else {
+        status.textContent = j.state === 'publishing' ? say('Publishing…', '发布中…')
+          : j.total ? say('Translating, ' + j.done + ' of ' + j.total + ' parts…', '翻译中，第 ' + j.done + '/' + j.total + ' 部分…')
+          : say('Translating…', '翻译中…');
+        setTimeout(function() { followJob(url, 0); }, 1500);
+      }
+    }).catch(function() {
+      if (misses < 20) setTimeout(function() { followJob(url, misses + 1); }, 3000);
+      else lost('Lost the server while publishing. Look at the blog before trying again.', '发布时与服务器失去联系，请先查看博客再重试。');
     });
   }
 
@@ -841,7 +878,7 @@
     if (entry) nameInput.title = say('The address stays as it is', '地址保持不变');
     tagInput.placeholder = tags.length ? say('Add a tag', '添加标签') : say('Tags', '标签');
     bodyInput.placeholder = post
-      ? say('Write the post. Markdown, math in $…$, and {{% en %}} or {{% zh %}} blocks work.', '写文章。支持 Markdown、$…$ 数学公式，以及 {{% en %}}、{{% zh %}} 语言块。')
+      ? say('Write the post in English or Chinese; it is translated into the other when published. Markdown and math in $…$ work.', '用中文或英文写文章，发布时自动翻译成另一种语言。支持 Markdown 和 $…$ 数学公式。')
       : say('Write your idea. Markdown works; a model polishes and translates it.', '写下你的想法，支持 Markdown；模型会润色并翻译。');
     sendBtn.title = canPublish ? mod + 'Enter' : say('Publishing is not configured here.', '这里不能发布。');
     for (var i = 0; i < toolBtns.length; i++) {
