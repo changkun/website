@@ -208,6 +208,30 @@ func TestEditorPreview(t *testing.T) {
 	}
 }
 
+// The preview's blocks say the line of the text they start on, counted in
+// the text as written, before its shortcodes became divs.
+func TestEditorPreviewLines(t *testing.T) {
+	h := newEditorHandler(t, nil)
+	body := "{{% en %}}\n\n## A\n\npara\n\n```go\nx\n```\n{{% /en %}}\n{{% zh %}}\n## B\n\n- one\n- two\n\n> q\n{{% /zh %}}\n"
+	rec := do(t, h, "POST", "/blog/new/preview", "application/json", asJSON(t, draft{Kind: "post", Body: body}), true)
+	var res struct {
+		HTML string `json:"html"`
+	}
+	if rec.Code != 200 || json.Unmarshal(rec.Body.Bytes(), &res) != nil {
+		t.Fatalf("preview = %d %s", rec.Code, rec.Body)
+	}
+	for _, want := range []string{`<h2 id="a" data-line="2">`, `<p data-line="4">`, `<div data-line="7"><div class="highlight">`,
+		`<h2 id="b" data-line="11">`, `<ul data-line="13">`, `<blockquote data-line="16">`} {
+		if !strings.Contains(res.HTML, want) {
+			t.Errorf("preview lacks %q:\n%s", want, res.HTML)
+		}
+	}
+	// A page as the blog serves it carries none.
+	if rec := get(t, h, "/blog/posts/hello/"); strings.Contains(rec.Body.String(), "data-line") {
+		t.Error("a page has data-line")
+	}
+}
+
 func TestEditorPublish(t *testing.T) {
 	pub := &fakePublisher{blobs: map[string][]byte{}, created: map[string][]ideas.File{}}
 	h := newEditorHandler(t, pub)

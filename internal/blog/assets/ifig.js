@@ -126,6 +126,8 @@
   function loop(root, step) {
     var visible = false, running = false, last = 0, wanted = true, asked = false;
     function frame(t) {
+      // A figure the editor's preview has drawn again is gone for good.
+      if (!root.isConnected) { running = false; wanted = false; return; }
       if (!visible || !wanted) { running = false; return; }
       var dt = last ? Math.min((t - last) / 1000, 0.05) : 0;
       last = t;
@@ -143,12 +145,15 @@
     return { start: function (ask) { if (ask) asked = true; wanted = true; kick(); }, stop: function () { wanted = false; } };
   }
 
-  function mount() {
-    var imgs = document.querySelectorAll('.post-body img');
+  // mount swaps the images below root, or the page, for their figures,
+  // each once; the editor calls it again for each preview it draws.
+  function mount(root) {
+    var imgs = (root || document).querySelectorAll('.post-body img');
     Array.prototype.forEach.call(imgs, function (img) {
       var file = (img.getAttribute('src') || '').split('/').pop();
       var build = registry[file];
-      if (!build) return;
+      if (!build || img.hasAttribute('data-ifig')) return;
+      img.setAttribute('data-ifig', '');
       var host = el('figure', { class: 'ifig', role: 'group', 'aria-label': img.getAttribute('alt') || '' });
       var stage = el('div', { class: 'ifig-stage' }, host);
       var controls = el('div', { class: 'ifig-controls' }, host);
@@ -180,6 +185,7 @@
 
   window.ifig = {
     register: function (file, build) { registry[file] = build; },
+    mount: mount,
     el: el, svg: svg, sub: sub, wrap: wrap, sans: sans, arrow: arrow,
     button: button, slider: slider, player: player, loop: loop, reduced: reduced
   };
@@ -188,5 +194,5 @@
   // scripts run before DOMContentLoaded, so waiting for it lets the post's
   // script register its figures first.
   if (document.readyState === 'complete') mount();
-  else document.addEventListener('DOMContentLoaded', mount);
+  else document.addEventListener('DOMContentLoaded', function () { mount(); });
 })();

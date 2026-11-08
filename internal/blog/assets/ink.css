@@ -1229,7 +1229,7 @@ svg { width: 16px; height: 16px; flex: none; }
 }
 
 .editor .compose-title,
-.editor .compose-content,
+.editor .compose-text,
 .editor-fields,
 .editor-files {
     width: 100%;
@@ -1239,6 +1239,58 @@ svg { width: 16px; height: 16px; flex: none; }
 }
 
 .editor .compose-preview .post-body { max-width: var(--measure); margin-left: auto; margin-right: auto; }
+
+/* The preview shows the text as it is written, both languages in turn,
+ * so it can scroll along with it. */
+[data-lang] .compose-preview .lang-en,
+[data-lang] .compose-preview .lang-zh { display: block !important; }
+
+.compose-preview .lang-zh { margin-top: 2em; padding-top: 2em; border-top: 1px solid var(--border); }
+
+/* The text is set twice in the same place: by the textarea, whose letters
+ * are clear so the caret, selection and input stay its own, and behind it
+ * as markdown, its parts in colour. Only colours differ, never the face,
+ * size or weight, so the two lines up letter for letter. */
+.compose-text { position: relative; display: flex; flex: 1 0 auto; flex-direction: column; width: 100%; }
+
+.compose-text textarea.compose-content { position: relative; z-index: 1; color: transparent; caret-color: var(--text); }
+
+.compose-text textarea.compose-content::selection { color: transparent; background: rgba(56, 83, 143, 0.22); }
+
+[data-theme="dark"] .compose-text textarea.compose-content::selection { background: rgba(155, 176, 228, 0.28); }
+
+.compose-hl {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.compose-hl > div { min-height: 1lh; }
+
+.md-mark,
+.md-url,
+.md-html { color: var(--text-muted); }
+
+.md-head { color: var(--code-name); }
+
+.md-strong,
+.md-em { color: var(--text); }
+
+.md-del { color: var(--text-muted); text-decoration: line-through; }
+
+.md-code { color: var(--code-string); }
+
+.md-link { color: var(--text); text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 3px; }
+
+.md-short { color: var(--code-keyword); }
+
+.md-math { color: var(--code-number); }
+
+.md-quote { color: var(--text-secondary); }
+
+.md-ref { color: var(--code-name); }
 
 .editor .compose-header { padding-left: 10px; }
 

@@ -152,7 +152,7 @@ func (h *handler) preview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	now := time.Now()
-	p := &Page{Section: d.Kind + "s", Title: d.Title, Path: "/new/", Date: now, Lastmod: now, links: map[string]string{}}
+	p := &Page{Section: d.Kind + "s", Title: d.Title, Path: "/new/", Date: now, Lastmod: now, links: map[string]string{}, lines: true}
 	for _, f := range d.Files {
 		if f.SHA != "" {
 			p.links[f.Name] = "/new/files/" + url.PathEscape(f.SHA) + "/" + url.PathEscape(f.Name)

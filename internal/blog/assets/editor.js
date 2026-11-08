@@ -20,7 +20,7 @@
   var status = document.getElementById('editor-status');
   var countEl = document.getElementById('editor-count');
   var sendBtn = document.getElementById('editor-send');
-  var writePane = bodyInput.parentNode;
+  var writePane = ed.querySelector('.compose-write');
   var previewPane = previewBody.parentNode;
   var kindBtns = ed.querySelectorAll('[data-kind]');
   var modeBtns = ed.querySelectorAll('[data-mode]');
@@ -123,6 +123,7 @@
   });
   [titleZhInput, nameInput, tagsInput].forEach(function(el) { el.addEventListener('input', changed); });
   bodyInput.addEventListener('input', function() {
+    highlight();
     fit(bodyInput);
     changed();
   });
@@ -443,7 +444,9 @@
     }).then(function(res) {
       if (seq !== previewSeq) return;
       previewBody.innerHTML = res.html;
+      drawFigures();
       if (res.math && window.MathJax && MathJax.Hub) MathJax.Hub.Queue(['Typeset', MathJax.Hub, previewBody]);
+      follow(0);
     }).catch(function() {
       if (seq !== previewSeq) return;
       previewBody.innerHTML = '<p class="compose-preview-empty">' + say('The preview could not load.', '预览加载失败。') + '</p>';
@@ -451,6 +454,190 @@
   }
 
   // Publishing.
+  // The text's markdown, set in colour behind the textarea. Each line is a
+  // div of its own, so the preview can find where a line of the text is.
+  var hl = document.getElementById('editor-hl');
+  var hlLines = [];
+
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function tag(cls, html) { return '<span class="md-' + cls + '">' + html + '</span>'; }
+  function mark(s) { return tag('mark', esc(s)); }
+  function math(m) { return tag('math', esc(m[0])); }
+
+  // The markdown within a line, each rule tried where one of its first
+  // characters is.
+  var INLINE = [
+    [/^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/, function(m) { return mark(m[1]) + tag('code', esc(m[2])) + mark(m[1]); }],
+    [/^\{\{[%<][\s\S]*?[%>]\}\}/, function(m) { return tag('short', esc(m[0])); }],
+    [/^\$\$[\s\S]+?\$\$/, math],
+    [/^\$[^\s$](?:[^$]*?[^\s$\\])?\$/, math],
+    [/^(!?\[)((?:[^\]\\]|\\.)*)(\]\()([^)\s]*(?:\s+"[^"]*")?)(\))/, function(m) {
+      return mark(m[1]) + (m[1] === '[' ? tag('link', inline(m[2])) : inline(m[2])) + mark(m[3]) + tag('url', esc(m[4])) + mark(m[5]);
+    }],
+    [/^\[\^[^\]\s]+\]/, function(m) { return tag('ref', esc(m[0])); }],
+    [/^<!--[\s\S]*?-->|^<\/?[A-Za-z][^<>]*>/, function(m) { return tag('html', esc(m[0])); }],
+    [/^(\*\*|__)(?=\S)([\s\S]*?\S)\1/, function(m) { return mark(m[1]) + tag('strong', inline(m[2])) + mark(m[1]); }],
+    [/^~~(?=\S)([\s\S]*?\S)~~/, function(m) { return mark('~~') + tag('del', inline(m[1])) + mark('~~'); }],
+    [/^([*_])(?=[^\s*_])([\s\S]*?[^\s\\])\1(?![*_\w])/, function(m) { return mark(m[1]) + tag('em', inline(m[2])) + mark(m[1]); }],
+    [/^\\[\\`*_{}\[\]()#+\-.!$~|<>]/, function(m) { return mark(m[0]); }]
+  ];
+  var STARTS = '`{$![<*_~\\';
+
+  function inline(s) {
+    var out = '', plain = '';
+    for (var i = 0; i < s.length;) {
+      var c = s.charAt(i), m = null, f = null;
+      // _ inside a word, as in snake_case, is a letter.
+      if (STARTS.indexOf(c) !== -1 && !(c === '_' && /\w/.test(s.charAt(i - 1)))) {
+        var rest = s.slice(i);
+        for (var r = 0; r < INLINE.length && !m; r++) {
+          m = INLINE[r][0].exec(rest);
+          f = INLINE[r][1];
+        }
+      }
+      if (m) {
+        out += esc(plain) + f(m);
+        plain = '';
+        i += m[0].length;
+      } else {
+        plain += c;
+        i++;
+      }
+    }
+    return out + esc(plain);
+  }
+
+  // One line, with st carrying what the lines before it opened: a fence of
+  // code, a block of math, or an HTML comment.
+  function lineHTML(line, st) {
+    var m, t = line.trim();
+    if (st.fence) {
+      if (t.length >= st.fence.length && t === st.fence.charAt(0).repeat(t.length)) {
+        st.fence = null;
+        return mark(line);
+      }
+      return tag('code', esc(line));
+    }
+    if (st.math) {
+      if (line.indexOf('$$') !== -1) st.math = false;
+      return tag('math', esc(line));
+    }
+    if (st.comment) {
+      if (line.indexOf('-->') !== -1) st.comment = false;
+      return tag('html', esc(line));
+    }
+    if ((m = /^(\s*)(`{3,}|~{3,})(.*)$/.exec(line))) {
+      st.fence = m[2];
+      return esc(m[1]) + mark(m[2]) + tag('code', esc(m[3]));
+    }
+    if (t.indexOf('$$') === 0 && (t === '$$' || t.indexOf('$$', 2) === -1)) {
+      st.math = true;
+      return tag('math', esc(line));
+    }
+    if (t.indexOf('<!--') === 0 && t.indexOf('-->') === -1) {
+      st.comment = true;
+      return tag('html', esc(line));
+    }
+    if ((m = /^(#{1,6})(\s+)(.*)$/.exec(line))) return tag('head', mark(m[1]) + esc(m[2]) + inline(m[3]));
+    if (/^\s{0,3}([-*_])(\s*\1){2,}\s*$/.test(line)) return mark(line);
+    if ((m = /^(\s*(?:>\s?)+)(.*)$/.exec(line))) return mark(m[1]) + tag('quote', inline(m[2]));
+    if ((m = /^(\s*)([-*+]|\d+[.)])(\s+)(\[[ xX]\]\s)?(.*)$/.exec(line))) {
+      return esc(m[1]) + mark(m[2]) + esc(m[3]) + (m[4] ? mark(m[4]) : '') + inline(m[5]);
+    }
+    if ((m = /^(\[\^[^\]]+\]:)(.*)$/.exec(line))) return tag('ref', esc(m[1])) + inline(m[2]);
+    if (/^\s*\|/.test(line)) {
+      if (/^[\s|:-]+$/.test(line)) return mark(line);
+      return line.split('|').map(inline).join(mark('|'));
+    }
+    return inline(line);
+  }
+
+  // Sets the lines again, only those that changed.
+  function highlight() {
+    var lines = bodyInput.value.split('\n'), st = {}, html = new Array(lines.length);
+    for (var i = 0; i < lines.length; i++) html[i] = lineHTML(lines[i], st) + '\n';
+    var old = hlLines, a = 0, b = 0;
+    while (a < old.length && a < html.length && old[a] === html[a]) a++;
+    while (b < old.length - a && b < html.length - a && old[old.length - 1 - b] === html[html.length - 1 - b]) b++;
+    for (var r = old.length - b - 1; r >= a; r--) hl.removeChild(hl.children[r]);
+    var frag = document.createDocumentFragment();
+    for (var n = a; n < html.length - b; n++) {
+      var div = document.createElement('div');
+      div.innerHTML = html[n];
+      frag.appendChild(div);
+    }
+    hl.insertBefore(frag, hl.children[a] || null);
+    hlLines = html;
+    pairs = null;
+  }
+
+  // The text and the preview scroll together, either one leading. The
+  // preview's blocks say the line of the text they start on; between two
+  // such places, each pane moves in proportion.
+  var panes = [writePane, previewPane];
+  var expected = [null, null]; // the scroll each pane was just given
+  var pairs = null;
+
+  function both() { return writePane.offsetParent !== null && previewPane.offsetParent !== null; }
+
+  // The places that match, as [y in the text's pane, y in the preview],
+  // each from the top of its pane's content, both rising.
+  function anchors() {
+    if (pairs) return pairs;
+    var wTop = writePane.getBoundingClientRect().top - writePane.scrollTop;
+    var pTop = previewPane.getBoundingClientRect().top - previewPane.scrollTop;
+    var base = hl.getBoundingClientRect().top - wTop;
+    var wMax = writePane.scrollHeight - writePane.clientHeight;
+    var pMax = previewPane.scrollHeight - previewPane.clientHeight;
+    var a = [[0, 0]];
+    var els = previewBody.querySelectorAll('[data-line]');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i], row = hl.children[+el.getAttribute('data-line')];
+      if (!row) continue;
+      if (!el.getClientRects().length) {
+        // An image a figure is drawn for stays, hidden, after the figure.
+        el = el.previousElementSibling;
+        if (!el || !el.classList.contains('ifig')) continue;
+      }
+      var s = base + row.offsetTop, p = el.getBoundingClientRect().top - pTop, last = a[a.length - 1];
+      if (s > last[0] && p > last[1] && s < wMax && p < pMax) a.push([s, p]);
+    }
+    var end = a[a.length - 1];
+    a.push([Math.max(wMax, end[0] + 1), Math.max(pMax, end[1] + 1)]);
+    return (pairs = a);
+  }
+
+  // follow scrolls the other pane to where pane `from` is.
+  function follow(from) {
+    if (!both()) return;
+    var src = panes[from], dst = panes[1 - from];
+    if (expected[from] !== null) {
+      var e = expected[from];
+      expected[from] = null;
+      if (Math.abs(src.scrollTop - e) < 1) return;
+    }
+    var a = anchors(), to = 1 - from, y = src.scrollTop, i = 1;
+    while (i < a.length - 1 && y > a[i][from]) i++;
+    var p = a[i - 1], q = a[i], t = Math.max(0, Math.min(1, (y - p[from]) / (q[from] - p[from])));
+    var before = dst.scrollTop;
+    dst.scrollTop = Math.round(p[to] + t * (q[to] - p[to]));
+    if (dst.scrollTop !== before) expected[to] = dst.scrollTop;
+  }
+
+  writePane.addEventListener('scroll', function() { follow(0); }, { passive: true });
+  previewPane.addEventListener('scroll', function() { follow(1); }, { passive: true });
+  if (window.ResizeObserver) {
+    var moved = new ResizeObserver(function() { pairs = null; });
+    [hl, previewBody, writePane, previewPane].forEach(function(el) { moved.observe(el); });
+  }
+
+  // A post's figures, drawn in the preview by its own scripts.
+  function drawFigures() {
+    if (window.ifig && ifig.mount) ifig.mount(previewBody);
+    pairs = null;
+  }
+  window.addEventListener('load', drawFigures);
+
   function publish() {
     var d = current();
     if (!canPublish) {
@@ -599,6 +786,7 @@
   }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-lang'] });
 
   load();
+  highlight();
   if (entry) {
     nameInput.value = entry.name;
     nameInput.readOnly = true;

@@ -13,6 +13,7 @@ import (
 	"path"
 	"regexp"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"unicode"
@@ -259,6 +260,10 @@ func (r *blogRenderer) code(w util.BufWriter, src []byte, node ast.Node, enterin
 		lang, _, _ = strings.Cut(strings.TrimSpace(string(n.Info.Segment.Value(src))), " ")
 		lang, _, _ = strings.Cut(lang, "{")
 	}
+	if v, ok := n.AttributeString("data-line"); ok {
+		fmt.Fprintf(w, `<div data-line="%s">`, v)
+		defer w.WriteString("</div>")
+	}
 	highlight(w, code.String(), lang)
 	return ast.WalkSkipChildren, nil
 }
@@ -359,26 +364,68 @@ const moreMarker = "HUGOMORE42"
 
 // expand replaces the shortcodes of body with the HTML Hugo put in their
 // place before it rendered the markdown: the wrapped markdown stays
-// markdown between blank lines, inside a div.
-func expand(body []byte, p *Page) []byte {
-	body = shortcode.ReplaceAllFunc(body, func(m []byte) []byte {
-		sm := shortcode.FindSubmatch(m)
-		if len(sm[1]) > 0 {
-			return []byte("\n</div>")
+// markdown between blank lines, inside a div. Each shortcode adds a line;
+// shifts are the lines of the result from which one more line was added,
+// in order.
+func expand(body []byte, p *Page) (out []byte, shifts []int) {
+	last, lines := 0, 0
+	for _, m := range shortcode.FindAllSubmatchIndex(body, -1) {
+		lines += bytes.Count(body[last:m[0]], []byte("\n"))
+		out = append(out, body[last:m[0]]...)
+		if m[3] > m[2] {
+			out = append(out, "\n</div>"...)
+		} else {
+			class := "lang-" + string(body[m[4]:m[5]])
+			if class == "lang-augmented" {
+				class = "idea-augmented"
+			}
+			out = append(out, `<div class="`+class+`">`+"\n"...)
 		}
-		class := "lang-" + string(sm[2])
-		if string(sm[2]) == "augmented" {
-			class = "idea-augmented"
+		lines++
+		shifts = append(shifts, lines)
+		last = m[1]
+	}
+	out = append(out, body[last:]...)
+	return lastupdate.ReplaceAll(out, []byte(p.Lastmod.Format("2006/01/02"))), shifts
+}
+
+// markLines gives each block at the top of doc a data-line attribute: the
+// line of the markdown, as written before expand, that the block starts on.
+func markLines(doc ast.Node, body []byte, shifts []int) {
+	for n := doc.FirstChild(); n != nil; n = n.NextSibling() {
+		if n.Kind() == ast.KindHTMLBlock {
+			continue
 		}
-		return []byte(`<div class="` + class + `">` + "\n")
-	})
-	return lastupdate.ReplaceAll(body, []byte(p.Lastmod.Format("2006/01/02")))
+		at := startOf(n)
+		if at < 0 {
+			continue
+		}
+		line := bytes.Count(body[:at], []byte("\n"))
+		line -= sort.SearchInts(shifts, line+1)
+		n.SetAttributeString("data-line", strconv.Itoa(line))
+	}
+}
+
+// startOf returns where in the source the first text of n is, or -1.
+func startOf(n ast.Node) int {
+	if t, ok := n.(*ast.Text); ok {
+		return t.Segment.Start
+	}
+	if n.Type() == ast.TypeBlock && n.Lines().Len() > 0 {
+		return n.Lines().At(0).Start
+	}
+	for c := n.FirstChild(); c != nil; c = c.NextSibling() {
+		if at := startOf(c); at >= 0 {
+			return at
+		}
+	}
+	return -1
 }
 
 // render renders p's markdown body into its content, summary, table of
 // contents, plain text and reading time.
 func render(p *Page, body []byte) error {
-	body = expand(body, p)
+	body, shifts := expand(body, p)
 	divider := false
 	if loc := moreDivider.FindIndex(body); loc != nil {
 		divider = true
@@ -387,6 +434,9 @@ func render(p *Page, body []byte) error {
 	ctx := parser.NewContext(parser.WithIDs(&headingIDs{seen: map[string]bool{}}))
 	doc := md.Parser().Parse(text.NewReader(body), parser.WithContext(ctx))
 	resolve(doc, p.links)
+	if p.lines {
+		markLines(doc, body, shifts)
+	}
 	var out bytes.Buffer
 	if err := md.Renderer().Render(&out, body, doc); err != nil {
 		return err

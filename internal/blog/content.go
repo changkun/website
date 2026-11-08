@@ -52,6 +52,11 @@ type Page struct {
 	// markdown may name by a relative path, by that path.
 	links map[string]string
 
+	// lines, for the editor's preview, has each block of the body say
+	// the line of the markdown it starts on, so the preview can scroll
+	// with the text.
+	lines bool
+
 	prev, next *Page  // in the section, older and newer
 	body       []byte // the markdown, until it is rendered
 }

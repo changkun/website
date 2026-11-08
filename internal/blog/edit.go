@@ -129,7 +129,7 @@ func (h *handler) editPage(w http.ResponseWriter, r *http.Request) {
 		e.Files = append(e.Files, f)
 	}
 	v := &view{Title: "Edit", URL: origin + editURL(p), MainClass: "page-editor", Math: true,
-		CanPublish: h.editor.Publisher != nil, Entry: e}
+		CanPublish: h.editor.Publisher != nil, Entry: e, Scripts: scriptURLs(p)}
 	w.Header().Set("Content-Type", htmlType)
 	w.Write(execute("new", v))
 }

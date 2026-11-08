@@ -19,7 +19,10 @@
         <label class="editor-name"><span id="editor-prefix">/blog/posts/</span><input id="editor-name" type="text" autocomplete="off" spellcheck="false" aria-label="Address"></label>
         <input id="editor-tags" type="text" autocomplete="off" aria-label="Tags">
       </div>
-      <textarea id="editor-body" class="compose-content"></textarea>
+      <div class="compose-text">
+        <div id="editor-hl" class="compose-content compose-hl" aria-hidden="true"></div>
+        <textarea id="editor-body" class="compose-content"></textarea>
+      </div>
       <ul id="editor-files" class="editor-files"></ul>
     </div>
     <div class="compose-preview">
@@ -52,6 +55,13 @@
 </div>
 {{- with .Entry}}
 <script type="application/json" id="editor-entry">{{.}}</script>
+{{- end}}
+{{- if .Scripts}}
+{{- /* The post's figure scripts, so its preview draws its figures. */}}
+<script defer src="{{asset "ifig.js"}}"></script>
+{{- range .Scripts}}
+<script defer src="{{.}}"></script>
+{{- end}}
 {{- end}}
 <script src="{{asset "editor.js"}}"></script>
 {{end}}

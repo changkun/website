@@ -145,15 +145,18 @@ var funcs = template.FuncMap{
 	"tagURL":    func(name string) string { return Prefix + "tags/" + urlize(name) + "/" },
 	"excerpt":   excerpt,
 	"augmented": func(p *Page) bool { return strings.Contains(string(p.Content), `class="idea-augmented"`) },
-	"scripts": func(p *Page) []string {
-		var urls []string
-		for _, s := range p.Scripts {
-			if _, ok := p.Files[s]; ok {
-				urls = append(urls, pagePath(p)+s)
-			}
+	"scripts":   scriptURLs,
+}
+
+// scriptURLs returns the addresses of the scripts p loads from its bundle.
+func scriptURLs(p *Page) []string {
+	var urls []string
+	for _, s := range p.Scripts {
+		if _, ok := p.Files[s]; ok {
+			urls = append(urls, pagePath(p)+s)
 		}
-		return urls
-	},
+	}
+	return urls
 }
 
 // templates are the blog's pages, by name, each with the layout around it.
@@ -174,11 +177,12 @@ type view struct {
 	Feed        string // the RSS feed of the list, if it is one
 	Menu        string // the menu item the page belongs to
 	MainClass   string
-	Rail        bool   // a contents rail on the side
-	Math        bool   // MathJax typesets the page
-	CanPublish  bool   // the editor can publish, not only preview
-	Edit        string // where the owner edits the page
-	Entry       *entry // the post or idea the editor opens, or nil for a new one
+	Rail        bool     // a contents rail on the side
+	Math        bool     // MathJax typesets the page
+	CanPublish  bool     // the editor can publish, not only preview
+	Edit        string   // where the owner edits the page
+	Entry       *entry   // the post or idea the editor opens, or nil for a new one
+	Scripts     []string // the figure scripts of the post the editor opens, for its preview
 
 	Page   *Page   // for a page of its own
 	Pages  []*Page // for a list
