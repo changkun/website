@@ -1,5 +1,5 @@
-// Row selection, the right pane, keyboard, copy buttons, and the Sync now
-// return address. Every page works without it: a row's title links to the
+// Row selection, the right pane, lists loaded in place, keyboard, copy
+// buttons, and the Sync now return address. Every page works without it: a row's title links to the
 // entry's own page.
 (function () {
   'use strict';
@@ -220,6 +220,12 @@
       ev.preventDefault();
       return;
     }
+    var link = ev.target.closest('a[href]');
+    if (link && inPlace(link) && !ev.metaKey && !ev.ctrlKey && !ev.shiftKey && !ev.altKey && ev.button === 0) {
+      ev.preventDefault();
+      go(link.href, true);
+      return;
+    }
     var close = ev.target.closest('.pane .close');
     if (close && app && wide.matches) { // hide the pane without a reload
       ev.preventDefault();
@@ -253,9 +259,12 @@
   });
 
   // The filter updates the list as you type. Enter still submits the form,
-  // which is also how it works without this script.
-  var filter = document.querySelector('form.filter');
-  if (filter) {
+  // which is also how it works without this script. A list loaded in place
+  // brings a new form, so this runs again for it.
+  function bindFilter() {
+    var filter = document.querySelector('form.filter');
+    if (!filter || filter.dataset.bound) return;
+    filter.dataset.bound = '1';
     var q = filter.querySelector('input[name=q]');
     var typing = null, seq = 0;
     q.addEventListener('input', function () {
@@ -293,6 +302,54 @@
       }).catch(function () { filter.submit(); });
     }
   }
+  bindFilter();
+
+  // Topics, breadcrumbs, sorting, pages and the share panel load in place:
+  // the list and the pane take the new page's content, while the topic tree
+  // stays as it is, scrolled where it was. Back and forward do the same.
+  // Without this script, or if a load fails, they are ordinary links.
+  var list = app && app.querySelector('.list');
+  var navSeq = 0;
+  function inPlace(a) {
+    return list && pane && tree && a.origin === location.origin &&
+      a.closest('.side a.node, .list .head h1 a, .list .head .actions-line a, table.entries thead a, .pager a');
+  }
+  function go(href, push) {
+    var u = new URL(href, location.href);
+    var n = ++navSeq;
+    fetch(u, { credentials: 'same-origin' }).then(function (res) {
+      if (!res.ok || res.redirected) throw new Error(res.status);
+      return res.text();
+    }).then(function (html) {
+      if (n !== navSeq) return; // a later click has its own request
+      var doc = new DOMParser().parseFromString(html, 'text/html');
+      var nApp = doc.querySelector('.app'), nList = doc.querySelector('.app > .list'), nPane = doc.getElementById('pane');
+      if (!nApp || !nList || !nPane) throw new Error('not a list page');
+      list.replaceChildren.apply(list, Array.from(nList.childNodes));
+      pane.replaceChildren.apply(pane, Array.from(nPane.childNodes));
+      app.className = nApp.className;
+      // Mark the new topic in the tree and open the topics above it.
+      tree.querySelectorAll('a.node.current').forEach(function (a) { a.classList.remove('current'); });
+      var nCur = doc.querySelector('.side a.node.current');
+      var mine = nCur && Array.from(tree.querySelectorAll('a.node')).find(function (a) { return a.getAttribute('href') === nCur.getAttribute('href'); });
+      if (mine) {
+        mine.classList.add('current');
+        for (var d = mine.closest('details'); d && !d.classList.contains('side-box'); d = d.parentElement.closest('details')) d.open = true;
+      }
+      document.title = doc.title;
+      if (push) history.pushState(null, '', u);
+      if (sync) sync.value = u.pathname + u.search;
+      cur = -1;
+      window.scrollTo(0, 0);
+      bindFilter();
+      var e = u.searchParams.get('e');
+      if (e) {
+        var i = rows().findIndex(function (r) { return r.dataset.key === e; });
+        if (i >= 0) select(i, false);
+      }
+    }).catch(function () { location.href = u.href; });
+  }
+  window.addEventListener('popstate', function () { go(location.href, false); });
 
   document.querySelectorAll('input.link-field').forEach(function (f) {
     f.addEventListener('focus', function () { f.select(); });
