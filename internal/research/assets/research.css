@@ -1,6 +1,6 @@
 /* The research page in the look of the blog (internal/blog/assets/ink.css):
  * latere.ai's ink palette, neutral grays with the ink itself as the
- * accent and one navy for links, and Inter for everything. */
+ * accent and one navy for links and the degree, and Inter for everything. */
 :root {
     --bg: #ffffff;
     --bg-raised: #f4f4f4;
@@ -15,9 +15,7 @@
     --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
     --measure: 700px;
     --gutter: 24px;
-    /* The fixed header's height, kept by the script after the header;
-     * the page starts below it, and the menu sticks to it. */
-    --header-h: 69px;
+    /* The menu's height, which anchors stop clear of. */
     --menu-h: 49px;
 }
 
@@ -37,12 +35,11 @@
 
 * { box-sizing: border-box; }
 
-/* Anchors stop clear of the header and the menu under it. */
-html { scroll-padding-top: calc(var(--header-h) + var(--menu-h) + 24px); }
+/* Anchors stop clear of the menu. */
+html { scroll-padding-top: calc(var(--menu-h) + 24px); }
 
 body {
     margin: 0;
-    padding-top: var(--header-h);
     background: var(--bg);
     color: var(--text-secondary);
     font: 15px/1.65 var(--sans);
@@ -68,40 +65,15 @@ button { font: inherit; color: inherit; }
 
 svg { width: 16px; height: 16px; flex: none; }
 
-/* ---- Header: the blog's ---- */
+/* ---- Theme button ---- */
 
-.site-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 20;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    transition: background-color 0.3s;
-}
-
-.header-inner {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 16px 16px 16px clamp(16px, 2vw, 24px);
-}
-
-.brand {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-right: auto;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.brand a { color: var(--text); }
-
-.brand .sep { color: var(--text-secondary); font-weight: 400; }
-
+/* Where the blog's header has it. It scrolls away with the page's top,
+ * so it never sits on the menu once the menu sticks. */
 .theme-toggle {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 20;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -111,7 +83,7 @@ svg { width: 16px; height: 16px; flex: none; }
     padding: 0;
     border: 1px solid var(--border-strong);
     border-radius: 8px;
-    background: none;
+    background: var(--bg);
     color: var(--text-secondary);
     cursor: pointer;
     transition: color 0.2s, background-color 0.2s;
@@ -144,7 +116,7 @@ footer {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     column-gap: 32px;
-    padding-top: 56px;
+    padding-top: 72px;
 }
 
 .portrait {
@@ -167,7 +139,7 @@ h1 {
     color: var(--text);
 }
 
-.degree { font-weight: 400; color: var(--text-secondary); }
+.degree { font-weight: 400; color: var(--navy); }
 
 .profiles {
     display: flex;
@@ -188,7 +160,7 @@ h1 {
     transition: color 0.2s, background-color 0.2s;
 }
 
-.profiles a:hover { color: var(--text); background: var(--bg-raised); }
+.profiles a:hover { color: var(--navy); background: var(--bg-raised); }
 
 .profiles svg { width: 18px; height: 18px; }
 
@@ -215,10 +187,10 @@ h1 {
 /* ---- Section menu ---- */
 
 /* The page's contents, as the blog's contents rail, laid sideways and
- * stuck under the header. */
+ * stuck to the top. */
 .sections {
     position: sticky;
-    top: var(--header-h);
+    top: 0;
     z-index: 10;
     margin-top: 24px;
     background: var(--bg);
@@ -306,10 +278,10 @@ h3 {
     line-height: 1;
     color: var(--text-secondary);
     vertical-align: 1px;
-    transition: color 0.2s, background-color 0.2s;
+    transition: color 0.2s, border-color 0.2s;
 }
 
-.chip:hover { color: var(--text); background: var(--bg-raised); }
+.chip:hover { color: var(--navy); border-color: var(--navy); }
 
 /* The languages of an entry not only in English. */
 .lang {
@@ -348,7 +320,7 @@ footer a:hover { color: var(--text-secondary); }
 
 @media (max-width: 720px) {
     :root { --gutter: 16px; }
-    .hero { column-gap: 16px; padding-top: 36px; }
+    .hero { column-gap: 16px; padding-top: 64px; }
     .portrait { grid-row: 1; width: 72px; height: 72px; }
     .identity { align-self: center; }
     .profiles { grid-column: 1 / -1; gap: 0; margin-top: 12px; }
@@ -373,8 +345,8 @@ footer a:hover { color: var(--text-secondary); }
         --text-muted: #444;
         --navy: #000;
     }
-    body { padding-top: 0; font-size: 10.5pt; }
-    .site-header, .sections, .profiles, .urlstat { display: none; }
+    body { font-size: 10.5pt; }
+    .theme-toggle, .sections, .profiles, .urlstat { display: none; }
     .hero { padding-top: 0; }
     .portrait { width: 72px; height: 72px; box-shadow: none; }
     h2 { break-after: avoid; }
