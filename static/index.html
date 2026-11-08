@@ -163,6 +163,25 @@
 
             .name-degree { color: var(--navy); }
 
+            /* The name in simplified and traditional Chinese, how to say
+             * the English one, and pronouns. */
+            .aka {
+                margin: 10px 0 0;
+                font-size: 16px;
+                color: var(--text-secondary);
+            }
+
+            .aka .sep { color: var(--text-muted); margin: 0 4px; }
+
+            .aka :lang(zh) {
+                font-family: 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
+                font-weight: 600;
+            }
+
+            .aka :lang(zh-Hant) {
+                font-family: 'PingFang TC', 'Noto Sans CJK TC', 'Microsoft JhengHei', sans-serif;
+            }
+
             .bio {
                 margin: 12px 0 0;
                 font-size: 16px;
@@ -313,6 +332,7 @@
 
                     <div class="intro">
                         <h1>Changkun Ou<span class="name-degree">, Ph.D.</span></h1>
+                        <p class="aka"><span lang="zh-Hans">欧长坤</span><span class="sep">/</span><span lang="zh-Hant">歐長坤</span><span class="sep">/</span><span title="Pinyin Ōu Chángkūn, surname first; IPA [ʈʂʰǎŋ.kʰwə́n óʊ]">&ldquo;chahng-kwun&rdquo;</span><span class="sep">/</span>he/him/his</p>
                         <p class="bio">Bridging HCI, AI, and systems programming. Building autonomous, human-in-the-loop systems, informed by psychology, philosophy, and social science.</p>
                     </div>
                 </div>
