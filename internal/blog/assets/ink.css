@@ -465,7 +465,7 @@ svg { width: 16px; height: 16px; flex: none; }
     transition: color 0.2s, background-color 0.2s;
 }
 
-.compose-btn:hover { color: var(--text); background: var(--bg-raised); }
+.compose-btn:hover { color: var(--text); background: var(--bg-raised); text-decoration: none; }
 
 .ideas-search-box { position: relative; flex: 1; min-width: 0; }
 
@@ -968,15 +968,7 @@ svg { width: 16px; height: 16px; flex: none; }
 
 .footer-stat { margin-left: 8px; font-variant-numeric: tabular-nums; }
 
-/* ---- Compose: the new-idea window of the ideas page ---- */
-
-.compose-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 2080;
-    background: rgba(0, 0, 0, 0.35);
-}
+/* ---- Compose: the editor at /blog/new, for a new post or idea ---- */
 
 /* The window reads like the idea it will become: the title in the face of
  * an idea's title, the text at the size of its body, and Preview renders it
@@ -1018,8 +1010,6 @@ svg { width: 16px; height: 16px; flex: none; }
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-
-.compose-date::after { content: ' · '; }
 
 .compose-modes {
     display: inline-flex;
@@ -1066,11 +1056,6 @@ svg { width: 16px; height: 16px; flex: none; }
 }
 
 .compose-icon:hover { color: var(--text); background: var(--bg-raised); }
-
-.compose-expand-min,
-.compose-window.expanded .compose-expand-max { display: none; }
-
-.compose-window.expanded .compose-expand-min { display: block; }
 
 .compose-body { display: flex; flex: 1; min-height: 0; }
 
@@ -1175,36 +1160,6 @@ svg { width: 16px; height: 16px; flex: none; }
 
 .compose-send:disabled { opacity: 0.5; cursor: default; }
 
-/* Expanded, where there is room for both: write and preview side by side. */
-@media (min-width: 721px) and (min-height: 521px) {
-    .compose-window.expanded {
-        width: min(1280px, calc(100vw - 48px));
-        height: calc(100vh - 48px);
-    }
-    .compose-window.expanded .compose-modes { display: none; }
-    .compose-window.expanded .compose-write { display: flex; }
-    .compose-window.expanded .compose-preview { display: block; border-left: 1px solid var(--border); }
-}
-
-.compose-toast {
-    position: fixed;
-    bottom: 40px;
-    left: 50%;
-    z-index: 3000;
-    padding: 8px 20px;
-    border-radius: 999px;
-    background: var(--text);
-    color: var(--bg);
-    font-size: 13px;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateX(-50%) translateY(20px);
-    transition: opacity 0.3s, transform 0.3s;
-}
-
-.compose-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
 /* ---- Phones ---- */
 
 @media (max-width: 720px) {
@@ -1243,23 +1198,10 @@ svg { width: 16px; height: 16px; flex: none; }
 /* ---- Compose on phones, upright or on their side ---- */
 
 @media (max-width: 720px), (max-height: 520px) {
-    /* A full sheet that follows the visual viewport, which compose.js
-     * reports, so the keyboard shrinks it instead of covering Post. 16px
-     * text keeps iOS from zooming in on focus. */
-    .compose-window,
-    .compose-window.expanded {
-        top: var(--compose-top, 0);
-        left: 0;
-        width: 100%;
-        height: var(--compose-height, 100%);
-        transform: none;
-        border: 0;
-        border-radius: 0;
-    }
+    /* Bigger targets for fingers; 16px text keeps iOS from zooming in on
+     * focus. */
     .compose-header { padding: 6px 6px 6px 16px; }
     .compose-heading { font: 500 15px/1.4 var(--sans); color: var(--text); }
-    .compose-date,
-    .compose-expand,
     .compose-count,
     .compose-tools-sep { display: none; }
     .compose-mode { padding: 6px 14px; font-size: 14px; }
@@ -1271,6 +1213,92 @@ svg { width: 16px; height: 16px; flex: none; }
     .compose-footer { gap: 8px; padding: 6px 8px 6px 4px; }
     .compose-tools .compose-icon { width: 35px; height: 40px; }
     .compose-send { padding: 9px 18px; font-size: 14px; }
+}
+
+/* ---- Editor: the compose window as a page of its own ---- */
+
+.compose-window.editor {
+    display: flex;
+    position: static;
+    width: 100%;
+    height: calc(100vh - var(--header-h) - 48px);
+    height: calc(100dvh - var(--header-h) - 48px);
+    min-height: 420px;
+    margin: 24px 0;
+    transform: none;
+    box-shadow: none;
+}
+
+.editor .compose-header { padding-left: 10px; }
+
+.editor-fields { display: flex; flex-wrap: wrap; gap: 6px 20px; padding: 10px 36px 0; }
+
+.editor[data-kind="idea"] .editor-fields { display: none; }
+
+.editor-fields input {
+    min-width: 0;
+    padding: 4px 0;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    outline: none;
+    font: 14px/1.5 var(--sans);
+    color: var(--text);
+}
+
+.editor-fields input:focus { border-bottom-color: var(--text-muted); }
+
+.editor-fields input::placeholder { color: var(--text-muted); opacity: 1; }
+
+#editor-title-zh { flex: 1 1 100%; font-size: 17px; font-weight: 500; }
+
+.editor-name { display: flex; flex: 1 1 260px; align-items: baseline; font: 13px var(--mono); color: var(--text-muted); }
+
+.editor-fields .editor-name input { flex: 1; font: 13px var(--mono); }
+
+#editor-tags { flex: 1 1 200px; }
+
+.editor-files { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0 36px 24px; list-style: none; }
+
+.editor-files li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 2px 2px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+
+.editor-file,
+.editor-file-remove { padding: 0; border: 0; background: none; font: inherit; cursor: pointer; }
+
+.editor-file { color: var(--text); }
+
+.editor-file:hover { text-decoration: underline; }
+
+.editor-file-remove { padding: 2px 6px; font-size: 15px; line-height: 1; color: var(--text-muted); }
+
+.editor-file-remove:hover { color: var(--text); }
+
+.editor.dropping { outline: 2px dashed var(--border-strong); outline-offset: -6px; }
+
+.editor-preview-title { margin: 0 0 0.8em; font: 600 28px/1.25 var(--sans); letter-spacing: -0.02em; color: var(--text); }
+
+.editor[data-kind="idea"] .editor-preview-title { font-size: 22px; }
+
+/* Where there is room, write and preview side by side. */
+@media (min-width: 900px) {
+    .editor .editor-modes { display: none; }
+    .editor[data-mode] .compose-write { display: flex; }
+    .editor[data-mode] .compose-preview { display: block; border-left: 1px solid var(--border); }
+}
+
+@media (max-width: 720px) {
+    .compose-window.editor { margin: 0 calc(-1 * var(--gutter)); width: calc(100% + 2 * var(--gutter)); height: calc(100dvh - var(--header-h)); border: 0; border-radius: 0; }
+    .editor-fields,
+    .editor-files { padding-left: 16px; padding-right: 16px; }
 }
 
 /* ---- Print ---- */

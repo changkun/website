@@ -1,0 +1,54 @@
+{{define "main"}}
+<div id="editor" class="compose-window editor" data-mode="write" data-kind="idea"{{if .CanPublish}} data-can-publish{{end}}>
+  <div class="compose-header">
+    <div class="compose-modes editor-kinds" role="group" aria-label="Kind">
+      <button class="compose-mode" type="button" data-kind="idea" aria-pressed="true"><span class="lang-en">Idea</span><span class="lang-zh">想法</span></button>
+      <button class="compose-mode" type="button" data-kind="post" aria-pressed="false"><span class="lang-en">Post</span><span class="lang-zh">文章</span></button>
+    </div>
+    <div id="editor-heading" class="compose-heading"></div>
+    <div class="compose-modes editor-modes" role="group">
+      <button class="compose-mode" type="button" data-mode="write" aria-pressed="true"><span class="lang-en">Write</span><span class="lang-zh">编辑</span></button>
+      <button class="compose-mode" type="button" data-mode="preview" aria-pressed="false"><span class="lang-en">Preview</span><span class="lang-zh">预览</span></button>
+    </div>
+  </div>
+  <div class="compose-body">
+    <div class="compose-write">
+      <textarea id="editor-title" class="compose-title" rows="1" autocomplete="off"></textarea>
+      <div class="editor-fields">
+        <input id="editor-title-zh" type="text" autocomplete="off" aria-label="Chinese title">
+        <label class="editor-name"><span>/blog/posts/</span><input id="editor-name" type="text" autocomplete="off" spellcheck="false" aria-label="Address"></label>
+        <input id="editor-tags" type="text" autocomplete="off" aria-label="Tags">
+      </div>
+      <textarea id="editor-body" class="compose-content"></textarea>
+      <ul id="editor-files" class="editor-files"></ul>
+    </div>
+    <div class="compose-preview">
+      <h1 id="editor-preview-title" class="editor-preview-title"></h1>
+      <div id="editor-preview-body" class="prose post-body"></div>
+    </div>
+  </div>
+  <div class="compose-footer">
+    <div class="compose-tools" role="toolbar">
+      <button class="compose-icon" type="button" data-tool="attach"><svg aria-hidden="true"><use href="#i-paperclip"/></svg></button>
+      <input id="editor-pick" type="file" multiple hidden>
+      <span class="compose-tools-sep"></span>
+      <button class="compose-icon" type="button" data-tool="bold"><svg aria-hidden="true"><use href="#i-bold"/></svg></button>
+      <button class="compose-icon" type="button" data-tool="italic"><svg aria-hidden="true"><use href="#i-italic"/></svg></button>
+      <span class="compose-tools-sep"></span>
+      <button class="compose-icon" type="button" data-tool="heading"><svg aria-hidden="true"><use href="#i-heading"/></svg></button>
+      <button class="compose-icon" type="button" data-tool="quote"><svg aria-hidden="true"><use href="#i-quote"/></svg></button>
+      <button class="compose-icon" type="button" data-tool="list"><svg aria-hidden="true"><use href="#i-list"/></svg></button>
+      <button class="compose-icon" type="button" data-tool="ordered"><svg aria-hidden="true"><use href="#i-list-ordered"/></svg></button>
+      <span class="compose-tools-sep"></span>
+      <button class="compose-icon" type="button" data-tool="code"><svg aria-hidden="true"><use href="#i-code"/></svg></button>
+      <button class="compose-icon" type="button" data-tool="link"><svg aria-hidden="true"><use href="#i-link"/></svg></button>
+    </div>
+    <div class="compose-meta">
+      <span id="editor-status" class="compose-status" role="status"></span>
+      <span id="editor-count" class="compose-count"></span>
+    </div>
+    <button id="editor-send" class="compose-send" type="button"><span class="lang-en">Publish</span><span class="lang-zh">发布</span></button>
+  </div>
+</div>
+<script src="{{asset "editor.js"}}"></script>
+{{end}}

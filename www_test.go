@@ -196,14 +196,14 @@ func TestWithWWW(t *testing.T) {
 	next := http.NotFoundHandler()
 
 	t.Setenv("WWW_DIR", "")
-	if h, err := withWWW(l, next); err != nil || h == nil {
+	if h, err := withWWW(l, next, nil); err != nil || h == nil {
 		t.Errorf("without WWW_DIR: %v, %v", h, err)
 	} else if _, ok := h.(*folders); ok {
 		t.Error("without WWW_DIR, folders are served")
 	}
 
 	t.Setenv("WWW_DIR", filepath.Join(t.TempDir(), "missing"))
-	if h, err := withWWW(l, next); err != nil {
+	if h, err := withWWW(l, next, nil); err != nil {
 		t.Errorf("a missing WWW_DIR failed: %v", err)
 	} else if _, ok := h.(*folders); ok {
 		t.Error("a missing WWW_DIR is served")
@@ -211,12 +211,12 @@ func TestWithWWW(t *testing.T) {
 
 	t.Setenv("WWW_DIR", wwwDir(t))
 	t.Setenv("WWW_CORS", "demos/")
-	if _, err := withWWW(l, next); err == nil {
+	if _, err := withWWW(l, next, nil); err == nil {
 		t.Error("a malformed WWW_CORS did not fail")
 	}
 
 	t.Setenv("WWW_CORS", "/demos/")
-	if h, err := withWWW(l, next); err != nil {
+	if h, err := withWWW(l, next, nil); err != nil {
 		t.Errorf("a valid configuration failed: %v", err)
 	} else if _, ok := h.(*folders); !ok {
 		t.Errorf("WWW_DIR is not served, got %T", h)

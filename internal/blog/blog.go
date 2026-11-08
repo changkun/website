@@ -160,7 +160,7 @@ var funcs = template.FuncMap{
 var templates = func() map[string]*template.Template {
 	base := template.Must(template.New("").Funcs(funcs).ParseFS(embedded, "templates/base.html", "templates/icons.html"))
 	m := make(map[string]*template.Template)
-	for _, name := range []string{"home", "archive", "terms", "ideas", "single"} {
+	for _, name := range []string{"home", "archive", "terms", "ideas", "single", "new"} {
 		m[name] = template.Must(template.Must(base.Clone()).ParseFS(embedded, "templates/"+name+".html"))
 	}
 	return m
@@ -176,6 +176,7 @@ type view struct {
 	MainClass   string
 	Rail        bool // a contents rail on the side
 	Math        bool // MathJax typesets the page
+	CanPublish  bool // the editor can publish, not only preview
 
 	Page   *Page   // for a page of its own
 	Pages  []*Page // for a list
@@ -188,16 +189,20 @@ type view struct {
 }
 
 // Handler serves the blog at Prefix from dir, a checkout of changkun/blog,
-// and passes the other requests below Prefix to files, which serves dir
-// at Prefix. Without a content folder in dir, as before the checkout took
-// the place of Hugo's output, every request goes to files.
-func Handler(dir string, files http.Handler, l *log.Logger) http.Handler {
-	return &handler{dir: dir, content: filepath.Join(dir, "content"), files: files, log: l}
+// and its editor, if ed is not nil. Without a content folder in dir, as
+// before the checkout took the place of Hugo's output, it passes every
+// request to files, which serves dir at Prefix.
+func Handler(dir string, files http.Handler, ed *Editor, l *log.Logger) http.Handler {
+	h := &handler{dir: dir, content: filepath.Join(dir, "content"), files: files, editor: ed, log: l}
+	h.editorMux = h.editorRoutes()
+	return h
 }
 
 type handler struct {
 	dir, content string
 	files        http.Handler
+	editor       *Editor
+	editorMux    http.Handler
 	log          *log.Logger
 
 	mu      sync.Mutex
@@ -270,12 +275,16 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.files.ServeHTTP(w, r)
 		return
 	}
+	p := r.URL.Path
+	if rest, ok := strings.CutPrefix(p, Prefix); ok && (rest == "new" || strings.HasPrefix(rest, "new/")) {
+		h.editorMux.ServeHTTP(w, r)
+		return
+	}
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {
 		w.Header().Set("Allow", "GET, HEAD")
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	p := r.URL.Path
 	if p+"/" == Prefix {
 		http.Redirect(w, r, Prefix, http.StatusMovedPermanently)
 		return
@@ -451,7 +460,10 @@ func (s *site) render(at string) ([]byte, string) {
 
 const siteDescription = "Bridging HCI, AI, and systems programming. Building intelligent human-in-the-loop optimization systems. Informed by psychology, sociology, cognitive science, and philosophy."
 
-func (s *site) exec(name string, v *view) []byte {
+func (s *site) exec(name string, v *view) []byte { return execute(name, v) }
+
+// execute renders the page template name with v.
+func execute(name string, v *view) []byte {
 	var b bytes.Buffer
 	if err := templates[name].ExecuteTemplate(&b, "base", v); err != nil {
 		return []byte(fmt.Sprintf("<!DOCTYPE html><p>The page failed to render: %s</p>", template.HTMLEscapeString(err.Error())))

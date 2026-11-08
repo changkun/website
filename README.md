@@ -33,11 +33,12 @@ answers 503.
 | `main.go` | Signal handling, the HTTP server, request logging |
 | `site.go` | The embedded `static/` site and its file server |
 | `www.go` | The folders of `WWW_DIR` and the sites of `WWW_SITES` |
-| `internal/ideas/` | The ideas API |
+| `internal/ideas/` | The ideas API, and commits to the blog repository |
 | `internal/ideas/prompts/` | Model prompts, as Go text templates embedded in the binary |
 | `internal/research/` | The research page, rendered from a checkout of changkun/research |
-| `internal/blog/` | The blog, rendered from a checkout of changkun/blog |
+| `internal/blog/` | The blog, rendered from a checkout of changkun/blog, and its editor |
 | `internal/library/` | The library: Zotero sync, owner pages, shares, comments |
+| `internal/owner/` | The owner's login and session, for the library and the editor |
 
 ## Folders
 
@@ -70,6 +71,20 @@ before, gave the pages, and `internal/blog/testdata/live.txt` lists them;
 it. Math between `$` or `$$` reaches MathJax as written. Without a `content`
 folder, as while the folder still holds Hugo's output, it is served like any
 other.
+
+`/blog/new` is the blog's editor, for the owner only: a post or an idea in
+markdown, with files attached by button, drop or paste, up to 25 MB each,
+and a preview the website renders as it will the page. Each file goes to
+the blog repository as a blob when attached, so a draft, kept in the
+browser, keeps its files. Publishing a post commits it with its files in
+one commit, through GitHub's Git Data API, to
+`content/posts/<date>-<name>.md`, or to a folder of that name when it has
+files; it never replaces a page, and refuses an address a page or an alias
+has. An idea goes through the ideas API's pipeline, and into a folder when
+it has files. A video or a sound in image syntax, `![](clip.mp4)`, plays in
+the page, and a file beside a page is linked by its full address, so it
+also shows in lists and feeds. Without `GIT_TOKEN` and `LLM_API_KEY` the
+editor previews but does not publish.
 
 ## Sites
 
@@ -120,8 +135,8 @@ polishing, and translation.
 ### Auth
 
 Routes other than `/ideas/ping` require an access token from
-[latere auth](https://auth.latere.ai), which the compose box on changkun.de
-gets through browser PKCE. The token must verify against the issuer's JWKS,
+[latere auth](https://auth.latere.ai), which a client gets through browser
+PKCE. The token must verify against the issuer's JWKS,
 and be issued to a client in `AUTH_ALLOWED_CLIENTS` for a principal in
 `AUTH_ALLOWED_PRINCIPALS`. Both checks matter: any latere account can get a
 valid token, for any latere client.
@@ -156,7 +171,7 @@ $LIBRARY_DIR/
     shares.yaml     every share: title, topics, members, tokens
     <id>.jsonl      one per share: comments, suggestions, hides; append-only
     read.txt        ids of inbox items marked read
-    session.key     signs the owner's session cookie
+    session.key     signs the owner's session cookie, for the editor too
 ```
 
 Sync runs at start, every `SYNC_INTERVAL`, and on Sync now. It fetches only
@@ -194,11 +209,12 @@ the same entries as BibTeX.
 
 ### Login
 
-The login page runs the same browser PKCE flow as the compose box, with
-`/login-sdk.js`, so `https://changkun.de/library/login` must be on the
-`changkun-blog` client's redirect URIs. The token is checked against
-`AUTH_ALLOWED_PRINCIPALS` and `AUTH_ALLOWED_CLIENTS` once, and the server then
-sets its own cookie for 30 days.
+The login page runs the browser PKCE flow with `/login-sdk.js`, so
+`https://changkun.de/library/login` must be on the `changkun-blog` client's
+redirect URIs. The token is checked against `AUTH_ALLOWED_PRINCIPALS` and
+`AUTH_ALLOWED_CLIENTS` once, and the server then sets its own cookie for the
+whole site for 30 days, which the blog's editor also reads; its login sends
+the owner here, and back with `?next=`.
 
 ## Configuration
 

@@ -22,6 +22,7 @@ import (
 	"syscall"
 	"time"
 
+	"changkun.de/x/website/internal/blog"
 	"changkun.de/x/website/internal/ideas"
 	"changkun.de/x/website/internal/library"
 	"changkun.de/x/website/internal/owner"
@@ -64,7 +65,20 @@ func notifyShutdown(parent context.Context) (context.Context, context.CancelFunc
 
 // serve serves on ln until ctx is done, then drains in-flight requests.
 func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
-	site, err := withWWW(l, FileServer(fsys))
+	// One login, the library's, serves the library and the blog's editor.
+	own := owner.New(filepath.Join(cmp.Or(os.Getenv("LIBRARY_DIR"), "/data"), "state", "session.key"), l)
+	lib, err := library.New(l, own)
+	if err != nil {
+		ln.Close()
+		return err
+	}
+	lib.Run(ctx)
+	svc := ideas.New(l)
+	ed := &blog.Editor{Owner: own.Is, Login: library.Prefix + "login"}
+	if svc != nil {
+		ed.Publisher = svc
+	}
+	site, err := withWWW(l, FileServer(fsys), ed)
 	if err != nil {
 		ln.Close()
 		return err
@@ -76,17 +90,9 @@ func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 		ln.Close()
 		return err
 	}
-	// One login, the library's, serves the library and the blog's editor.
-	own := owner.New(filepath.Join(cmp.Or(os.Getenv("LIBRARY_DIR"), "/data"), "state", "session.key"), l)
-	lib, err := library.New(l, own)
-	if err != nil {
-		ln.Close()
-		return err
-	}
-	lib.Run(ctx)
 
 	r.Handle("/", site)
-	r.Handle(ideas.Prefix, ideas.Handler(ideas.New(l), l))
+	r.Handle(ideas.Prefix, ideas.Handler(svc, l))
 	r.Handle(library.Prefix, library.Handler(lib))
 	s := &http.Server{
 		Handler:           logging(l)(h),

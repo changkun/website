@@ -23,10 +23,10 @@ import (
 // as WWW_CORS configures. Publishing a folder takes a copy or
 // a clone into WWW_DIR, and no restart. The research folder, a checkout of
 // changkun/research, also has its page rendered; see package research. The
-// blog folder, a checkout of changkun/blog, has its pages rendered; see
-// package blog.
+// blog folder, a checkout of changkun/blog, has its pages rendered, and ed
+// edits it; see package blog.
 // Without WWW_DIR, it returns next.
-func withWWW(l *log.Logger, next http.Handler) (http.Handler, error) {
+func withWWW(l *log.Logger, next http.Handler, ed *blog.Editor) (http.Handler, error) {
 	dir := os.Getenv("WWW_DIR")
 	if dir == "" {
 		return next, nil
@@ -47,7 +47,7 @@ func withWWW(l *log.Logger, next http.Handler) (http.Handler, error) {
 		files: files,
 		own: map[string]http.Handler{
 			"research": research.Handler(filepath.Join(dir, "research"), "/research/", files, l),
-			"blog":     blog.Handler(filepath.Join(dir, "blog"), files, l),
+			"blog":     blog.Handler(filepath.Join(dir, "blog"), files, ed, l),
 		},
 		site: fsys,
 		cors: cors,
