@@ -93,7 +93,7 @@ func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 	r.Handle("/", site)
 	r.Handle(library.Prefix, library.Handler(lib))
 	s := &http.Server{
-		Handler:           logging(l)(h),
+		Handler:           logging(l)(edgeCache(h)),
 		ErrorLog:          l,
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,

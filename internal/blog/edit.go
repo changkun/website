@@ -60,22 +60,6 @@ func blobSHA(b []byte) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// serveEditable serves the owner a post or an idea with a link to edit it,
-// and reports whether it did. The page is rendered for the request and not
-// kept, so no one else is served the link.
-func (h *handler) serveEditable(w http.ResponseWriter, r *http.Request, s *site, at string) bool {
-	p := s.byPath[at]
-	if p == nil || !p.Dated() || h.editor == nil || h.editor.Owner == nil || !h.editor.Owner(r) {
-		return false
-	}
-	v := singleView(p)
-	v.Edit = editURL(p)
-	w.Header().Set("Content-Type", htmlType)
-	w.Header().Set("Cache-Control", "no-store")
-	http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(execute("single", v)))
-	return true
-}
-
 // editable finds the post or idea r edits, by the address after
 // Prefix+"edit", and reads its markdown file. It writes the error and
 // reports false if there is none.

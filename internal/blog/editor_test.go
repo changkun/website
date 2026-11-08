@@ -407,32 +407,30 @@ func TestBlobSHA(t *testing.T) {
 	}
 }
 
-// TestEditLink checks that the owner, and only the owner, is served a post
-// or an idea with a link to edit it, and that everyone else is served the
-// page as it is kept.
+// TestEditLink checks that a post or an idea has a link to edit it, hidden,
+// which the page's script shows the owner, and that the page is the same
+// for the owner as for everyone else, so Cloudflare can keep it.
 func TestEditLink(t *testing.T) {
 	h := newEditorHandler(t, newFakePublisher())
 	for page, edit := range map[string]string{
-		"/blog/posts/hello/":    `<a class="article-edit" href="/blog/edit/posts/hello/" rel="nofollow">`,
-		"/blog/ideas/idea-one/": `<a class="article-edit" href="/blog/edit/ideas/idea-one/" rel="nofollow">`,
+		"/blog/posts/hello/":    `<a class="article-edit" href="/blog/edit/posts/hello/" rel="nofollow" hidden>`,
+		"/blog/ideas/idea-one/": `<a class="article-edit" href="/blog/edit/ideas/idea-one/" rel="nofollow" hidden>`,
 	} {
-		rec := do(t, h, "GET", page, "", nil, true)
-		if rec.Code != 200 || !strings.Contains(rec.Body.String(), edit) || rec.Header().Get("Cache-Control") != "no-store" {
-			t.Errorf("the owner's GET %s = %d, %q, without %s", page, rec.Code, rec.Header().Get("Cache-Control"), edit)
+		owner := do(t, h, "GET", page, "", nil, true)
+		anon := do(t, h, "GET", page, "", nil, false)
+		if anon.Code != 200 || !strings.Contains(anon.Body.String(), edit) || anon.Header().Get("ETag") == "" {
+			t.Errorf("GET %s = %d, ETag %q, without %s", page, anon.Code, anon.Header().Get("ETag"), edit)
 		}
-		rec = do(t, h, "GET", page, "", nil, false)
-		if rec.Code != 200 || strings.Contains(rec.Body.String(), "article-edit") || rec.Header().Get("ETag") == "" {
-			t.Errorf("anonymous GET %s = %d, ETag %q, with the edit link: %v", page, rec.Code,
-				rec.Header().Get("ETag"), strings.Contains(rec.Body.String(), "article-edit"))
+		if owner.Body.String() != anon.Body.String() || owner.Header().Get("Cache-Control") != anon.Header().Get("Cache-Control") {
+			t.Errorf("GET %s differs for the owner", page)
 		}
+	}
+	if rec := do(t, h, "GET", "/blog/posts/hello/", "", nil, false); !strings.Contains(rec.Body.String(), "signed_in=1") {
+		t.Error("the page has no script to show the owner the edit link")
 	}
 	// A page of its own is not edited here.
-	if rec := do(t, h, "GET", "/blog/about/", "", nil, true); strings.Contains(rec.Body.String(), "article-edit") {
+	if rec := do(t, h, "GET", "/blog/about/", "", nil, true); strings.Contains(rec.Body.String(), `class="article-edit"`) {
 		t.Error("the about page has an edit link")
-	}
-	// Without an editor, no one is the owner.
-	if rec := do(t, newTestHandler(t, "testdata/site"), "GET", "/blog/posts/hello/", "", nil, true); strings.Contains(rec.Body.String(), "article-edit") {
-		t.Error("a blog without an editor has an edit link")
 	}
 }
 

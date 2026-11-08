@@ -54,6 +54,22 @@ func TestSessionCookie(t *testing.T) {
 	if c := rec.Result().Cookies(); len(c) == 0 || c[0].Name != cookieName || c[0].Path != "/" || c[0].MaxAge >= 0 {
 		t.Fatalf("logout cookies = %v", c)
 	}
+	// And the cookie that tells the pages' scripts, which they can read.
+	var marked bool
+	for _, c := range rec.Result().Cookies() {
+		if c.Name == signedIn {
+			marked = true
+			if c.Path != "/" || c.MaxAge >= 0 || c.HttpOnly {
+				t.Errorf("logout %s cookie = %+v", signedIn, c)
+			}
+		}
+	}
+	if !marked {
+		t.Errorf("logout does not clear the %s cookie", signedIn)
+	}
+	if c := marker(httptest.NewRequest("POST", "/library/login", nil), "1", 60); c.Name != signedIn || c.Value != "1" || c.HttpOnly || c.Path != "/" {
+		t.Errorf("marker = %+v", c)
+	}
 
 	var nobody *Owner
 	if nobody.Is(httptest.NewRequest("GET", "/", nil)) {

@@ -146,6 +146,13 @@
   })();
 </script>
 <script src="{{asset "lang.js"}}"></script>
+<script>
+  // A page is the same for everyone, so Cloudflare can keep it near each
+  // reader; the owner's Edit link is shown here, when the owner is signed in.
+  if (/(?:^|; )signed_in=1(?:;|$)/.test(document.cookie)) {
+    document.querySelectorAll('.article-edit[hidden]').forEach(function(a) { a.hidden = false; });
+  }
+</script>
 {{- if .Rail}}
 <script>
   // The contents rail marks the section being read: the last heading that

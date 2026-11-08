@@ -36,6 +36,11 @@ const (
 	cookieName  = "owner"
 	oldCookie   = "library_owner" // the library's own cookie, from before the blog's editor shared it
 	sessionLife = 30 * 24 * time.Hour
+	// signedIn tells the pages' scripts that the owner is signed in, so a
+	// page served the same to everyone, as Cloudflare keeps it at its edge,
+	// can still show the owner its Edit link. It grants nothing: every owner
+	// action checks the session cookie.
+	signedIn = "signed_in"
 )
 
 // An Owner decides whether a request comes from the site's owner. A nil
@@ -138,6 +143,7 @@ func (o *Owner) Login(w http.ResponseWriter, r *http.Request) {
 	exp := strconv.FormatInt(time.Now().Add(sessionLife).Unix(), 10)
 	http.SetCookie(w, cookie(r, cookieName, "/", exp+"."+o.sign(exp), int(sessionLife.Seconds())))
 	http.SetCookie(w, cookie(r, oldCookie, "/library/", "", -1))
+	http.SetCookie(w, marker(r, "1", int(sessionLife.Seconds())))
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -145,6 +151,7 @@ func (o *Owner) Login(w http.ResponseWriter, r *http.Request) {
 func (o *Owner) Logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie(r, cookieName, "/", "", -1))
 	http.SetCookie(w, cookie(r, oldCookie, "/library/", "", -1))
+	http.SetCookie(w, marker(r, "", -1))
 }
 
 func cookie(r *http.Request, name, path, value string, age int) *http.Cookie {
@@ -157,6 +164,13 @@ func cookie(r *http.Request, name, path, value string, age int) *http.Cookie {
 		Secure:   Secure(r),
 		SameSite: http.SameSiteLaxMode, // other sites cannot post the owner's forms
 	}
+}
+
+// marker is the signedIn cookie, which scripts may read.
+func marker(r *http.Request, value string, age int) *http.Cookie {
+	c := cookie(r, signedIn, "/", value, age)
+	c.HttpOnly = false
+	return c
 }
 
 // Secure reports whether the client reached the site over https, directly

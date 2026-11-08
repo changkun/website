@@ -180,7 +180,7 @@ type view struct {
 	Rail        bool     // a contents rail on the side
 	Math        bool     // MathJax typesets the page
 	CanPublish  bool     // the editor can publish, not only preview
-	Edit        string   // where the owner edits the page
+	Edit        string   // where the owner edits the page, a link only the owner is shown
 	Entry       *entry   // the post or idea the editor opens, or nil for a new one
 	Scripts     []string // the figure scripts of the post the editor opens, for its preview
 
@@ -320,9 +320,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	at := "/" + rest
 	if f, ok := s.files[at]; ok {
 		h.serveFile(w, r, f)
-		return
-	}
-	if h.serveEditable(w, r, s, at) {
 		return
 	}
 	if res := s.response(at); res != nil {
@@ -564,6 +561,11 @@ func singleView(p *Page) *view {
 	}
 	if v.Description == "" {
 		v.Description = siteDescription
+	}
+	if p.Dated() {
+		// Hidden, and shown by the page's script to the owner: the page
+		// is the same for everyone, so Cloudflare can keep it.
+		v.Edit = editURL(p)
 	}
 	return v
 }
