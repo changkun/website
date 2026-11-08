@@ -52,7 +52,7 @@ func TestPages(t *testing.T) {
 			`<div class="highlight">`, `class="language-go" data-lang="go"`,
 			`href="/blog/tags/c&#43;&#43;/"`, `rel="next"`, "MathJax.js",
 		}, []string{"HUGOMORE42"}},
-		{"/blog/posts/a-bundle/", 200, []string{`<img src="one.png"`, `/blog/assets/ifig.js?v=`, `src="/blog/posts/a-bundle/figures.js"`, `rel="prev"`}, []string{"toc-rail", "MathJax"}},
+		{"/blog/posts/a-bundle/", 200, []string{`<img src="/blog/posts/a-bundle/one.png"`, `/blog/assets/ifig.js?v=`, `src="/blog/posts/a-bundle/figures.js"`, `rel="prev"`}, []string{"toc-rail", "MathJax"}},
 		{"/blog/posts/a-bundle/one.png", 200, []string{"PNG"}, nil},
 		{"/blog/posts/2021-02-02-bundle/one.png", 404, nil, nil},
 		{"/blog/images/x.png", 200, []string{"PNG"}, nil},

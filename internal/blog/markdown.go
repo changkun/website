@@ -9,6 +9,8 @@ import (
 	"fmt"
 	gohtml "html"
 	"html/template"
+	"net/url"
+	"path"
 	"regexp"
 	"slices"
 	"strconv"
@@ -135,13 +137,64 @@ func canonical(u string) string {
 	return u
 }
 
+// resolve points the links and images of doc that name a file beside the
+// page, such as fig.png in a post's folder, at the file's address, so that
+// they also work away from the page: in lists, summaries and feeds.
+func resolve(doc ast.Node, links map[string]string) {
+	if len(links) == 0 {
+		return
+	}
+	to := func(dest []byte) []byte {
+		name, err := url.PathUnescape(strings.TrimPrefix(string(dest), "./"))
+		if a, ok := links[name]; ok && err == nil {
+			return []byte(a)
+		}
+		return dest
+	}
+	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		switch n := n.(type) {
+		case *ast.Image:
+			if entering {
+				n.Destination = to(n.Destination)
+			}
+		case *ast.Link:
+			if entering {
+				n.Destination = to(n.Destination)
+			}
+		}
+		return ast.WalkContinue, nil
+	})
+}
+
+// media is the element that shows a file of each kind other than an image,
+// by its extension.
+var media = map[string]string{
+	".mp4": "video", ".m4v": "video", ".mov": "video", ".webm": "video",
+	".mp3": "audio", ".m4a": "audio", ".aac": "audio", ".ogg": "audio", ".oga": "audio", ".wav": "audio", ".flac": "audio",
+}
+
+// image draws an image, or plays a video or a sound written as one.
 func (r *blogRenderer) image(w util.BufWriter, src []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
 	if !entering {
 		return ast.WalkContinue, nil
 	}
 	n := node.(*ast.Image)
+	dest := gohtml.EscapeString(canonical(string(n.Destination)))
+	if el, ok := media[strings.ToLower(path.Ext(string(n.Destination)))]; ok {
+		w.WriteString("<" + el + ` src="` + dest + `" controls preload="metadata"`)
+		if el == "video" {
+			w.WriteString(" playsinline")
+		}
+		if alt := plainText(n, src); len(alt) > 0 {
+			w.WriteString(` aria-label="`)
+			w.Write(util.EscapeHTML(alt))
+			w.WriteString(`"`)
+		}
+		w.WriteString("></" + el + ">")
+		return ast.WalkSkipChildren, nil
+	}
 	w.WriteString(`<img src="`)
-	w.WriteString(gohtml.EscapeString(canonical(string(n.Destination))))
+	w.WriteString(dest)
 	w.WriteString(`" alt="`)
 	w.Write(util.EscapeHTML(plainText(n, src)))
 	w.WriteString(`"`)
@@ -333,6 +386,7 @@ func render(p *Page, body []byte) error {
 	}
 	ctx := parser.NewContext(parser.WithIDs(&headingIDs{seen: map[string]bool{}}))
 	doc := md.Parser().Parse(text.NewReader(body), parser.WithContext(ctx))
+	resolve(doc, p.links)
 	var out bytes.Buffer
 	if err := md.Renderer().Render(&out, body, doc); err != nil {
 		return err

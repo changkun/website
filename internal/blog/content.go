@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"io/fs"
 	"log"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -46,6 +47,10 @@ type Page struct {
 
 	// Files are the bundle's other files, by their path in the bundle.
 	Files map[string]string
+
+	// links are the addresses below the blog of the files that the
+	// markdown may name by a relative path, by that path.
+	links map[string]string
 
 	prev, next *Page  // in the section, older and newer
 	body       []byte // the markdown, until it is rendered
@@ -243,6 +248,7 @@ func newPage(root fs.FS, name string, src []byte) (*Page, error) {
 	}
 	if p.Bundle != "" {
 		p.Files = make(map[string]string)
+		p.links = make(map[string]string)
 		err := fs.WalkDir(root, p.Bundle, func(f string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -255,6 +261,7 @@ func newPage(root fs.FS, name string, src []byte) (*Page, error) {
 				return nil // the script that draws the figures, not published
 			}
 			p.Files[rel] = f
+			p.links[rel] = p.Path + (&url.URL{Path: rel}).EscapedPath()
 			return nil
 		})
 		if err != nil {
