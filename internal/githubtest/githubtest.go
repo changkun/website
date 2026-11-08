@@ -39,7 +39,11 @@ func Git(dir string, args ...string) ([]byte, error) {
 // InitRepo makes a bare repository at dir, with branch main at one commit
 // of files, by their paths.
 func InitRepo(dir string, files map[string][]byte) error {
-	if _, err := run("", nil, nil, "init", "--bare", "-b", "main", dir); err != nil {
+	// Not init -b, which git before 2.28 does not know.
+	if _, err := run("", nil, nil, "init", "--bare", dir); err != nil {
+		return err
+	}
+	if _, err := run(dir, nil, nil, "symbolic-ref", "HEAD", "refs/heads/main"); err != nil {
 		return err
 	}
 	index := filepath.Join(dir, "seed.index")
