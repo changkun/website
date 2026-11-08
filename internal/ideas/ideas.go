@@ -65,7 +65,7 @@ func New(l *log.Logger) *Service {
 			token: gitToken,
 			owner: owner,
 			repo:  repo,
-			name:  cmp.Or(os.Getenv("GIT_COMMITTER_NAME"), "Changkun Ideas API Server"),
+			name:  cmp.Or(os.Getenv("GIT_COMMITTER_NAME"), "Changkun Ou"),
 			email: cmp.Or(os.Getenv("GIT_COMMITTER_EMAIL"), "hi+ideas@changkun.de"),
 		},
 	}
