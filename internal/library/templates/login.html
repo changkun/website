@@ -4,22 +4,47 @@
 <p><button id="login" hidden>Log in with latere</button></p>
 <script src="/login-sdk.js"></script>
 <script>
+// The page logs in by itself: with a latere token it asks the server for the
+// owner's cookie, and without one it goes to latere. The button is only for
+// when that did not work: latere was cancelled or failed, the page went
+// there a moment ago, or the owner just logged out. So it never loops.
 (function () {
-  var next = {{.Data}};
+  var KEY = 'library.login';
+  var params = new URLSearchParams(location.search);
   var status = document.getElementById('login-status');
   var button = document.getElementById('login');
+  var saved = null;
+  try { saved = JSON.parse(sessionStorage.getItem(KEY)); } catch (e) {}
+  // latere returns to this page without ?next=, so the page to go on to is
+  // kept across the round trip.
+  var next = {{.Data}};
+  if (params.has('code') && saved && /^\/library\//.test(saved.next) && saved.next.indexOf('//') !== 0) next = saved.next;
   function offer(msg) {
     status.textContent = msg;
     button.hidden = false;
   }
-  button.onclick = function () { latereAuth.login(location.origin + location.pathname); };
+  function start() {
+    try { sessionStorage.setItem(KEY, JSON.stringify({ next: next, at: Date.now() })); } catch (e) {}
+    status.textContent = 'Taking you to latere…';
+    latereAuth.login(location.origin + location.pathname);
+  }
+  button.onclick = start;
   if (!window.latereAuth) { offer('The login script did not load.'); return; }
   latereAuth.handleCallback().then(function () {
     return latereAuth.getToken();
   }).then(function (tok) {
-    if (!tok) { offer('Log in with the latere account that owns this library.'); return; }
+    if (!tok) {
+      var recent = saved && Date.now() - saved.at < 60000;
+      if (params.has('out') || params.has('error') || recent) { offer('Log in with the latere account that owns this library.'); return; }
+      start();
+      return;
+    }
     return fetch('/library/login', { method: 'POST', headers: { Authorization: 'Bearer ' + tok } }).then(function (r) {
-      if (r.ok) { location.replace(next); return; }
+      if (r.ok) {
+        try { sessionStorage.removeItem(KEY); } catch (e) {}
+        location.replace(next);
+        return;
+      }
       offer(r.status === 403 ? 'This latere account is not the owner of this library.' : 'Login failed (' + r.status + ').');
     });
   }).catch(function (e) { offer('Login failed: ' + e.message); });

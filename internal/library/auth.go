@@ -138,7 +138,8 @@ func (o *owner) login(w http.ResponseWriter, r *http.Request) {
 func (o *owner) logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "", Path: Prefix, MaxAge: -1,
 		HttpOnly: true, Secure: secure(r), SameSite: http.SameSiteLaxMode})
-	http.Redirect(w, r, Prefix+"login", http.StatusSeeOther)
+	// ?out= keeps the login page from logging straight back in.
+	http.Redirect(w, r, Prefix+"login?out=1", http.StatusSeeOther)
 }
 
 // secure reports whether the client reached us over https, directly or
