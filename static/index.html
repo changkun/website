@@ -21,12 +21,12 @@
         </script>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
         <style>
             /* The latere.ai ink palette: neutral grays with no hue, and the
              * ink itself as the accent. --navy is latere's blue, the one hue
-             * on the page, spent sparingly: the eyebrow, the degree, and a
-             * link under the pointer. */
+             * on the page, spent sparingly: the degree and a link under the
+             * pointer. One typeface, Inter, for everything. */
             :root {
                 --bg: #ffffff;
                 --bg-raised: #f4f4f4;
@@ -37,6 +37,9 @@
                 --accent: var(--text);
                 --border: rgba(0, 0, 0, 0.08);
                 --border-strong: rgba(0, 0, 0, 0.14);
+                /* A soft lift: a tight contact shadow under a wide, faint
+                 * one. */
+                --photo-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.10);
             }
 
             [data-theme="dark"] {
@@ -48,6 +51,7 @@
                 --navy: #9bb0e4;
                 --border: rgba(255, 255, 255, 0.08);
                 --border-strong: rgba(255, 255, 255, 0.14);
+                --photo-shadow: 0 1px 2px rgba(0, 0, 0, 0.40), 0 6px 20px rgba(0, 0, 0, 0.45);
             }
 
             * { box-sizing: border-box; }
@@ -71,10 +75,6 @@
 
             a { text-decoration: none; }
 
-            .mono {
-                font-family: ui-monospace, 'SF Mono', 'Fira Code', Menlo, monospace;
-            }
-
             a:focus-visible,
             button:focus-visible {
                 outline: 2px solid var(--accent);
@@ -83,10 +83,12 @@
 
             a:focus-visible { border-radius: 4px; }
 
+            /* 16px from the top and right, where the library's header puts
+             * its button too. */
             .theme-toggle {
                 position: fixed;
-                top: 24px;
-                right: 24px;
+                top: 16px;
+                right: 16px;
                 z-index: 50;
                 width: 36px;
                 height: 36px;
@@ -123,92 +125,49 @@
                 padding: 72px 24px;
             }
 
-            .container { width: 100%; max-width: 880px; }
+            .container { width: 100%; max-width: 760px; }
 
             .hero {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 48px;
+                gap: 32px;
                 align-items: flex-start;
             }
 
-            .portrait { flex: none; }
+            /* The photo spans the text beside it: its top at the top of the
+             * name's capitals, its bottom on the bio's last baseline. */
+            .portrait { flex: none; margin-top: 7px; }
 
             .portrait img {
-                width: 160px;
-                height: 160px;
+                width: 130px;
+                height: 130px;
                 border-radius: 12px;
-                border: 1px solid var(--border);
+                box-shadow: var(--photo-shadow);
                 display: block;
                 object-fit: cover;
             }
 
-            .location {
-                margin-top: 13px;
-                font-size: 10.5px;
-                letter-spacing: 0.12em;
-                color: var(--text-muted);
-                text-align: center;
-            }
-
             .intro { flex: 1; min-width: 300px; }
 
-            .eyebrow {
-                font-size: 11px;
-                letter-spacing: 0.16em;
-                color: var(--navy);
-                text-transform: uppercase;
-                text-wrap: balance;
-            }
-
-            /* On a narrow screen the roles wrap between one another, never
-             * inside one. */
-            .eyebrow span { white-space: nowrap; }
-
+            /* The C's round side starts its ink 0.05em in; pulled back by
+             * that, it lines up with the straight edges of the lines below,
+             * as a round letter has to, to look aligned. */
             h1 {
-                margin: 11px 0 0;
-                font-family: 'Instrument Serif', serif;
-                font-weight: 400;
-                font-size: clamp(40px, 7vw, 56px);
-                line-height: 1;
-                letter-spacing: -0.01em;
+                margin: 0 0 0 -0.05em;
+                font-weight: 600;
+                font-size: clamp(30px, 5vw, 38px);
+                line-height: 1.15;
+                letter-spacing: -0.02em;
                 color: var(--text);
             }
 
             .name-degree { color: var(--navy); }
 
-            .lede {
-                margin: 16px 0 0;
-                font-family: 'Instrument Serif', serif;
-                font-style: italic;
-                font-size: 21px;
-                line-height: 1.35;
-                color: var(--text-secondary);
-                max-width: 520px;
-                text-wrap: balance;
-            }
-
             .bio {
-                margin: 20px 0 0;
-                font-size: 14.5px;
-                line-height: 1.75;
-                color: var(--text-secondary);
-                max-width: 520px;
-            }
-
-            .motto {
-                margin: 14px 0 0;
-                font-family: 'Instrument Serif', serif;
-                font-style: italic;
+                margin: 12px 0 0;
                 font-size: 16px;
-                color: var(--text-muted);
-            }
-
-            .keywords {
-                margin: 18px 0 0;
-                font-size: 11.5px;
-                letter-spacing: 0.04em;
-                color: var(--text-muted);
+                line-height: 1.65;
+                color: var(--text-secondary);
             }
 
             .divider {
@@ -217,17 +176,19 @@
                 background: linear-gradient(90deg, var(--border-strong), var(--border) 60%, transparent);
             }
 
+            /* Columns are as wide as their links, and the space left over
+             * goes between them, so the first starts at the left edge and
+             * the last ends at the right: the block sits centered as seen. */
             .links {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                grid-template-columns: repeat(4, auto);
+                justify-content: space-between;
                 gap: 32px 24px;
             }
 
             .col-label {
-                font-size: 10px;
-                letter-spacing: 0.14em;
+                font-size: 13px;
                 color: var(--text-muted);
-                text-transform: uppercase;
                 margin-bottom: 14px;
             }
 
@@ -288,9 +249,12 @@
 
             footer a:hover { color: var(--text-secondary); }
 
+            @media (max-width: 640px) {
+                .links { grid-template-columns: repeat(2, auto); }
+            }
+
             @media (max-width: 600px) {
                 main { padding: 64px 24px; }
-                .theme-toggle { top: 16px; right: 16px; }
             }
         </style>
     </head>
@@ -345,16 +309,11 @@
                 <div class="hero">
                     <div class="portrait">
                         <img src="./logo.png" alt="Changkun Ou">
-                        <div class="location mono">MUNICH · DE</div>
                     </div>
 
                     <div class="intro">
-                        <div class="eyebrow mono"><span>Founder ·</span> <span>Researcher ·</span> <span>Engineer ·</span> <span>Educator</span></div>
                         <h1>Changkun Ou<span class="name-degree">, Ph.D.</span></h1>
-                        <p class="lede">From systems to agents, and the judgment to know what we can't yet trust.</p>
                         <p class="bio">Bridging HCI, AI, and systems programming. Building autonomous, human-in-the-loop systems, informed by psychology, philosophy, and social science.</p>
-                        <p class="motto">Science and art, life in between.</p>
-                        <div class="keywords mono">Human-AI Interaction · Agents · LLM · Go · C++</div>
                     </div>
                 </div>
 
@@ -362,7 +321,7 @@
 
                 <div class="links">
                     <div class="col">
-                        <div class="col-label mono">Research</div>
+                        <div class="col-label">Research</div>
                         <div class="col-links">
                             <a href="https://changkun.de/s/research"><svg class="icon" aria-hidden="true"><use href="#i-research"/></svg>Research</a>
                             <a href="https://scholar.google.de/citations?user=3qjB-eUAAAAJ"><svg class="icon" aria-hidden="true"><use href="#i-scholar"/></svg>Scholar</a>
@@ -373,7 +332,7 @@
                         </div>
                     </div>
                     <div class="col">
-                        <div class="col-label mono">Writing</div>
+                        <div class="col-label">Writing</div>
                         <div class="col-links">
                             <a href="https://changkun.de/s/blog"><svg class="icon" aria-hidden="true"><use href="#i-blog"/></svg>Blog</a>
                             <a href="https://changkun.de/books/"><svg class="icon" aria-hidden="true"><use href="#i-books"/></svg>Books</a>
@@ -385,7 +344,7 @@
                         </div>
                     </div>
                     <div class="col">
-                        <div class="col-label mono">Build</div>
+                        <div class="col-label">Build</div>
                         <div class="col-links">
                             <a href="https://changkun.de/s/github"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>GitHub</a>
                             <a href="https://stackoverflow.com/users/3819460/changkun"><svg class="icon" aria-hidden="true"><use href="#i-stackoverflow"/></svg>Stack Overflow</a>
@@ -395,7 +354,7 @@
                         </div>
                     </div>
                     <div class="col">
-                        <div class="col-label mono">Connect</div>
+                        <div class="col-label">Connect</div>
                         <div class="col-links">
                             <a href="https://changkun.de/s/email"><svg class="icon" aria-hidden="true"><use href="#i-email"/></svg>Email</a>
                             <a href="https://www.linkedin.com/in/changkun/"><svg class="icon" aria-hidden="true"><use href="#i-linkedin"/></svg>LinkedIn</a>
