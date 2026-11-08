@@ -1208,17 +1208,37 @@ svg { width: 16px; height: 16px; flex: none; }
 
 /* ---- Editor: the compose window as a page of its own ---- */
 
+/* It fills the window below the header, edge to edge, with no footer
+ * under it; the text keeps the measure of a page in each pane. */
+.main.page-editor { max-width: none; padding: 0; }
+
+.main.page-editor + .site-footer { display: none; }
+
 .compose-window.editor {
     display: flex;
     position: static;
     width: 100%;
-    height: calc(100vh - var(--header-h) - 48px);
-    height: calc(100dvh - var(--header-h) - 48px);
+    height: calc(100vh - var(--header-h));
+    height: calc(100dvh - var(--header-h));
     min-height: 420px;
-    margin: 24px 0;
+    margin: 0;
     transform: none;
+    border: 0;
+    border-radius: 0;
     box-shadow: none;
 }
+
+.editor .compose-title,
+.editor .compose-content,
+.editor-fields,
+.editor-files {
+    width: 100%;
+    max-width: calc(var(--measure) + 72px);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.editor .compose-preview .post-body { max-width: var(--measure); margin-left: auto; margin-right: auto; }
 
 .editor .compose-header { padding-left: 10px; }
 
@@ -1284,7 +1304,7 @@ svg { width: 16px; height: 16px; flex: none; }
 
 .editor.dropping { outline: 2px dashed var(--border-strong); outline-offset: -6px; }
 
-.editor-preview-title { margin: 0 0 0.8em; font: 600 28px/1.25 var(--sans); letter-spacing: -0.02em; color: var(--text); }
+.editor-preview-title { max-width: var(--measure); margin: 0 auto 0.8em; font: 600 28px/1.25 var(--sans); letter-spacing: -0.02em; color: var(--text); }
 
 .editor[data-kind="idea"] .editor-preview-title { font-size: 22px; }
 
@@ -1296,7 +1316,6 @@ svg { width: 16px; height: 16px; flex: none; }
 }
 
 @media (max-width: 720px) {
-    .compose-window.editor { margin: 0 calc(-1 * var(--gutter)); width: calc(100% + 2 * var(--gutter)); height: calc(100dvh - var(--header-h)); border: 0; border-radius: 0; }
     .editor-fields,
     .editor-files { padding-left: 16px; padding-right: 16px; }
 }
