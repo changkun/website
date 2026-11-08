@@ -20,11 +20,13 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/research.css?v={{.CSSVersion}}">
 </head>
 <body>
 <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></g></symbol>
     <symbol id="i-home" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></g></symbol>
     <symbol id="i-email" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></g></symbol>
     <symbol id="i-scholar" viewBox="0 0 24 24"><path fill="currentColor" d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></symbol>
@@ -36,15 +38,29 @@
     <symbol id="i-youtube" viewBox="0 0 24 24"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></symbol>
 </svg>
 
-<button class="theme-toggle" type="button" aria-label="Toggle theme">
-    <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-    <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-</button>
+<header class="site-header">
+    <div class="header-inner">
+        <div class="brand"><a href="https://changkun.de/">Changkun Ou</a><span class="sep">/</span><a href="./">Research</a></div>
+        <button class="theme-toggle" type="button" aria-label="Toggle theme">
+            <svg class="icon-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+            <svg class="icon-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+        </button>
+    </div>
+</header>
+<script>
+    // The header's height, for the page to start below it and the menu to
+    // stick to it; it changes when the header's text wraps.
+    (function() {
+        var h = document.querySelector('.site-header');
+        var fit = function() { document.documentElement.style.setProperty('--header-h', h.offsetHeight + 'px'); };
+        fit();
+        if (window.ResizeObserver) new ResizeObserver(fit).observe(h);
+    })();
+</script>
 
 <header class="hero">
-    <img class="portrait" src="assets/changkun_ou3.png" alt="Changkun Ou" width="120" height="120">
+    <img class="portrait" src="assets/changkun_ou3.png" alt="Changkun Ou" width="130" height="130">
     <div class="identity">
-        <div class="eyebrow">Research</div>
         <h1>Changkun Ou<span class="degree">, Ph.D.</span></h1>
     </div>
     <nav class="profiles" aria-label="Profiles">
@@ -89,7 +105,7 @@
             try { localStorage.setItem('theme', next); } catch (e) {}
         });
         // The menu marks the section being read: the last one whose heading
-        // has scrolled up to the menu.
+        // has scrolled up to the menu, which sticks under the header.
         var menu = document.querySelector('.sections-inner');
         var links = document.querySelectorAll('.sections a');
         var headings = Array.prototype.map.call(links, function(a) {
@@ -107,9 +123,11 @@
         var ticking = false, marked = -2;
         function mark() {
             ticking = false;
+            // Past the point a link to the heading scrolls it to.
+            var edge = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) + 8;
             var current = -1;
             headings.forEach(function(h, i) {
-                if (h && h.getBoundingClientRect().top <= 72) current = i;
+                if (h && h.getBoundingClientRect().top <= edge) current = i;
             });
             if (current === marked) return;
             marked = current;

@@ -1,59 +1,59 @@
-/* The latere.ai ink palette the home page uses: neutral grays with no
- * hue, the ink itself as the accent, and latere's navy as the one color,
- * on the eyebrow, the degree, and the links. */
+/* The research page in the look of the blog (internal/blog/assets/ink.css):
+ * latere.ai's ink palette, neutral grays with the ink itself as the
+ * accent and one navy for links, and Inter for everything. */
 :root {
     --bg: #ffffff;
     --bg-raised: #f4f4f4;
     --text: #0d0d0d;
+    --text-prose: #262626;
     --text-secondary: #525252;
     --text-muted: #666666;
     --navy: #38538f;
     --border: rgba(0, 0, 0, 0.08);
     --border-strong: rgba(0, 0, 0, 0.14);
-    --nav-bg: rgba(255, 255, 255, 0.92);
-    --serif: 'Instrument Serif', Georgia, serif;
-    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-    --measure: 760px;
+    --photo-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.10);
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
+    --measure: 700px;
     --gutter: 24px;
+    /* The fixed header's height, kept by the script after the header;
+     * the page starts below it, and the menu sticks to it. */
+    --header-h: 69px;
+    --menu-h: 49px;
 }
 
 [data-theme="dark"] {
     --bg: #161616;
     --bg-raised: #262626;
     --text: #ececec;
+    --text-prose: #d4d4d4;
     --text-secondary: #b4b4b4;
     --text-muted: #9a9a9a;
     --navy: #9bb0e4;
     --border: rgba(255, 255, 255, 0.08);
     --border-strong: rgba(255, 255, 255, 0.14);
-    --nav-bg: rgba(22, 22, 22, 0.92);
+    --photo-shadow: 0 1px 2px rgba(0, 0, 0, 0.40), 0 6px 20px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 
-html { scroll-padding-top: 64px; }
+/* Anchors stop clear of the header and the menu under it. */
+html { scroll-padding-top: calc(var(--header-h) + var(--menu-h) + 24px); }
 
 body {
     margin: 0;
+    padding-top: var(--header-h);
     background: var(--bg);
     color: var(--text-secondary);
     font: 15px/1.65 var(--sans);
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
     transition: background-color 0.3s, color 0.3s;
 }
 
 ::selection { background: #555; color: #fff; }
 
-a {
-    color: var(--navy);
-    text-decoration: underline;
-    text-decoration-color: transparent;
-    text-underline-offset: 2px;
-    transition: color 0.2s, text-decoration-color 0.2s;
-}
-
-a:hover { text-decoration-color: currentColor; }
+a { color: var(--navy); text-decoration: none; }
 
 a:focus-visible,
 button:focus-visible {
@@ -62,26 +62,56 @@ button:focus-visible {
     border-radius: 4px;
 }
 
+button { font: inherit; color: inherit; }
+
 .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
 
-/* ---- Header ---- */
+svg { width: 16px; height: 16px; flex: none; }
 
-/* It scrolls away with the header, so it never sits on the menu once
- * the menu sticks to the top. */
-.theme-toggle {
-    position: absolute;
-    top: 16px;
-    right: 16px;
+/* ---- Header: the blog's ---- */
+
+.site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 20;
-    width: 36px;
-    height: 36px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.3s;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 16px 16px clamp(16px, 2vw, 24px);
+}
+
+.brand {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-right: auto;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.brand a { color: var(--text); }
+
+.brand .sep { color: var(--text-secondary); font-weight: 400; }
+
+.theme-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex: none;
+    width: 36px;
+    height: 36px;
     padding: 0;
     border: 1px solid var(--border-strong);
     border-radius: 8px;
-    background: var(--bg);
+    background: none;
     color: var(--text-secondary);
     cursor: pointer;
     transition: color 0.2s, background-color 0.2s;
@@ -89,18 +119,12 @@ button:focus-visible {
 
 .theme-toggle:hover { color: var(--text); background: var(--bg-raised); }
 
-.theme-toggle svg {
-    width: 18px;
-    height: 18px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
+.theme-toggle svg { width: 18px; height: 18px; }
 
 [data-theme="light"] .icon-sun,
 [data-theme="dark"] .icon-moon { display: none; }
+
+/* ---- Frame ---- */
 
 .hero,
 .intro,
@@ -113,21 +137,22 @@ footer {
     padding: 0 var(--gutter);
 }
 
-/* The portrait beside the name, with the profile links under the name;
- * on a phone the links take a line of their own below both. */
+/* The portrait beside the name, with the profile links under the name,
+ * as the blog's front page; on a phone the links take a line of their
+ * own below both. */
 .hero {
     display: grid;
-    grid-template-columns: auto 1fr;
-    column-gap: 28px;
-    padding-top: 72px;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 32px;
+    padding-top: 56px;
 }
 
 .portrait {
     grid-row: 1 / span 2;
-    width: 120px;
-    height: 120px;
+    width: 130px;
+    height: 130px;
     border-radius: 12px;
-    border: 1px solid var(--border);
+    box-shadow: var(--photo-shadow);
     object-fit: cover;
     user-select: none;
     -webkit-user-drag: none;
@@ -135,28 +160,21 @@ footer {
 
 .identity { min-width: 0; align-self: end; }
 
-.eyebrow {
-    font: 11px/1.4 var(--mono);
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--navy);
-}
-
 h1 {
-    margin: 8px 0 0;
-    font: 400 clamp(36px, 6vw, 52px)/1 var(--serif);
-    letter-spacing: -0.01em;
+    margin: 0;
+    font: 600 clamp(30px, 5vw, 38px)/1.15 var(--sans);
+    letter-spacing: -0.02em;
     color: var(--text);
 }
 
-.degree { color: var(--navy); }
+.degree { font-weight: 400; color: var(--text-secondary); }
 
 .profiles {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 2px;
     align-self: start;
-    margin: 14px 0 0 -8px;
+    margin: 10px 0 0 -8px;
 }
 
 .profiles a {
@@ -170,30 +188,43 @@ h1 {
     transition: color 0.2s, background-color 0.2s;
 }
 
-.profiles a:hover { color: var(--navy); background: var(--bg-raised); }
+.profiles a:hover { color: var(--text); background: var(--bg-raised); }
 
 .profiles svg { width: 18px; height: 18px; }
 
-.intro { padding-top: 28px; }
+.intro { padding-top: 32px; }
 
 .intro p {
-    margin: 0 0 14px;
-    font-size: 16px;
-    line-height: 1.7;
+    margin: 0 0 1.1em;
+    font-size: 16.5px;
+    line-height: 1.75;
+    color: var(--text-prose);
 }
+
+.intro a,
+.content a:not(.chip) {
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.2s;
+}
+
+.intro a:hover,
+.content a:not(.chip):hover { text-decoration-color: currentColor; }
 
 /* ---- Section menu ---- */
 
+/* The page's contents, as the blog's contents rail, laid sideways and
+ * stuck under the header. */
 .sections {
     position: sticky;
-    top: 0;
+    top: var(--header-h);
     z-index: 10;
-    margin-top: 28px;
-    background: var(--nav-bg);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    margin-top: 24px;
+    background: var(--bg);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
+    transition: background-color 0.3s;
 }
 
 .sections-inner {
@@ -207,12 +238,11 @@ h1 {
 .sections-inner::-webkit-scrollbar { display: none; }
 
 .sections a {
-    padding: 13px 0 12px;
-    font-size: 13px;
-    font-weight: 500;
+    padding: 12px 0 11px;
+    font-size: 14px;
     color: var(--text-secondary);
-    text-decoration: none;
     border-bottom: 1px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
 }
 
 .sections a:hover,
@@ -222,20 +252,17 @@ h1 {
 
 .content { padding-bottom: 24px; }
 
-.content > h2:first-child { margin-top: 40px; }
-
 h2 {
-    margin: 56px 0 20px;
-    font: 400 32px/1.1 var(--serif);
+    margin: 48px 0 18px;
+    font: 600 24px/1.3 var(--sans);
+    letter-spacing: -0.015em;
     color: var(--text);
 }
 
 h3 {
     margin: 28px 0 12px;
-    font: 500 11px/1.4 var(--mono);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-muted);
+    font: 600 16.5px/1.4 var(--sans);
+    color: var(--text);
 }
 
 .content p { margin: 0 0 14px; }
@@ -274,15 +301,15 @@ h3 {
     padding: 0 7px;
     border: 1px solid var(--border-strong);
     border-radius: 6px;
-    font: 500 11px/1 var(--mono);
-    letter-spacing: 0.02em;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1;
     color: var(--text-secondary);
-    text-decoration: none;
     vertical-align: 1px;
-    transition: color 0.2s, border-color 0.2s;
+    transition: color 0.2s, background-color 0.2s;
 }
 
-.chip:hover { color: var(--navy); border-color: var(--navy); }
+.chip:hover { color: var(--text); background: var(--bg-raised); }
 
 /* The languages of an entry not only in English. */
 .lang {
@@ -297,9 +324,10 @@ h3 {
     vertical-align: 1px;
 }
 
-/* ---- Footer ---- */
+/* ---- Footer: the blog's ---- */
 
 footer {
+    margin-top: 32px;
     padding-top: 28px;
     padding-bottom: 40px;
     border-top: 1px solid var(--border);
@@ -314,13 +342,15 @@ footer a { color: var(--text-muted); }
 
 footer a:hover { color: var(--text-secondary); }
 
+.urlstat { font-variant-numeric: tabular-nums; }
+
 /* ---- Phones ---- */
 
-@media (max-width: 600px) {
+@media (max-width: 720px) {
     :root { --gutter: 16px; }
-    .hero { column-gap: 16px; padding-top: 64px; }
-    .portrait { grid-row: 1; width: 80px; height: 80px; }
-    h1 { font-size: 34px; }
+    .hero { column-gap: 16px; padding-top: 36px; }
+    .portrait { grid-row: 1; width: 72px; height: 72px; }
+    .identity { align-self: center; }
     .profiles { grid-column: 1 / -1; gap: 0; margin-top: 12px; }
     /* The menu scrolls sideways; its edge fades to say so. */
     .sections-inner {
@@ -328,8 +358,8 @@ footer a:hover { color: var(--text-secondary); }
         -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 48px), transparent);
         mask-image: linear-gradient(90deg, #000 calc(100% - 48px), transparent);
     }
-    .intro p { font-size: 15px; }
-    h2 { margin-top: 44px; font-size: 28px; }
+    .intro p { font-size: 16px; }
+    h2 { margin-top: 40px; font-size: 22px; }
 }
 
 /* ---- Print ---- */
@@ -338,14 +368,15 @@ footer a:hover { color: var(--text-secondary); }
     :root {
         --bg: #fff;
         --text: #000;
+        --text-prose: #000;
         --text-secondary: #222;
         --text-muted: #444;
         --navy: #000;
     }
-    body { font-size: 10.5pt; }
-    .theme-toggle, .sections, .profiles, .urlstat { display: none; }
+    body { padding-top: 0; font-size: 10.5pt; }
+    .site-header, .sections, .profiles, .urlstat { display: none; }
     .hero { padding-top: 0; }
-    .portrait { width: 72px; height: 72px; }
+    .portrait { width: 72px; height: 72px; box-shadow: none; }
     h2 { break-after: avoid; }
     .content li { break-inside: avoid; }
     .chip { border-color: #999; }
