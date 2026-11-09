@@ -334,12 +334,6 @@ func TestOwnerPages(t *testing.T) {
 		t.Fatalf("anonymous POST /library/sync = %d, want 403", rec.Code)
 	}
 
-	// The login page moved to the site's /login; old links go there.
-	if rec := get(t, h, "/library/login?next=%2Fblog%2Fnew", false); rec.Code != http.StatusMovedPermanently ||
-		rec.Header().Get("Location") != "/login?next=%2Fblog%2Fnew" {
-		t.Fatalf("GET /library/login = %d %s", rec.Code, rec.Header().Get("Location"))
-	}
-
 	s.owner.Dev = true
 	for path, want := range map[string]string{
 		"/library/":                   "Pollux",

@@ -178,7 +178,6 @@ an hour old.
 | `GET /library/inbox` | owner | Every comment and suggestion, unread in bold |
 | `GET /library/shares` | owner | Every share, its links, revoke |
 | `POST /library/sync` | owner | Sync now |
-| `GET /library/login` | anyone | A permanent redirect to `/login`, where the login page moved |
 | `GET /library/s/<token>` | member | The share: entries, suggestions, comments |
 | `GET /library/s/<token>/e/<key>` | member | One entry with the share's comments |
 | `GET /library/p/<id>` | anyone | A public share, read-only, without comments |

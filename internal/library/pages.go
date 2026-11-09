@@ -169,14 +169,6 @@ func (s *Service) routes() http.Handler {
 	assets, _ := fs.Sub(assetsFS, "assets")
 	m.Handle("GET /library/assets/", http.StripPrefix("/library/assets/", http.FileServerFS(assets)))
 	m.HandleFunc("GET /library/healthz", s.healthz)
-	// The login page was the library's before it was the site's.
-	m.HandleFunc("GET /library/login", func(w http.ResponseWriter, r *http.Request) {
-		to := "/login"
-		if r.URL.RawQuery != "" {
-			to += "?" + r.URL.RawQuery
-		}
-		http.Redirect(w, r, to, http.StatusMovedPermanently)
-	})
 
 	// ownOr serves the owner with h and everyone else with other.
 	ownOr := func(h, other http.HandlerFunc) http.HandlerFunc {
