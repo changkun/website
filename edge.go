@@ -30,8 +30,9 @@ const edgeControl = "max-age=60, stale-while-revalidate=604800, stale-if-error=6
 // edge. A Cache Rule on the zone makes pages eligible and leaves an answer
 // without the mark to the server, so what is not marked is not kept: what
 // is set apart for one person (private, no-store), sets a cookie, is not a
-// whole 200 or 304, or is under the library or the blog's editor, where
-// what one is shown depends on who asks and on shares that can be revoked.
+// whole 200 or 304, or is the login page or under the library or the
+// blog's editor, where what one is shown depends on who asks and on shares
+// that can be revoked.
 // Files the server names for good (immutable) keep their own Cache-Control.
 func edgeCache(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -45,6 +46,9 @@ func edgeCache(next http.Handler) http.Handler {
 
 // personal reports whether the answer at path depends on who asks.
 func personal(path string) bool {
+	if path == "/login" || path == "/logout" {
+		return true
+	}
 	if strings.HasPrefix(path, library.Prefix) {
 		return !strings.HasPrefix(path, library.Prefix+"assets/")
 	}

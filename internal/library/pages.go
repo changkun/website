@@ -169,9 +169,14 @@ func (s *Service) routes() http.Handler {
 	assets, _ := fs.Sub(assetsFS, "assets")
 	m.Handle("GET /library/assets/", http.StripPrefix("/library/assets/", http.FileServerFS(assets)))
 	m.HandleFunc("GET /library/healthz", s.healthz)
-	m.HandleFunc("GET /library/login", s.loginPage)
-	m.HandleFunc("POST /library/login", s.owner.Login)
-	m.HandleFunc("POST /library/logout", s.logout)
+	// The login page was the library's before it was the site's.
+	m.HandleFunc("GET /library/login", func(w http.ResponseWriter, r *http.Request) {
+		to := "/login"
+		if r.URL.RawQuery != "" {
+			to += "?" + r.URL.RawQuery
+		}
+		http.Redirect(w, r, to, http.StatusMovedPermanently)
+	})
 
 	// ownOr serves the owner with h and everyone else with other.
 	ownOr := func(h, other http.HandlerFunc) http.HandlerFunc {
@@ -214,11 +219,11 @@ func (s *Service) routes() http.Handler {
 	})
 }
 
-// toLogin sends a GET to the login page, which returns to it after, and
-// refuses anything else.
+// toLogin sends a GET to the site's login page, which returns to it after,
+// and refuses anything else.
 func toLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		http.Redirect(w, r, Prefix+"login?next="+url.QueryEscape(r.URL.RequestURI()), http.StatusSeeOther)
+		http.Redirect(w, r, "/login?next="+url.QueryEscape(r.URL.RequestURI()), http.StatusSeeOther)
 		return
 	}
 	http.Error(w, "forbidden", http.StatusForbidden)
@@ -231,31 +236,6 @@ func (s *Service) healthz(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Fprintln(w, "ok, synced", ago(ok))
-}
-
-// loginPage logs the owner in, for the library and for the blog's editor,
-// and goes on to ?next=, a page of either.
-func (s *Service) loginPage(w http.ResponseWriter, r *http.Request) {
-	next := r.URL.Query().Get("next")
-	if !loginNext.MatchString(next) {
-		next = Prefix
-	}
-	if s.owner.Is(r) {
-		http.Redirect(w, r, next, http.StatusSeeOther)
-		return
-	}
-	s.render(w, r, http.StatusOK, "login", view{Title: "Log in", Data: next})
-}
-
-// loginNext matches the pages the login page may go on to. The login
-// template checks the same.
-var loginNext = regexp.MustCompile(`^/(library|blog)/`)
-
-// logout ends the owner's session and shows the login page, which does not
-// log straight back in.
-func (s *Service) logout(w http.ResponseWriter, r *http.Request) {
-	s.owner.Logout(w, r)
-	http.Redirect(w, r, Prefix+"login?out=1", http.StatusSeeOther)
 }
 
 // list is a filtered, sorted, paged list of entries.

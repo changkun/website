@@ -124,7 +124,7 @@ func newEditorHandler(t *testing.T, pub Publisher) http.Handler {
 	t.Helper()
 	ed := &Editor{
 		Owner: func(r *http.Request) bool { return r.Header.Get("X-Test-Owner") == "1" },
-		Login: "/library/login",
+		Login: "/login",
 	}
 	if pub != nil {
 		ed.Publisher = pub
@@ -158,7 +158,7 @@ func asJSON(t *testing.T, v any) []byte {
 func TestEditorOwnerOnly(t *testing.T) {
 	h := newEditorHandler(t, &fakePublisher{blobs: map[string][]byte{}, created: map[string][]ideas.File{}})
 	rec := do(t, h, "GET", "/blog/new", "", nil, false)
-	if rec.Code != http.StatusSeeOther || rec.Header().Get("Location") != "/library/login?next=%2Fblog%2Fnew" {
+	if rec.Code != http.StatusSeeOther || rec.Header().Get("Location") != "/login?next=%2Fblog%2Fnew" {
 		t.Fatalf("anonymous GET /blog/new = %d to %q", rec.Code, rec.Header().Get("Location"))
 	}
 	for _, p := range []string{"/blog/new", "/blog/new/preview", "/blog/new/files?name=a.png"} {
@@ -476,7 +476,7 @@ func TestEditPage(t *testing.T) {
 		t.Errorf("GET ?base = %d %s", rec.Code, rec.Body)
 	}
 	rec = do(t, h, "GET", "/blog/edit/posts/hello/", "", nil, false)
-	if rec.Code != http.StatusSeeOther || rec.Header().Get("Location") != "/library/login?next=%2Fblog%2Fedit%2Fposts%2Fhello%2F" {
+	if rec.Code != http.StatusSeeOther || rec.Header().Get("Location") != "/login?next=%2Fblog%2Fedit%2Fposts%2Fhello%2F" {
 		t.Errorf("anonymous GET of the editor = %d to %q", rec.Code, rec.Header().Get("Location"))
 	}
 	for _, p := range []string{"/blog/edit/about/", "/blog/edit/posts/nope/", "/blog/edit/posts/hello", "/blog/edit/"} {

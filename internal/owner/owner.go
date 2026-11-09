@@ -4,7 +4,7 @@
 
 // Package owner recognizes requests from the person who runs changkun.de.
 //
-// Logging in goes through latere: the library's login page runs the PKCE
+// Logging in goes through latere: the login page at /login runs the PKCE
 // flow in the browser with /login-sdk.js and posts the access token to
 // Login once. Login checks it against AUTH_ALLOWED_PRINCIPALS and
 // AUTH_ALLOWED_CLIENTS and sets a cookie for the whole site, signed with a key kept on disk, so

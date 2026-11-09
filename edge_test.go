@@ -41,6 +41,8 @@ func TestEdgeCache(t *testing.T) {
 		{name: "editor", method: "GET", path: "/blog/new", code: 200},
 		{name: "editor job", method: "GET", path: "/blog/new/jobs/1", code: 200},
 		{name: "edit", method: "GET", path: "/blog/edit/posts/x/", code: 200},
+		{name: "login", method: "GET", path: "/login", code: 200},
+		{name: "login with next", method: "GET", path: "/login?next=/blog/", code: 200},
 	} {
 		h := edgeCache(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			for k, v := range tc.header {

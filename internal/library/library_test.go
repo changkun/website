@@ -324,7 +324,7 @@ func TestOwnerPages(t *testing.T) {
 	// Without login, owner pages redirect to the login page, and the home
 	// page is an empty library that shows nothing private.
 	if rec := get(t, h, "/library/t/SYS", false); rec.Code != http.StatusSeeOther ||
-		!strings.HasPrefix(rec.Header().Get("Location"), "/library/login") {
+		rec.Header().Get("Location") != "/login?next=%2Flibrary%2Ft%2FSYS" {
 		t.Fatalf("anonymous GET /library/t/SYS = %d %s", rec.Code, rec.Header().Get("Location"))
 	}
 	if rec := get(t, h, "/library/", false); rec.Code != http.StatusOK || strings.Contains(rec.Body.String(), "Pollux") {
@@ -334,20 +334,13 @@ func TestOwnerPages(t *testing.T) {
 		t.Fatalf("anonymous POST /library/sync = %d, want 403", rec.Code)
 	}
 
-	s.owner.Dev = true
-	// The login page goes on to the library or the blog's editor, nowhere else.
-	for next, want := range map[string]string{
-		"/blog/new":            "/blog/new",
-		"/library/t/SYS":       "/library/t/SYS",
-		"https://example.com/": "/library/",
-		"//example.com/":       "/library/",
-		"/elsewhere":           "/library/",
-	} {
-		rec := get(t, h, "/library/login?next="+url.QueryEscape(next), true)
-		if rec.Code != http.StatusSeeOther || rec.Header().Get("Location") != want {
-			t.Errorf("login with next=%s = %d to %q, want %q", next, rec.Code, rec.Header().Get("Location"), want)
-		}
+	// The login page moved to the site's /login; old links go there.
+	if rec := get(t, h, "/library/login?next=%2Fblog%2Fnew", false); rec.Code != http.StatusMovedPermanently ||
+		rec.Header().Get("Location") != "/login?next=%2Fblog%2Fnew" {
+		t.Fatalf("GET /library/login = %d %s", rec.Code, rec.Header().Get("Location"))
 	}
+
+	s.owner.Dev = true
 	for path, want := range map[string]string{
 		"/library/":                   "Pollux",
 		"/library/?q=borg":            "Borg",

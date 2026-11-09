@@ -43,14 +43,14 @@ func TestSessionCookie(t *testing.T) {
 
 	// Without an allowlist, login is refused.
 	rec := httptest.NewRecorder()
-	o.Login(rec, httptest.NewRequest("POST", "/library/login", nil))
+	o.Login(rec, httptest.NewRequest("POST", "/login", nil))
 	if rec.Code != http.StatusForbidden {
 		t.Fatalf("login without allowlist = %d, want 403", rec.Code)
 	}
 
 	// Logging out clears the cookie for the whole site.
 	rec = httptest.NewRecorder()
-	o.Logout(rec, httptest.NewRequest("POST", "/library/logout", nil))
+	o.Logout(rec, httptest.NewRequest("POST", "/logout", nil))
 	if c := rec.Result().Cookies(); len(c) == 0 || c[0].Name != cookieName || c[0].Path != "/" || c[0].MaxAge >= 0 {
 		t.Fatalf("logout cookies = %v", c)
 	}
@@ -67,7 +67,7 @@ func TestSessionCookie(t *testing.T) {
 	if !marked {
 		t.Errorf("logout does not clear the %s cookie", signedIn)
 	}
-	if c := marker(httptest.NewRequest("POST", "/library/login", nil), "1", 60); c.Name != signedIn || c.Value != "1" || c.HttpOnly || c.Path != "/" {
+	if c := marker(httptest.NewRequest("POST", "/login", nil), "1", 60); c.Name != signedIn || c.Value != "1" || c.HttpOnly || c.Path != "/" {
 		t.Errorf("marker = %+v", c)
 	}
 

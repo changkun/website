@@ -178,7 +178,7 @@ an hour old.
 | `GET /library/inbox` | owner | Every comment and suggestion, unread in bold |
 | `GET /library/shares` | owner | Every share, its links, revoke |
 | `POST /library/sync` | owner | Sync now |
-| `GET`, `POST /library/login` | owner | latere login, then a session cookie |
+| `GET /library/login` | anyone | A permanent redirect to `/login`, where the login page moved |
 | `GET /library/s/<token>` | member | The share: entries, suggestions, comments |
 | `GET /library/s/<token>/e/<key>` | member | One entry with the share's comments |
 | `GET /library/p/<id>` | anyone | A public share, read-only, without comments |
@@ -195,12 +195,18 @@ the same entries as BibTeX.
 
 ### Login
 
-The login page runs the browser PKCE flow with `/login-sdk.js`, so
-`https://changkun.de/library/login` must be on the `changkun-blog` client's
-redirect URIs. The token is checked against `AUTH_ALLOWED_PRINCIPALS` and
-`AUTH_ALLOWED_CLIENTS` once, and the server then sets its own cookie for the
-whole site for 30 days, which the blog's editor also reads; its login sends
-the owner here, and back with `?next=`.
+One login, at `/login`, serves the whole site: the library's owner pages,
+the blog's editor and the Edit link on posts. The page runs the browser PKCE
+flow with `/login-sdk.js`, so `https://changkun.de/login` must be on the
+`changkun-blog` client's redirect URIs. The token is checked against
+`AUTH_ALLOWED_PRINCIPALS` and `AUTH_ALLOWED_CLIENTS` once, and the server then
+sets its own cookie for the whole site for 30 days, and a `signed_in` cookie
+that pages' scripts may read. A page that needs the owner sends a visitor to
+`/login?next=<page>`, which goes back after; `next` may be the home page or a
+page of the library or the blog. `POST /logout` ends the session, and the
+login page it goes on to logs out of latere too, so pages that read the latere
+token, such as urlstat's dashboard, are logged out with it. The home page's
+footer links to the login page, and shows Logout when `signed_in` is set.
 
 ## Configuration
 

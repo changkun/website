@@ -402,7 +402,7 @@
         </main>
 
         <footer>
-            <span>Copyright &copy; 2016&ndash;<script>document.write(new Date().getFullYear())</script> Changkun Ou. All rights reserved.<span class="footer-stat"> &middot; PV/UV <span id="urlstat-site-pv"></span>/<span id="urlstat-site-uv"></span></span> &middot; <a href="https://changkun.github.io/status/">Status</a> &middot; <a href="https://changkun.de/urlstat/dashboard">urlstat</a> &middot; <a href="https://changkun.de/s/">redir</a> &middot; <a id="login" href="#">Login</a></span>
+            <span>Copyright &copy; 2016&ndash;<script>document.write(new Date().getFullYear())</script> Changkun Ou. All rights reserved.<span class="footer-stat"> &middot; PV/UV <span id="urlstat-site-pv"></span>/<span id="urlstat-site-uv"></span></span> &middot; <a href="https://changkun.github.io/status/">Status</a> &middot; <a href="https://changkun.de/urlstat/dashboard">urlstat</a> &middot; <a href="https://changkun.de/s/">redir</a> &middot; <a id="login" href="/login?next=/">Login</a></span>
         </footer>
 
         <script>
@@ -429,48 +429,19 @@
                 });
             })();
         </script>
-        <script src="/login-sdk.js"></script>
+        <form id="logout" method="post" action="/logout" hidden></form>
         <script>
-            // Footer login via the hosted latere PKCE SDK. Clicking Login starts
-            // the flow; on return we decode the JWT to show the user + a Logout.
+            // Logging in is at /login, for the whole site. The page is the
+            // same for everyone, as Cloudflare keeps it, so the owner's
+            // Logout is shown here, when the owner is signed in.
             (function() {
-                const loginEl = document.getElementById('login');
-                if (!loginEl || typeof latereAuth === 'undefined') return;
-
-                function decodeJwt(t) {
-                    try {
-                        const p = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-                        return JSON.parse(decodeURIComponent(escape(atob(p))));
-                    } catch (e) { return null; }
-                }
-
-                function showLoggedIn() {
-                    let raw = null;
-                    try { raw = JSON.parse(localStorage.getItem('latere-token')); } catch (e) {}
-                    const claims = raw ? decodeJwt(raw.access_token) : null;
-                    loginEl.textContent = (claims && (claims.email || claims.name || claims.sub)) || 'Logged in';
-                    loginEl.removeAttribute('href');
-                    loginEl.style.cursor = 'default';
-                    const sep = document.createTextNode(' · ');
-                    const logout = document.createElement('a');
-                    logout.textContent = 'Logout';
-                    logout.href = '#';
-                    logout.addEventListener('click', (ev) => {
-                        ev.preventDefault();
-                        latereAuth.logout();
-                        window.location.replace(window.location.origin + window.location.pathname);
-                    });
-                    loginEl.parentNode.appendChild(sep);
-                    loginEl.parentNode.appendChild(logout);
-                }
-
-                loginEl.addEventListener('click', (ev) => {
-                    ev.preventDefault();
-                    latereAuth.login(window.location.href);
-                });
-
-                latereAuth.handleCallback().then((ok) => {
-                    if (ok || latereAuth.hasValidToken()) showLoggedIn();
+                if (!/(?:^|; )signed_in=1(?:;|$)/.test(document.cookie)) return;
+                var a = document.getElementById('login');
+                a.textContent = 'Logout';
+                a.href = '/logout';
+                a.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.getElementById('logout').submit();
                 });
             })();
         </script>

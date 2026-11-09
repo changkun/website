@@ -64,7 +64,7 @@ func notifyShutdown(parent context.Context) (context.Context, context.CancelFunc
 
 // serve serves on ln until ctx is done, then drains in-flight requests.
 func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
-	// One login, the library's, serves the library and the blog's editor.
+	// One login, at /login, serves the library and the blog's editor.
 	own := owner.New(filepath.Join(cmp.Or(os.Getenv("LIBRARY_DIR"), "/data"), "state", "session.key"), l)
 	lib, err := library.New(l, own)
 	if err != nil {
@@ -73,7 +73,7 @@ func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 	}
 	lib.Run(ctx)
 	svc := ideas.New(l)
-	ed := &blog.Editor{Owner: own.Is, Login: library.Prefix + "login"}
+	ed := &blog.Editor{Owner: own.Is, Login: "/login"}
 	if svc != nil {
 		ed.Publisher = svc
 	}
@@ -92,6 +92,8 @@ func serve(ctx context.Context, ln net.Listener, l *log.Logger) error {
 
 	r.Handle("/", site)
 	r.Handle(library.Prefix, library.Handler(lib))
+	r.Handle("/login", own.Handler())
+	r.Handle("/logout", own.Handler())
 	s := &http.Server{
 		Handler:           logging(l)(edgeCache(h)),
 		ErrorLog:          l,
