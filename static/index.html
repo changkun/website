@@ -268,6 +268,10 @@
 
             footer a:hover { color: var(--text-secondary); }
 
+            /* The site's views and visitors, filled in by urlstat on changkun.de. */
+            .footer-stat { font-variant-numeric: tabular-nums; }
+            .footer-stat:has(#urlstat-site-pv:empty) { display: none; }
+
             @media (max-width: 640px) {
                 .links { grid-template-columns: repeat(2, auto); }
             }
@@ -398,7 +402,7 @@
         </main>
 
         <footer>
-            <span>Copyright &copy; 2016&ndash;<script>document.write(new Date().getFullYear())</script> Changkun Ou. All rights reserved. &middot; <a href="https://changkun.github.io/status/">Status</a> &middot; <a href="https://changkun.de/urlstat/dashboard">urlstat</a> &middot; <a href="https://changkun.de/s/">redir</a> &middot; <a id="login" href="#">Login</a></span>
+            <span>Copyright &copy; 2016&ndash;<script>document.write(new Date().getFullYear())</script> Changkun Ou. All rights reserved.<span class="footer-stat"> &middot; PV/UV <span id="urlstat-site-pv"></span>/<span id="urlstat-site-uv"></span></span> &middot; <a href="https://changkun.github.io/status/">Status</a> &middot; <a href="https://changkun.de/urlstat/dashboard">urlstat</a> &middot; <a href="https://changkun.de/s/">redir</a> &middot; <a id="login" href="#">Login</a></span>
         </footer>
 
         <script>

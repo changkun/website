@@ -158,6 +158,10 @@
 
             footer a:hover { color: var(--text-secondary); }
 
+            /* This page's views and visitors, filled in by urlstat on changkun.de. */
+            .page-stat { font-variant-numeric: tabular-nums; }
+            .page-stat:has(#urlstat-page-pv:empty) { display: none; }
+
             @media (max-width: 600px) {
                 main { padding: 64px 16px 16px; }
                 .book-title { font-size: 18px; }
@@ -222,7 +226,7 @@
         </main>
 
         <footer>
-            Copyright &copy; 2016&ndash;<script>document.write(new Date().getFullYear())</script> <a href="/">Changkun Ou</a>. All rights reserved.
+            Copyright &copy; 2016&ndash;<script>document.write(new Date().getFullYear())</script> <a href="/">Changkun Ou</a>. All rights reserved.<span class="page-stat"> &middot; PV/UV <span id="urlstat-page-pv"></span>/<span id="urlstat-page-uv"></span></span>
         </footer>
 
         <script>
