@@ -18,8 +18,12 @@ run:
 	ZOTERO_API_KEY=$$(op read op://Personal/Zotero/api-key 2>/dev/null) \
 	LIBRARY_DIR=./data LIBRARY_DEV_OWNER=1 WEBSITE_ADDR=localhost:8080 \
 	go run .
+# up starts the image just built, then removes all but the two newest
+# versions of it, so a deploy can still be rolled back by one.
 up:
 	docker compose up -d
+	-docker images $(NAME) --format '{{.Tag}}' | grep -vx latest | tail -n +3 | sed 's/^/$(NAME):/' | xargs -r docker rmi
+	-docker image prune -f
 down:
 	docker compose down
 clean: down
